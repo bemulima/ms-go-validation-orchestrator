@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "php-css-js",
+  "profiles": ["php", "css", "javascript"],
+  "workspace": {
+    "required_files": ["index.php", "public/styles.css", "public/app.js"]
+  },
+  "stages": [
+    {
+      "id": "php",
+      "engine": "php.core",
+      "language": "php",
+      "mode": "final",
+      "targets": {
+        "files": ["index.php"]
+      },
+      "rules": {
+        "version": "1",
+        "language": "php",
+        "requiredTokens": ["echo"],
+        "structuralRules": {
+          "expectedTokens": ["T_ECHO"]
+        }
+      }
+    },
+    {
+      "id": "css",
+      "engine": "css.ast",
+      "language": "css",
+      "mode": "both",
+      "targets": {
+        "files": ["public/styles.css"]
+      },
+      "rules": {
+        "rules": [
+          {
+            "selector": { "value": ".page" },
+            "declarations": [
+              { "property": { "value": "min-height" }, "value": { "value": "100vh" } }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "javascript",
+      "engine": "js.ast",
+      "language": "js",
+      "mode": "both",
+      "targets": {
+        "files": ["public/app.js"],
+        "entrypoint": "public/app.js"
+      },
+      "rules": {
+        "maxFileSizeKb": 64
+      }
+    }
+  ]
+}

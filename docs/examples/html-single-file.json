@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "html5",
+  "profiles": ["html5"],
+  "workspace": {
+    "required_files": ["index.html"]
+  },
+  "stages": [
+    {
+      "id": "html",
+      "name": "HTML document structure",
+      "engine": "html.dom",
+      "language": "html",
+      "mode": "both",
+      "targets": {
+        "files": ["index.html"]
+      },
+      "rules": {
+        "version": 2,
+        "head": {
+          "doctype": true,
+          "htmlLang": "en",
+          "head": [
+            {
+              "tag": { "value": "title", "errorMessage": "Title is required" },
+              "text": { "mode": "contains", "value": "Profile", "errorMessage": "Title must mention Profile" }
+            }
+          ]
+        },
+        "body": {
+          "roots": [
+            {
+              "tag": { "value": "main", "errorMessage": "Root must be <main>" },
+              "children": [
+                {
+                  "tag": { "value": "h1", "errorMessage": "Need <h1>" },
+                  "text": { "mode": "contains", "value": "Student", "errorMessage": "Heading should mention Student" }
+                },
+                {
+                  "tag": { "value": "img", "errorMessage": "Need profile image" },
+                  "attributes": [
+                    { "name": "src", "required": true, "errorMessage": "src is required" },
+                    { "name": "alt", "required": true, "errorMessage": "alt is required" },
+                    { "name": "class", "oneOf": ["profile-avatar"], "errorMessage": "Use class profile-avatar" }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "html-css-js",
+  "profiles": ["html5", "css", "javascript"],
+  "workspace": {
+    "required_files": ["index.html", "styles.css", "app.js"]
+  },
+  "stages": [
+    {
+      "id": "html",
+      "engine": "html.dom",
+      "language": "html",
+      "mode": "both",
+      "targets": {
+        "files": ["index.html"]
+      },
+      "rules": {
+        "version": 2,
+        "body": {
+          "roots": [
+            {
+              "tag": { "value": "main", "errorMessage": "Need <main>" },
+              "children": [
+                {
+                  "tag": { "value": "button", "errorMessage": "Need save button" },
+                  "attributes": [
+                    { "name": "id", "value": "save-button", "errorMessage": "Use id save-button" }
+                  ],
+                  "text": { "mode": "contains", "value": "Save", "errorMessage": "Button text should be Save" }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "css",
+      "engine": "css.ast",
+      "language": "css",
+      "mode": "both",
+      "depends_on": ["html"],
+      "targets": {
+        "files": ["styles.css"]
+      },
+      "rules": {
+        "rules": [
+          {
+            "selector": { "value": "#save-button" },
+            "declarations": [
+              { "property": { "value": "background-color" }, "value": { "value": "#2563eb" } }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "javascript",
+      "engine": "js.ast",
+      "language": "js",
+      "mode": "both",
+      "depends_on": ["html"],
+      "targets": {
+        "files": ["app.js"],
+        "entrypoint": "app.js"
+      },
+      "rules": {
+        "forbiddenGlobals": ["window"],
+        "maxFileSizeKb": 64
+      }
+    }
+  ],
+  "links": [
+    {
+      "id": "html-has-button-id",
+      "kind": "workspace.file_contains",
+      "config": {
+        "file": "index.html",
+        "needle": "id=\"save-button\"",
+        "message": "index.html should contain the save-button element"
+      }
+    },
+    {
+      "id": "javascript-uses-button-selector",
+      "kind": "workspace.file_contains",
+      "depends_on": ["javascript"],
+      "config": {
+        "file": "app.js",
+        "needle": "#save-button",
+        "message": "app.js should reference the save-button selector"
+      }
+    }
+  ]
+}
