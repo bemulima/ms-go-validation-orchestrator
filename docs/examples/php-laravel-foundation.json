@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "laravel-11",
+  "profiles": ["php", "laravel"],
+  "workspace": {
+    "required_files": [
+      "routes/web.php",
+      "app/Http/Controllers/DashboardController.php",
+      "resources/views/dashboard.blade.php"
+    ]
+  },
+  "stages": [
+    {
+      "id": "laravel",
+      "name": "Laravel foundation",
+      "engine": "php.laravel",
+      "language": "php",
+      "framework": "laravel",
+      "mode": "final",
+      "targets": {
+        "files": [
+          "routes/web.php",
+          "app/Http/Controllers/DashboardController.php",
+          "resources/views/dashboard.blade.php"
+        ]
+      },
+      "rules": {
+        "requiredRoutes": [
+          {
+            "file": "routes/web.php",
+            "method": "GET",
+            "path": "/dashboard",
+            "uses": "DashboardController@index"
+          }
+        ],
+        "requiredControllers": [
+          {
+            "path": "app/Http/Controllers/DashboardController.php",
+            "className": "DashboardController",
+            "extends": "Controller",
+            "methods": ["index"]
+          }
+        ],
+        "requiredViews": [
+          "resources/views/dashboard.blade.php"
+        ]
+      }
+    }
+  ],
+  "links": []
+}

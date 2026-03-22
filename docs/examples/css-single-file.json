@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "css",
+  "profiles": ["css"],
+  "workspace": {
+    "required_files": ["styles.css"]
+  },
+  "stages": [
+    {
+      "id": "css",
+      "name": "Stylesheet rules",
+      "engine": "css.ast",
+      "language": "css",
+      "mode": "both",
+      "targets": {
+        "files": ["styles.css"]
+      },
+      "rules": {
+        "rules": [
+          {
+            "selector": { "value": ".card" },
+            "declarations": [
+              {
+                "property": { "value": "background-color" },
+                "anyOfValues": [{ "value": "#ffffff" }, { "value": "white" }]
+              },
+              {
+                "property": { "value": "border-radius" },
+                "value": { "value": "12px" }
+              }
+            ]
+          },
+          {
+            "selector": { "value": "#hero" },
+            "declarations": [
+              {
+                "property": { "value": "background" },
+                "value": { "value": "linear-gradient\\(", "isRegex": true }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

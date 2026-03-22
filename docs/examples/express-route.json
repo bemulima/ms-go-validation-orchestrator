@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "express",
+  "profiles": ["node", "express", "typescript"],
+  "workspace": {
+    "required_files": ["src/main.ts"]
+  },
+  "stages": [
+    {
+      "id": "express-structure",
+      "name": "Express structure",
+      "engine": "node.express",
+      "language": "ts",
+      "framework": "express",
+      "mode": "both",
+      "targets": {
+        "files": ["src/main.ts"],
+        "entrypoint": "src/main.ts"
+      },
+      "rules": {
+        "requiredDependencies": ["express"],
+        "express": {
+          "routes": [
+            { "method": "GET", "path": "/health", "mustUseAsync": true }
+          ],
+          "mustUseEnvPort": true
+        }
+      }
+    },
+    {
+      "id": "express-runtime",
+      "name": "Express runtime",
+      "engine": "http.runtime",
+      "language": "ts",
+      "framework": "express",
+      "mode": "final",
+      "depends_on": ["express-structure"],
+      "targets": {
+        "files": ["src/main.ts"],
+        "entrypoint": "src/main.ts"
+      },
+      "checks": {
+        "requests": [
+          {
+            "name": "health",
+            "request": { "method": "GET", "path": "/health" },
+            "expect": { "status": 200, "jsonMatch": { "ok": true } }
+          }
+        ]
+      }
+    }
+  ]
+}

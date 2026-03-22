@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "yii3-web",
+  "profiles": ["php", "yii3"],
+  "workspace": {
+    "required_files": [
+      "src/Controller/SiteController.php",
+      "templates/site/index.php"
+    ]
+  },
+  "stages": [
+    {
+      "id": "yii3",
+      "name": "Yii3 foundation",
+      "engine": "php.yii3",
+      "language": "php",
+      "framework": "yii3",
+      "mode": "final",
+      "targets": {
+        "files": [
+          "src/Controller/SiteController.php",
+          "templates/site/index.php"
+        ]
+      },
+      "rules": {
+        "requiredControllers": [
+          {
+            "path": "src/Controller/SiteController.php",
+            "className": "SiteController",
+            "methods": ["index"]
+          }
+        ],
+        "requiredViews": [
+          "templates/site/index.php"
+        ]
+      }
+    }
+  ],
+  "links": []
+}

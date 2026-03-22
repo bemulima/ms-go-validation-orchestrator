@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "php-core",
+  "profiles": ["php"],
+  "workspace": {
+    "required_files": ["index.php"]
+  },
+  "stages": [
+    {
+      "id": "php",
+      "name": "PHP core checks",
+      "engine": "php.core",
+      "language": "php",
+      "mode": "final",
+      "targets": {
+        "files": ["index.php"]
+      },
+      "rules": {
+        "version": "1",
+        "language": "php",
+        "minPhpVersion": "8.2",
+        "forbiddenFunctions": ["eval"],
+        "maxLines": 200,
+        "maxNestingLevel": 3,
+        "structuralRules": {
+          "classes": [
+            {
+              "name": "UserService",
+              "required": true,
+              "namePattern": "/Service$/",
+              "constructor": {
+                "required": true
+              },
+              "properties": [
+                { "name": "repo", "visibility": "private", "required": true }
+              ],
+              "methods": [
+                {
+                  "name": "create",
+                  "visibility": "public",
+                  "required": true,
+                  "delegation": {
+                    "mustCall": [
+                      { "type": "thisMethod", "method": "validate", "minCount": 1 }
+                    ],
+                    "forbiddenBodyTypes": ["loop"]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "html-css-js-browser",
+  "profiles": ["html5", "css", "javascript"],
+  "workspace": {
+    "required_files": ["index.html", "styles.css", "app.js"]
+  },
+  "stages": [
+    {
+      "id": "html",
+      "engine": "html.dom",
+      "language": "html",
+      "mode": "both",
+      "targets": {
+        "files": ["index.html"]
+      },
+      "rules": {
+        "version": 2,
+        "body": {
+          "roots": [
+            {
+              "tag": { "value": "main", "errorMessage": "Need <main>" },
+              "children": [
+                {
+                  "tag": { "value": "button", "errorMessage": "Need theme toggle button" },
+                  "attributes": [
+                    { "name": "id", "value": "toggle-theme", "errorMessage": "Use id toggle-theme" }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "css",
+      "engine": "css.ast",
+      "language": "css",
+      "mode": "both",
+      "depends_on": ["html"],
+      "targets": {
+        "files": ["styles.css"]
+      },
+      "rules": {
+        "rules": [
+          {
+            "selector": { "value": ".dark" },
+            "declarations": [
+              {
+                "property": { "value": "background-color" },
+                "anyOfValues": [{ "value": "#111827" }, { "value": "black" }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "javascript",
+      "engine": "js.ast",
+      "language": "js",
+      "mode": "both",
+      "depends_on": ["html"],
+      "targets": {
+        "files": ["app.js"],
+        "entrypoint": "app.js"
+      },
+      "rules": {
+        "maxFileSizeKb": 64
+      }
+    },
+    {
+      "id": "browser-runtime",
+      "name": "Browser runtime foundation",
+      "engine": "browser.runtime",
+      "language": "js",
+      "mode": "final",
+      "depends_on": ["html", "css", "javascript"],
+      "targets": {
+        "files": ["index.html", "styles.css", "app.js"],
+        "entrypoint": "index.html"
+      },
+      "checks": {
+        "interactions": [
+          {
+            "selector": "#toggle-theme",
+            "action": "click",
+            "expectClassToggle": {
+              "selector": "body",
+              "className": "dark"
+            }
+          }
+        ],
+        "computedStyles": [
+          {
+            "selector": "body.dark",
+            "property": "background-color"
+          }
+        ]
+      }
+    }
+  ],
+  "links": [
+    {
+      "id": "javascript-uses-toggle-selector",
+      "kind": "workspace.file_contains",
+      "depends_on": ["javascript"],
+      "config": {
+        "file": "app.js",
+        "needle": "toggle-theme",
+        "message": "app.js should reference the toggle-theme selector"
+      }
+    }
+  ]
+}

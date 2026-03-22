@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "html-css",
+  "profiles": ["html5", "css"],
+  "workspace": {
+    "required_files": ["index.html", "styles.css"]
+  },
+  "stages": [
+    {
+      "id": "html",
+      "engine": "html.dom",
+      "language": "html",
+      "mode": "both",
+      "targets": {
+        "files": ["index.html"]
+      },
+      "rules": {
+        "version": 2,
+        "body": {
+          "roots": [
+            {
+              "tag": { "value": "main", "errorMessage": "Need <main>" },
+              "children": [
+                {
+                  "tag": { "value": "section", "errorMessage": "Need card section" },
+                  "attributes": [
+                    { "name": "class", "oneOf": ["card"], "errorMessage": "Use class card" }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "css",
+      "engine": "css.ast",
+      "language": "css",
+      "mode": "both",
+      "depends_on": ["html"],
+      "targets": {
+        "files": ["styles.css"]
+      },
+      "rules": {
+        "rules": [
+          {
+            "selector": { "value": ".card" },
+            "declarations": [
+              {
+                "property": { "value": "background-color" },
+                "anyOfValues": [{ "value": "#fff" }, { "value": "white" }]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "links": [
+    {
+      "id": "html-card-class",
+      "kind": "workspace.file_contains",
+      "config": {
+        "file": "index.html",
+        "needle": "class=\"card\"",
+        "message": "index.html should render an element with class card"
+      }
+    },
+    {
+      "id": "css-card-selector",
+      "kind": "workspace.file_contains",
+      "depends_on": ["css"],
+      "config": {
+        "file": "styles.css",
+        "needle": ".card",
+        "message": "styles.css should define the .card selector"
+      }
+    }
+  ]
+}

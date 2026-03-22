@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "typescript",
+  "profiles": ["typescript"],
+  "workspace": {
+    "required_files": ["src/main.ts"]
+  },
+  "stages": [
+    {
+      "id": "typescript",
+      "name": "TypeScript static checks",
+      "engine": "ts.ast",
+      "language": "ts",
+      "mode": "both",
+      "targets": {
+        "files": ["src/main.ts"],
+        "entrypoint": "src/main.ts"
+      },
+      "rules": {
+        "requiredDependencies": [],
+        "forbiddenGlobals": ["document"],
+        "maxFileSizeKb": 64
+      }
+    }
+  ]
+}

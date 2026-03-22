@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "symfony-http-kernel",
+  "profiles": ["php", "symfony"],
+  "workspace": {
+    "required_files": [
+      "src/Controller/HomeController.php",
+      "templates/home/index.html.twig"
+    ]
+  },
+  "stages": [
+    {
+      "id": "symfony",
+      "name": "Symfony foundation",
+      "engine": "php.symfony",
+      "language": "php",
+      "framework": "symfony",
+      "mode": "final",
+      "targets": {
+        "files": [
+          "src/Controller/HomeController.php",
+          "templates/home/index.html.twig"
+        ]
+      },
+      "rules": {
+        "requiredControllers": [
+          {
+            "path": "src/Controller/HomeController.php",
+            "className": "HomeController",
+            "extends": "AbstractController",
+            "methods": ["index"]
+          }
+        ],
+        "requiredRoutes": [
+          {
+            "file": "src/Controller/HomeController.php",
+            "path": "/",
+            "name": "home_index"
+          }
+        ],
+        "requiredTemplates": [
+          "templates/home/index.html.twig"
+        ]
+      }
+    }
+  ],
+  "links": []
+}

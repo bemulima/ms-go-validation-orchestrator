@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "react",
+  "profiles": ["react", "typescript"],
+  "workspace": {
+    "required_files": ["src/App.tsx"]
+  },
+  "stages": [
+    {
+      "id": "react",
+      "name": "React component checks",
+      "engine": "react.ast",
+      "language": "tsx",
+      "framework": "react",
+      "mode": "both",
+      "targets": {
+        "files": ["src/App.tsx"]
+      },
+      "rules": [
+        { "kind": "component_exists", "name": "App", "export": "default", "componentKind": "function" },
+        { "kind": "hook_usage", "hook": "useState", "component": "App", "minCount": 1, "maxCount": 1 },
+        { "kind": "hook_type", "hook": "useState", "component": "App", "expectedType": "number" },
+        {
+          "kind": "jsx_tree",
+          "component": "App",
+          "selector": "button",
+          "textIncludes": "Save",
+          "attributesIncludes": { "id": "save-button", "className": "btn-primary" }
+        },
+        {
+          "kind": "event_handler",
+          "component": "App",
+          "jsxSelector": "button",
+          "event": "onClick",
+          "mustCall": ["setCount"]
+        }
+      ]
+    }
+  ]
+}

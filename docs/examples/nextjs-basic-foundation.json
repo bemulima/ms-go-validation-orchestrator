@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "nextjs-app-router",
+  "profiles": ["react", "nextjs", "typescript"],
+  "workspace": {
+    "required_files": ["app/page.tsx", "app/api/health/route.ts"]
+  },
+  "stages": [
+    {
+      "id": "nextjs-app",
+      "name": "Next.js app foundation",
+      "engine": "nextjs.app",
+      "language": "ts",
+      "framework": "nextjs",
+      "mode": "final",
+      "targets": {
+        "files": ["app/page.tsx", "app/api/health/route.ts"]
+      },
+      "rules": {
+        "appRouter": true,
+        "requiredPages": ["app/page.tsx"],
+        "requiredApiRoutes": ["app/api/health/route.ts"],
+        "requiredClientComponents": [],
+        "requiredServerComponents": ["app/page.tsx"]
+      }
+    }
+  ]
+}

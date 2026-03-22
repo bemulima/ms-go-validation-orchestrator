@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "javascript",
+  "profiles": ["javascript"],
+  "workspace": {
+    "required_files": ["app.js"]
+  },
+  "stages": [
+    {
+      "id": "javascript",
+      "name": "JavaScript static checks",
+      "engine": "js.ast",
+      "language": "js",
+      "mode": "both",
+      "targets": {
+        "files": ["app.js"],
+        "entrypoint": "app.js"
+      },
+      "rules": {
+        "requiredDependencies": [],
+        "forbiddenGlobals": ["window"],
+        "maxFileSizeKb": 64
+      }
+    }
+  ]
+}

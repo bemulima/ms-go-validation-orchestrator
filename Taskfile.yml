@@ -1,0 +1,14 @@
+version: "3"
+
+tasks:
+  test:
+    cmds:
+      - go test ./... -count=1
+
+  fmt:
+    cmds:
+      - gofmt -w ./cmd ./config ./dto ./internal ./mapper ./public ./tests
+
+  run:
+    cmds:
+      - go run ./cmd/ms-go-validation-orchestrator

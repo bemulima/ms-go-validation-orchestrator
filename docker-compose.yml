@@ -1,0 +1,23 @@
+services:
+  ms-go-validation-orchestrator:
+    container_name: ms-go-validation-orchestrator
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-8080}
+      SERVICE_NAME: ${SERVICE_NAME:-ms-go-validation-orchestrator}
+      HTML_VALIDATOR_URL: ${HTML_VALIDATOR_URL:-}
+      CSS_VALIDATOR_URL: ${CSS_VALIDATOR_URL:-}
+      REACT_VALIDATOR_URL: ${REACT_VALIDATOR_URL:-}
+      NODE_VALIDATOR_URL: ${NODE_VALIDATOR_URL:-}
+      PHP_VALIDATOR_URL: ${PHP_VALIDATOR_URL:-}
+    restart: unless-stopped
+    networks:
+      - default
+      - ms-net
+
+networks:
+  ms-net:
+    external: true
