@@ -44,16 +44,28 @@ Each engine validates one technology concern:
 - `node.fastify`
 - `node.nest`
 - `http.runtime`
+- `python.django.runtime`
+- `go.gin.runtime`
+- `go.echo.runtime`
+- `php.laravel.runtime`
+- `php.symfony.runtime`
+- `php.yii2.runtime`
+- `php.yii3.runtime`
 - `browser.runtime`
+- `git.core`
+- `docker.dockerfile`
+- `docker.compose`
+- `python.core`
+- `python.django`
+- `go.core`
+- `go.gin`
+- `go.echo`
 - `php.core`
-- `nextjs.app`
-
-Future foundation engines:
-
 - `php.laravel`
 - `php.yii2`
 - `php.yii3`
 - `php.symfony`
+- `nextjs.app`
 
 ## Stage model
 
@@ -89,7 +101,12 @@ Example:
 - `node.express`
 - `http.runtime`
 
-### Fullstack foundation task
+Or:
+
+- `python.django`
+- `python.django.runtime`
+
+### Fullstack task
 
 - backend or framework stage
 - optional frontend stages
@@ -97,9 +114,37 @@ Example:
 
 Example:
 
-- `php.core`
+- `php.laravel`
+- `php.laravel.runtime`
 - `css.ast`
 - `js.ast`
+
+### Repository or infrastructure task
+
+- repository or container stage
+- optional file/string links
+
+Example:
+
+- `git.core`
+- `docker.dockerfile`
+- `docker.compose`
+
+### Language and framework backend task
+
+- language stage
+- optional framework structure stage
+- optional runtime stage later
+
+Example:
+
+- `python.core`
+- `python.django`
+
+Or:
+
+- `go.core`
+- `go.gin`
 
 ## Live vs final
 
@@ -118,8 +163,13 @@ Examples:
 
 - `html.dom`, `css.ast`, `react.ast` are usually `both`
 - `http.runtime` is usually `final`
+- `python.django.runtime`, `go.gin.runtime`, `go.echo.runtime`, `php.laravel.runtime`, `php.symfony.runtime`, `php.yii2.runtime`, and `php.yii3.runtime` are usually `final`
 - `nextjs.app` is currently used as `final`
 - `browser.runtime` can be `final` or `both` depending on task cost
+- `git.core` is currently most reliable in sandbox-backed `final` mode because it needs a real `.git`
+- `docker.dockerfile` and `docker.compose` are usually `both`
+- `python.core` and `go.core` are usually `both`
+- `python.django`, `go.gin`, `go.echo`, `php.laravel`, `php.symfony`, `php.yii2`, and `php.yii3` are currently best as structure stages paired with runtime stages when HTTP behavior matters
 
 ## Links
 

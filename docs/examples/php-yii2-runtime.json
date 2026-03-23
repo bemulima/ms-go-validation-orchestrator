@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "yii2-runtime",
+  "profiles": ["php", "yii2"],
+  "workspace": {
+    "required_files": [
+      "controllers/SiteController.php",
+      "views/site/index.php",
+      "web/index.php"
+    ]
+  },
+  "stages": [
+    {
+      "id": "yii2-structure",
+      "engine": "php.yii2",
+      "language": "php",
+      "framework": "yii2",
+      "mode": "final",
+      "targets": {
+        "files": ["controllers/SiteController.php", "views/site/index.php"]
+      },
+      "rules": {
+        "requiredControllers": [
+          {
+            "path": "controllers/SiteController.php",
+            "className": "SiteController",
+            "extends": "Controller",
+            "actions": ["actionIndex"]
+          }
+        ],
+        "requiredRenders": [
+          {
+            "file": "controllers/SiteController.php",
+            "view": "index"
+          }
+        ],
+        "requiredViews": ["views/site/index.php"]
+      }
+    },
+    {
+      "id": "yii2-runtime",
+      "engine": "php.yii2.runtime",
+      "mode": "final",
+      "depends_on": ["yii2-structure"],
+      "targets": {
+        "files": ["web/index.php"],
+        "entrypoint": "web/index.php"
+      },
+      "checks": {
+        "startupTimeoutSeconds": 25,
+        "readinessPath": "/",
+        "requests": [
+          {
+            "name": "home",
+            "request": { "method": "GET", "path": "/" },
+            "expect": { "status": 200 }
+          }
+        ]
+      }
+    }
+  ],
+  "links": []
+}

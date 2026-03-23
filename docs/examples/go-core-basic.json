@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "go",
+  "profiles": ["go"],
+  "workspace": {
+    "required_files": ["service.go"]
+  },
+  "stages": [
+    {
+      "id": "go",
+      "engine": "go.core",
+      "mode": "both",
+      "targets": {
+        "files": ["service.go"]
+      },
+      "rules": {
+        "requiredImports": ["context"],
+        "requiredFunctions": [
+          { "name": "BuildUser", "paramsCount": 1 }
+        ],
+        "requiredStructs": [
+          { "name": "User", "fields": ["ID", "Email"] }
+        ],
+        "requiredInterfaces": [
+          { "name": "Runner", "fields": ["Run"] }
+        ],
+        "requiredMethods": [
+          { "receiver": "Service", "name": "Handle" }
+        ]
+      }
+    }
+  ],
+  "links": []
+}

@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "django",
+  "profiles": ["python", "django"],
+  "workspace": {
+    "required_files": ["settings.py", "urls.py", "models.py", "views.py"]
+  },
+  "stages": [
+    {
+      "id": "django",
+      "engine": "python.django",
+      "mode": "final",
+      "rules": {
+        "requiredApps": ["blog"],
+        "requiredSettings": ["INSTALLED_APPS"],
+        "requiredUrlPaths": [
+          { "path": "posts/", "view": "views.post_list" }
+        ],
+        "requiredModels": [
+          { "name": "Post", "fields": ["title"] }
+        ],
+        "requiredViews": [
+          { "name": "post_list" }
+        ],
+        "requiredTemplates": ["templates/blog/post_list.html"]
+      }
+    }
+  ],
+  "links": []
+}

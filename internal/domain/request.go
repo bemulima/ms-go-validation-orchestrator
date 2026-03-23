@@ -13,7 +13,8 @@ type ValidationRequest struct {
 }
 
 type ValidationWorkspace struct {
-	Files []WorkspaceFile `json:"files,omitempty"`
+	Files    []WorkspaceFile `json:"files,omitempty"`
+	RootPath string          `json:"root_path,omitempty"`
 }
 
 type WorkspaceFile struct {

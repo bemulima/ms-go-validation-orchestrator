@@ -1,6 +1,6 @@
 # Capability Matrix
 
-This matrix shows what each engine supports today and what remains foundation-only.
+This matrix shows what each engine supports today and where support is still intentionally partial.
 
 | Engine | Scope | Live-ready | Final-ready | Composite-ready | Status |
 | --- | --- | --- | --- | --- | --- |
@@ -14,13 +14,28 @@ This matrix shows what each engine supports today and what remains foundation-on
 | `node.fastify` | Fastify structure validation | Yes | Yes | Yes | Implemented |
 | `node.nest` | NestJS structure validation | Yes | Yes | Yes | Implemented subset |
 | `http.runtime` | Runtime HTTP requests/responses | No | Yes | Yes | Implemented |
+| `python.django.runtime` | Django runtime boot + HTTP assertions | No | Yes | Yes | Implemented subset |
+| `go.gin.runtime` | Gin runtime boot + HTTP assertions | No | Yes | Yes | Implemented subset |
+| `go.echo.runtime` | Echo runtime boot + HTTP assertions | No | Yes | Yes | Implemented subset |
+| `php.laravel.runtime` | Laravel runtime boot + HTTP assertions | No | Yes | Yes | Implemented subset |
+| `php.symfony.runtime` | Symfony runtime boot + HTTP assertions | No | Yes | Yes | Implemented subset |
+| `php.yii2.runtime` | Yii2 runtime boot + HTTP assertions | No | Yes | Yes | Implemented subset |
+| `php.yii3.runtime` | Yii3 runtime boot + HTTP assertions | No | Yes | Yes | Implemented subset |
 | `browser.runtime` | DOM interactions and computed styles in real browser | Task-dependent | Yes | Yes | Implemented subset |
+| `git.core` | Branch, clean state, tracked/ignored files, tags, commits | Sandbox-dependent | Yes | Yes | Implemented subset |
+| `docker.dockerfile` | Static Dockerfile instruction validation | Yes | Yes | Yes | Implemented |
+| `docker.compose` | Static Docker Compose structure validation | Yes | Yes | Yes | Implemented |
+| `python.core` | Python AST checks for imports, functions, classes, variables | Yes | Yes | Yes | Implemented |
+| `python.django` | Django project structure, settings, urls, models, views, templates | Task-dependent | Yes | Yes | Implemented subset |
+| `go.core` | Go AST checks for imports, functions, structs, interfaces, methods | Yes | Yes | Yes | Implemented |
+| `go.gin` | Gin route and group structure validation | Task-dependent | Yes | Yes | Implemented subset |
+| `go.echo` | Echo route and group structure validation | Task-dependent | Yes | Yes | Implemented subset |
 | `php.core` | Syntax + simple structural PHP checks | No | Yes | Yes | Implemented |
 | `nextjs.app` | App Router pages, layouts, API routes, client/server boundaries | No | Yes | Yes | Implemented subset |
-| `php.laravel` | Laravel workspace validation | No | No | Yes | Foundation only |
-| `php.yii2` | Yii2 workspace validation | No | No | Yes | Foundation only |
-| `php.yii3` | Yii3 workspace validation | No | No | Yes | Foundation only |
-| `php.symfony` | Symfony workspace validation | No | No | Yes | Foundation only |
+| `php.laravel` | Laravel workspace validation | Task-dependent | Yes | Yes | Implemented subset |
+| `php.yii2` | Yii2 workspace validation | Task-dependent | Yes | Yes | Implemented subset |
+| `php.yii3` | Yii3 workspace validation | Task-dependent | Yes | Yes | Implemented subset |
+| `php.symfony` | Symfony workspace validation | Task-dependent | Yes | Yes | Implemented subset |
 | `legacy.generic` | Temporary legacy compatibility wrapper | Yes | Yes | No | Transitional only |
 
 ## Notes by engine family
@@ -43,12 +58,25 @@ This matrix shows what each engine supports today and what remains foundation-on
 - `node.express`, `node.fastify`, and `node.nest` handle framework structure.
 - `http.runtime` should be used after structure stages, usually with `depends_on`.
 
+## Git / Docker
+
+- `git.core` requires a real repository path with `.git`; JSON-only workspace snapshots are not sufficient for full history validation.
+- `docker.dockerfile` and `docker.compose` are static validators today.
+- Docker runtime, build, and daemon-backed checks are intentionally out of scope for the first pass.
+
+## Python / Go
+
+- `python.core` and `go.core` are AST-based validators.
+- `python.django`, `go.gin`, and `go.echo` validate framework structure.
+- `python.django.runtime`, `go.gin.runtime`, and `go.echo.runtime` add framework-aware runtime execution on top of `ms-go-http-runtime-validator`.
+
 ## PHP
 
-- `php.core` is the production-ready PHP engine today.
-- Framework engines exist in platform contracts and authoring, but they still need a dedicated runtime service.
+- `php.core` is still the most mature PHP engine.
+- `php.laravel`, `php.yii2`, `php.yii3`, and `php.symfony` validate framework structure.
+- `php.laravel.runtime`, `php.symfony.runtime`, `php.yii2.runtime`, and `php.yii3.runtime` provide framework-aware runtime execution, but coverage is still a subset rather than full framework lifecycle validation.
 
 ## Authoring guidance
 
 - Prefer implemented engines for production tasks.
-- Use foundation-only engines only when you explicitly want a forward-looking contract and you understand that execution still depends on future engine rollout.
+- Treat `Implemented subset` rows as production-capable only when your task stays within the documented subset.

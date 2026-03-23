@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "django-runtime",
+  "profiles": ["python", "django"],
+  "workspace": {
+    "required_files": [
+      "manage.py",
+      "settings.py",
+      "urls.py",
+      "models.py",
+      "views.py",
+      "templates/blog/post_list.html"
+    ]
+  },
+  "stages": [
+    {
+      "id": "django-structure",
+      "engine": "python.django",
+      "mode": "final",
+      "rules": {
+        "requiredApps": ["blog"],
+        "requiredSettings": ["INSTALLED_APPS"],
+        "requiredUrlPaths": [
+          { "path": "posts/", "view": "views.post_list" }
+        ],
+        "requiredModels": [
+          { "name": "Post", "fields": ["title"] }
+        ],
+        "requiredViews": [
+          { "name": "post_list" }
+        ],
+        "requiredTemplates": ["templates/blog/post_list.html"]
+      }
+    },
+    {
+      "id": "django-runtime",
+      "engine": "python.django.runtime",
+      "mode": "final",
+      "depends_on": ["django-structure"],
+      "targets": {
+        "files": ["manage.py"],
+        "entrypoint": "manage.py"
+      },
+      "checks": {
+        "startupTimeoutSeconds": 20,
+        "readinessPath": "/posts/",
+        "requests": [
+          {
+            "name": "posts-index",
+            "request": { "method": "GET", "path": "/posts/" },
+            "expect": { "status": 200 }
+          }
+        ]
+      }
+    }
+  ],
+  "links": []
+}

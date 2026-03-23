@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "python",
+  "profiles": ["python"],
+  "workspace": {
+    "required_files": ["service.py"]
+  },
+  "stages": [
+    {
+      "id": "python",
+      "engine": "python.core",
+      "mode": "both",
+      "targets": {
+        "files": ["service.py"]
+      },
+      "rules": {
+        "requiredImports": ["dataclasses"],
+        "requiredFunctions": [
+          { "name": "load_user", "argsCount": 1 }
+        ],
+        "requiredClasses": [
+          { "name": "UserService", "methods": ["create"] }
+        ],
+        "requiredVariables": ["DEFAULT_LIMIT"]
+      }
+    }
+  ],
+  "links": []
+}

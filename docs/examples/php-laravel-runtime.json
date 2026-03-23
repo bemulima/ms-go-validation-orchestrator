@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "laravel-runtime",
+  "profiles": ["php", "laravel"],
+  "workspace": {
+    "required_files": [
+      "artisan",
+      "routes/web.php",
+      "app/Http/Controllers/DashboardController.php",
+      "resources/views/dashboard.blade.php"
+    ]
+  },
+  "stages": [
+    {
+      "id": "laravel-structure",
+      "engine": "php.laravel",
+      "language": "php",
+      "framework": "laravel",
+      "mode": "final",
+      "targets": {
+        "files": [
+          "routes/web.php",
+          "app/Http/Controllers/DashboardController.php",
+          "resources/views/dashboard.blade.php"
+        ]
+      },
+      "rules": {
+        "requiredRoutes": [
+          {
+            "file": "routes/web.php",
+            "method": "GET",
+            "path": "/dashboard",
+            "uses": "DashboardController@index"
+          }
+        ],
+        "requiredControllers": [
+          {
+            "path": "app/Http/Controllers/DashboardController.php",
+            "className": "DashboardController",
+            "extends": "Controller",
+            "methods": ["index"]
+          }
+        ],
+        "requiredViews": ["resources/views/dashboard.blade.php"]
+      }
+    },
+    {
+      "id": "laravel-runtime",
+      "engine": "php.laravel.runtime",
+      "mode": "final",
+      "depends_on": ["laravel-structure"],
+      "targets": {
+        "files": ["artisan"],
+        "entrypoint": "artisan"
+      },
+      "checks": {
+        "startupTimeoutSeconds": 25,
+        "readinessPath": "/dashboard",
+        "requests": [
+          {
+            "name": "dashboard",
+            "request": { "method": "GET", "path": "/dashboard" },
+            "expect": { "status": 200 }
+          }
+        ]
+      }
+    }
+  ],
+  "links": []
+}

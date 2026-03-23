@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "echo",
+  "profiles": ["go", "echo"],
+  "workspace": {
+    "required_files": ["server.go"]
+  },
+  "stages": [
+    {
+      "id": "echo",
+      "engine": "go.echo",
+      "mode": "final",
+      "targets": {
+        "files": ["server.go"]
+      },
+      "rules": {
+        "requiredRoutes": [
+          { "method": "GET", "path": "/api/health", "handler": "healthHandler" }
+        ]
+      }
+    }
+  ],
+  "links": []
+}

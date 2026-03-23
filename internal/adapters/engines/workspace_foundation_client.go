@@ -54,7 +54,8 @@ func (client WorkspaceFoundationClient) Validate(
 			"checks": rawJSONOrValue(input.Stage.Checks),
 		},
 		"workspace": map[string]any{
-			"files": workspaceFilesAsMaps(input.Workspace.Files),
+			"files":     workspaceFilesAsMaps(input.Workspace.Files),
+			"root_path": input.Workspace.RootPath,
 		},
 	})
 	if err != nil {

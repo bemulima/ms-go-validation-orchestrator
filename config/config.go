@@ -21,6 +21,11 @@ type EngineEndpoints struct {
 	PHPFramework string
 	NextJS       string
 	Browser      string
+	Git          string
+	Docker       string
+	Python       string
+	Go           string
+	HTTPRuntime  string
 }
 
 type Config struct {
@@ -50,6 +55,11 @@ func Load() (Config, error) {
 			PHPFramework: trimURL(os.Getenv("PHP_FRAMEWORK_VALIDATOR_URL")),
 			NextJS:       trimURL(os.Getenv("NEXTJS_VALIDATOR_URL")),
 			Browser:      trimURL(os.Getenv("BROWSER_RUNTIME_VALIDATOR_URL")),
+			Git:          trimURL(os.Getenv("GIT_VALIDATOR_URL")),
+			Docker:       trimURL(os.Getenv("DOCKER_VALIDATOR_URL")),
+			Python:       trimURL(os.Getenv("PYTHON_VALIDATOR_URL")),
+			Go:           trimURL(os.Getenv("GO_CODE_VALIDATOR_URL")),
+			HTTPRuntime:  trimURL(os.Getenv("HTTP_RUNTIME_VALIDATOR_URL")),
 		},
 	}
 

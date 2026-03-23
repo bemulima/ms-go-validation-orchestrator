@@ -28,7 +28,8 @@ func ToDomainValidationRequest(input dto.ValidateRequest) (domain.ValidationRequ
 		Locale:                input.Locale,
 		CodeStructure:         codeStructure,
 		Workspace: domain.ValidationWorkspace{
-			Files: files,
+			Files:    files,
+			RootPath: input.Workspace.RootPath,
 		},
 		TaskMetadata: domain.TaskMetadata{
 			TaskKind:               input.TaskMetadata.TaskKind,
