@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "gin",
+  "profiles": ["go", "gin"],
+  "workspace": {
+    "required_files": ["server.go"]
+  },
+  "stages": [
+    {
+      "id": "gin",
+      "engine": "go.gin",
+      "mode": "final",
+      "targets": {
+        "files": ["server.go"]
+      },
+      "rules": {
+        "requiredRoutes": [
+          { "method": "GET", "path": "/api/health", "handler": "healthHandler" }
+        ]
+      }
+    }
+  ],
+  "links": []
+}

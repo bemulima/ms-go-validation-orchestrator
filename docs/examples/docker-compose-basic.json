@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "docker-compose",
+  "profiles": ["docker", "compose"],
+  "workspace": {
+    "required_files": ["docker-compose.yml"]
+  },
+  "stages": [
+    {
+      "id": "compose",
+      "engine": "docker.compose",
+      "mode": "both",
+      "targets": {
+        "files": ["docker-compose.yml"]
+      },
+      "rules": {
+        "requiredServices": [
+          {
+            "name": "app",
+            "imageContains": "node",
+            "portsInclude": ["3000:3000"],
+            "dependsOn": ["db"],
+            "environmentContains": ["NODE_ENV=production"]
+          }
+        ],
+        "requiredNetworks": ["default"],
+        "requiredVolumes": ["db-data"]
+      }
+    }
+  ],
+  "links": []
+}

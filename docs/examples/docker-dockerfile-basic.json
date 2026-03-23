@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "dockerfile",
+  "profiles": ["docker"],
+  "workspace": {
+    "required_files": ["Dockerfile"]
+  },
+  "stages": [
+    {
+      "id": "dockerfile",
+      "engine": "docker.dockerfile",
+      "mode": "both",
+      "targets": {
+        "files": ["Dockerfile"]
+      },
+      "rules": {
+        "requiredInstructions": [
+          { "instruction": "FROM", "contains": "golang" },
+          { "instruction": "COPY", "contains": "go.mod" }
+        ],
+        "requiredWorkdir": "/app",
+        "requiredExposePorts": ["8080"],
+        "requireMultiStage": true
+      }
+    }
+  ],
+  "links": []
+}

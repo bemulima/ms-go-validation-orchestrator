@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "yii3-runtime",
+  "profiles": ["php", "yii3"],
+  "workspace": {
+    "required_files": [
+      "src/Controller/SiteController.php",
+      "templates/site/index.php",
+      "public/index.php"
+    ]
+  },
+  "stages": [
+    {
+      "id": "yii3-structure",
+      "engine": "php.yii3",
+      "language": "php",
+      "framework": "yii3",
+      "mode": "final",
+      "targets": {
+        "files": ["src/Controller/SiteController.php", "templates/site/index.php"]
+      },
+      "rules": {
+        "requiredControllers": [
+          {
+            "path": "src/Controller/SiteController.php",
+            "className": "SiteController",
+            "methods": ["index"]
+          }
+        ],
+        "requiredViews": ["templates/site/index.php"]
+      }
+    },
+    {
+      "id": "yii3-runtime",
+      "engine": "php.yii3.runtime",
+      "mode": "final",
+      "depends_on": ["yii3-structure"],
+      "targets": {
+        "files": ["public/index.php"],
+        "entrypoint": "public/index.php"
+      },
+      "checks": {
+        "startupTimeoutSeconds": 25,
+        "readinessPath": "/",
+        "requests": [
+          {
+            "name": "home",
+            "request": { "method": "GET", "path": "/" },
+            "expect": { "status": 200 }
+          }
+        ]
+      }
+    }
+  ],
+  "links": []
+}

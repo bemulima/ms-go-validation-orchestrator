@@ -75,6 +75,7 @@ func buildEngineClients(
 	}
 
 	if cfg.Engines.Node != "" {
+		nodeRuntimeClient := engines.NewNodeClient(cfg.Engines.Node, httpClient, "http.runtime")
 		engineClients = append(
 			engineClients,
 			engines.NewNodeClient(cfg.Engines.Node, httpClient, "js.ast"),
@@ -82,7 +83,35 @@ func buildEngineClients(
 			engines.NewNodeClient(cfg.Engines.Node, httpClient, "node.express"),
 			engines.NewNodeClient(cfg.Engines.Node, httpClient, "node.fastify"),
 			engines.NewNodeClient(cfg.Engines.Node, httpClient, "node.nest"),
-			engines.NewNodeClient(cfg.Engines.Node, httpClient, "http.runtime"),
+		)
+		if cfg.Engines.HTTPRuntime != "" {
+			engineClients = append(
+				engineClients,
+				engines.NewHTTPRuntimeDispatchClient(
+					engines.NewWorkspaceFoundationClient(cfg.Engines.HTTPRuntime, httpClient, "http.runtime"),
+					nodeRuntimeClient,
+				),
+			)
+		} else {
+			engineClients = append(engineClients, nodeRuntimeClient)
+		}
+	} else if cfg.Engines.HTTPRuntime != "" {
+		engineClients = append(
+			engineClients,
+			engines.NewWorkspaceFoundationClient(cfg.Engines.HTTPRuntime, httpClient, "http.runtime"),
+		)
+	}
+
+	if cfg.Engines.HTTPRuntime != "" {
+		engineClients = append(
+			engineClients,
+			engines.NewWorkspaceFoundationClient(cfg.Engines.HTTPRuntime, httpClient, "python.django.runtime"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.HTTPRuntime, httpClient, "go.gin.runtime"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.HTTPRuntime, httpClient, "go.echo.runtime"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.HTTPRuntime, httpClient, "php.laravel.runtime"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.HTTPRuntime, httpClient, "php.symfony.runtime"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.HTTPRuntime, httpClient, "php.yii2.runtime"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.HTTPRuntime, httpClient, "php.yii3.runtime"),
 		)
 	}
 
@@ -111,6 +140,38 @@ func buildEngineClients(
 		engineClients = append(
 			engineClients,
 			engines.NewWorkspaceFoundationClient(cfg.Engines.Browser, httpClient, "browser.runtime"),
+		)
+	}
+
+	if cfg.Engines.Git != "" {
+		engineClients = append(
+			engineClients,
+			engines.NewWorkspaceFoundationClient(cfg.Engines.Git, httpClient, "git.core"),
+		)
+	}
+
+	if cfg.Engines.Docker != "" {
+		engineClients = append(
+			engineClients,
+			engines.NewWorkspaceFoundationClient(cfg.Engines.Docker, httpClient, "docker.dockerfile"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.Docker, httpClient, "docker.compose"),
+		)
+	}
+
+	if cfg.Engines.Python != "" {
+		engineClients = append(
+			engineClients,
+			engines.NewWorkspaceFoundationClient(cfg.Engines.Python, httpClient, "python.core"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.Python, httpClient, "python.django"),
+		)
+	}
+
+	if cfg.Engines.Go != "" {
+		engineClients = append(
+			engineClients,
+			engines.NewWorkspaceFoundationClient(cfg.Engines.Go, httpClient, "go.core"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.Go, httpClient, "go.gin"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.Go, httpClient, "go.echo"),
 		)
 	}
 

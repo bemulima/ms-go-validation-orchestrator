@@ -11,7 +11,8 @@ type ValidateRequest struct {
 }
 
 type WorkspaceInput struct {
-	Files []WorkspaceFileInput `json:"files,omitempty"`
+	Files    []WorkspaceFileInput `json:"files,omitempty"`
+	RootPath string               `json:"root_path,omitempty"`
 }
 
 type WorkspaceFileInput struct {

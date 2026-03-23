@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "echo-runtime",
+  "profiles": ["go", "echo"],
+  "workspace": {
+    "required_files": ["server.go"]
+  },
+  "stages": [
+    {
+      "id": "echo-structure",
+      "engine": "go.echo",
+      "mode": "final",
+      "targets": {
+        "files": ["server.go"]
+      },
+      "rules": {
+        "requiredRoutes": [
+          { "method": "GET", "path": "/api/health", "handler": "healthHandler" }
+        ]
+      }
+    },
+    {
+      "id": "echo-runtime",
+      "engine": "go.echo.runtime",
+      "mode": "final",
+      "depends_on": ["echo-structure"],
+      "targets": {
+        "files": ["server.go"],
+        "entrypoint": "server.go"
+      },
+      "checks": {
+        "startupTimeoutSeconds": 20,
+        "readinessPath": "/api/health",
+        "requests": [
+          {
+            "name": "health",
+            "request": { "method": "GET", "path": "/api/health" },
+            "expect": { "status": 200 }
+          }
+        ]
+      }
+    }
+  ],
+  "links": []
+}

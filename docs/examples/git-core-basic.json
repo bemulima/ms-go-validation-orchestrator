@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "git",
+  "profiles": ["git"],
+  "workspace": {
+    "required_files": ["README.md", ".gitignore"]
+  },
+  "stages": [
+    {
+      "id": "git",
+      "engine": "git.core",
+      "mode": "final",
+      "rules": {
+        "requiredBranch": "feature/validation-platform",
+        "branchPattern": "^feature/",
+        "requireCleanWorkingTree": true,
+        "requiredTrackedFiles": ["README.md"],
+        "requiredIgnoredFiles": ["build/output.txt"],
+        "minCommits": 1,
+        "lastCommitMessage": {
+          "contains": "validation"
+        }
+      }
+    }
+  ],
+  "links": []
+}

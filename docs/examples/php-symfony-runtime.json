@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "symfony-runtime",
+  "profiles": ["php", "symfony"],
+  "workspace": {
+    "required_files": [
+      "src/Controller/HomeController.php",
+      "templates/home/index.html.twig",
+      "public/index.php"
+    ]
+  },
+  "stages": [
+    {
+      "id": "symfony-structure",
+      "engine": "php.symfony",
+      "language": "php",
+      "framework": "symfony",
+      "mode": "final",
+      "targets": {
+        "files": [
+          "src/Controller/HomeController.php",
+          "templates/home/index.html.twig"
+        ]
+      },
+      "rules": {
+        "requiredControllers": [
+          {
+            "path": "src/Controller/HomeController.php",
+            "className": "HomeController",
+            "extends": "AbstractController",
+            "methods": ["index"]
+          }
+        ],
+        "requiredRoutes": [
+          {
+            "file": "src/Controller/HomeController.php",
+            "path": "/",
+            "name": "home_index"
+          }
+        ],
+        "requiredTemplates": ["templates/home/index.html.twig"]
+      }
+    },
+    {
+      "id": "symfony-runtime",
+      "engine": "php.symfony.runtime",
+      "mode": "final",
+      "depends_on": ["symfony-structure"],
+      "targets": {
+        "files": ["public/index.php"],
+        "entrypoint": "public/index.php"
+      },
+      "checks": {
+        "startupTimeoutSeconds": 25,
+        "readinessPath": "/",
+        "requests": [
+          {
+            "name": "home",
+            "request": { "method": "GET", "path": "/" },
+            "expect": { "status": 200 }
+          }
+        ]
+      }
+    }
+  ],
+  "links": []
+}

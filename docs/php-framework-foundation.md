@@ -1,6 +1,6 @@
 # PHP Framework Foundation
 
-`php.core` remains the only implemented PHP engine today. It is intended for single-file and simple structural validation in [ms-go-php-validator](/Users/marat/Developments/microservices/ms-go-php-validator).
+`php.core` remains the most mature PHP engine today. It is intended for single-file and simple structural validation in [ms-go-php-validator](/Users/marat/Developments/microservices/ms-go-php-validator).
 
 Framework-aware PHP validation is a separate capability family:
 
@@ -9,7 +9,7 @@ Framework-aware PHP validation is a separate capability family:
 - `php.yii3`
 - `php.symfony`
 
-## What foundation means here
+## Current status
 
 The platform now supports these engine IDs in:
 
@@ -18,8 +18,9 @@ The platform now supports these engine IDs in:
 - admin contract authoring
 - task capability inference
 - example contracts and docs
+- a dedicated static workspace validator endpoint
 
-This does **not** mean that Laravel, Yii2, Yii3, or Symfony validation is already implemented. It means the architecture is ready for a dedicated framework-aware engine.
+This does **not** mean full runtime framework execution. The current implementation is a static workspace subset for routes, controllers, models/entities, views/templates, migrations, and selected config markers.
 
 ## Why a separate engine family
 
@@ -67,4 +68,5 @@ Framework-specific extensions are expected, but the top-level stage shape stays 
 ## Current rollout rule
 
 - Use `php.core` for production PHP tasks that must validate today.
-- Use `php.laravel`, `php.yii2`, `php.yii3`, `php.symfony` only for foundation contracts, examples, or behind a dedicated future validator endpoint configured through `PHP_FRAMEWORK_VALIDATOR_URL`.
+- Use `php.laravel`, `php.yii2`, `php.yii3`, `php.symfony` for static framework tasks today.
+- Do not treat them as full runtime framework validators yet; deeper container/runtime semantics remain a later phase.
