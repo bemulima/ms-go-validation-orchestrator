@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "workspace": {
+    "required_files": ["scripts/run.sh"]
+  },
+  "stages": [
+    {
+      "id": "linux-cli",
+      "engine": "linux.cli",
+      "mode": "final",
+      "checks": {
+        "commands": [
+          {
+            "name": "run-script",
+            "command": ["sh", "-c", "printf 'ok\\n'"],
+            "expect": {
+              "exitCode": 0,
+              "stdoutContains": ["ok"]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

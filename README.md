@@ -17,7 +17,12 @@ This initial platform pass is intentionally conservative:
 - `git.core` is now available when `GIT_VALIDATOR_URL` points to `ms-go-git-validator`.
 - `docker.dockerfile` and `docker.compose` are now available when `DOCKER_VALIDATOR_URL` points to `ms-go-docker-validator`.
 - `python.core` and `python.django` are now available when `PYTHON_VALIDATOR_URL` points to `ms-py-validator`.
-- `go.core`, `go.gin`, and `go.echo` are now available when `GO_CODE_VALIDATOR_URL` points to `ms-go-code-validator`.
+- `golang`, `go.core`, `go.gin`, and `go.echo` are now available when `GO_CODE_VALIDATOR_URL` points to `ms-go-code-validator`.
+- `db.postgres.schema`, `db.postgres.runtime`, `db.mysql.schema`, and `db.mysql.runtime` are now available when `DB_VALIDATOR_URL` points to `ms-go-db-validator`.
+- `db.tarantool.schema` and `db.tarantool.runtime` are now available when `DB_VALIDATOR_URL` points to `ms-go-db-validator`.
+- `linux.fs`, `linux.cli`, and `linux.runtime` are now available when `LINUX_VALIDATOR_URL` points to `ms-go-linux-validator`.
+- `cache.redis.config`, `cache.redis.runtime`, `search.elasticsearch.mapping`, and `search.elasticsearch.runtime` are now available when `CACHE_SEARCH_VALIDATOR_URL` points to `ms-go-cache-search-validator`.
+- `search.manticore` and `search.sphinx` are now available when `CACHE_SEARCH_VALIDATOR_URL` points to `ms-go-cache-search-validator`.
 - generic backend `http.runtime` is now available when `HTTP_RUNTIME_VALIDATOR_URL` points to `ms-go-http-runtime-validator`.
 
 ## Configuration
@@ -41,6 +46,9 @@ Environment variables:
 | `DOCKER_VALIDATOR_URL` | `""` | Base URL of `ms-go-docker-validator` |
 | `PYTHON_VALIDATOR_URL` | `""` | Base URL of `ms-py-validator` |
 | `GO_CODE_VALIDATOR_URL` | `""` | Base URL of `ms-go-code-validator` |
+| `DB_VALIDATOR_URL` | `""` | Base URL of `ms-go-db-validator` |
+| `LINUX_VALIDATOR_URL` | `""` | Base URL of `ms-go-linux-validator` |
+| `CACHE_SEARCH_VALIDATOR_URL` | `""` | Base URL of `ms-go-cache-search-validator` |
 | `HTTP_RUNTIME_VALIDATOR_URL` | `""` | Base URL of `ms-go-http-runtime-validator` |
 
 ## Run
@@ -105,9 +113,25 @@ go test ./... -count=1
 - `docker.compose`
 - `python.core`
 - `python.django`
+- `golang`
 - `go.core`
 - `go.gin`
 - `go.echo`
+- `db.postgres.schema`
+- `db.postgres.runtime`
+- `db.mysql.schema`
+- `db.mysql.runtime`
+- `db.tarantool.schema`
+- `db.tarantool.runtime`
+- `linux.fs`
+- `linux.cli`
+- `linux.runtime`
+- `cache.redis.config`
+- `cache.redis.runtime`
+- `search.elasticsearch.mapping`
+- `search.elasticsearch.runtime`
+- `search.manticore`
+- `search.sphinx`
 - Legacy adapter that wraps old `code_structure` payloads into `legacy.generic`
 
 ## Important limitations
@@ -120,6 +144,10 @@ go test ./... -count=1
 - `browser.runtime` requires `ms-ts-browser-runtime-validator` and a Playwright-compatible browser.
 - `git.core` requires `workspace.root_path` with a real `.git` repository; JSON file snapshots alone are not enough.
 - `docker.dockerfile` and `docker.compose` are static-only in this first pass; they do not run Docker builds or compose stacks.
+- `db.postgres.runtime` and `db.mysql.runtime` can auto-provision ephemeral databases when the DB validator has Docker access. Explicit DSN is still supported.
+- `linux.cli` and `linux.runtime` execute commands inside the validator environment and should be kept to deterministic, short-lived checks.
+- `cache.redis.runtime`, `search.elasticsearch.runtime`, `search.manticore`, and `search.sphinx` can auto-provision ephemeral runtime containers when the cache/search validator has Docker access. Explicit endpoints are still supported.
+- `db.tarantool.runtime` can auto-provision a temporary Tarantool instance when the DB validator has Docker access and a runtime `init.lua` is available in the workspace.
 - `python.django.runtime`, `go.gin.runtime`, `go.echo.runtime`, `php.laravel.runtime`, `php.symfony.runtime`, `php.yii2.runtime`, and `php.yii3.runtime` are framework-aware runtime wrappers around `ms-go-http-runtime-validator`.
 - `http.runtime` remains available as the generic escape hatch when a task must provide an explicit `checks.command`.
 

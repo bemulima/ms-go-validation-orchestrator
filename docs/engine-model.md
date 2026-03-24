@@ -57,6 +57,7 @@ Each engine validates one technology concern:
 - `docker.compose`
 - `python.core`
 - `python.django`
+- `golang`
 - `go.core`
 - `go.gin`
 - `go.echo`
@@ -143,6 +144,7 @@ Example:
 
 Or:
 
+- `golang`
 - `go.core`
 - `go.gin`
 
@@ -168,7 +170,7 @@ Examples:
 - `browser.runtime` can be `final` or `both` depending on task cost
 - `git.core` is currently most reliable in sandbox-backed `final` mode because it needs a real `.git`
 - `docker.dockerfile` and `docker.compose` are usually `both`
-- `python.core` and `go.core` are usually `both`
+- `python.core`, `golang`, and `go.core` are usually `both`
 - `python.django`, `go.gin`, `go.echo`, `php.laravel`, `php.symfony`, `php.yii2`, and `php.yii3` are currently best as structure stages paired with runtime stages when HTTP behavior matters
 
 ## Links

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "stages": [
+    {
+      "id": "redis-runtime",
+      "engine": "cache.redis.runtime",
+      "mode": "final",
+      "checks": {
+        "setupCommands": [
+          ["SET", "user:1", "john"]
+        ],
+        "commands": [
+          {
+            "name": "load-user",
+            "command": ["GET", "user:1"],
+            "expect": {
+              "stringEquals": "john"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

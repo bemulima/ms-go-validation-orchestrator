@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "stages": [
+    {
+      "id": "es-runtime",
+      "engine": "search.elasticsearch.runtime",
+      "mode": "final",
+      "checks": {
+        "baseURL": "http://elasticsearch:9200",
+        "requests": [
+          {
+            "name": "search-products",
+            "method": "GET",
+            "path": "/products/_search",
+            "expect": {
+              "status": 200,
+              "jsonPathEquals": {
+                "hits.total.value": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

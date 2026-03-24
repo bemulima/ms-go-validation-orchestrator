@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "workspace": {
+    "required_files": ["scripts/run.sh", "README.md"]
+  },
+  "stages": [
+    {
+      "id": "linux-fs",
+      "engine": "linux.fs",
+      "mode": "both",
+      "rules": {
+        "requiredFiles": [
+          { "path": "scripts/run.sh" },
+          { "path": "README.md" }
+        ],
+        "requiredFileContains": [
+          { "path": "scripts/run.sh", "contains": "echo ok" }
+        ],
+        "forbiddenPaths": ["tmp/debug.log"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "stages": [
+    {
+      "id": "mysql-runtime",
+      "engine": "db.mysql.runtime",
+      "checks": {
+        "connection": {
+          "dsn": "root:root@tcp(mysql:3306)/demo"
+        },
+        "setupSql": [
+          "CREATE TABLE users (id bigint not null, email varchar(255) not null);",
+          "INSERT INTO users (id, email) VALUES (1, 'john@example.com');"
+        ],
+        "queries": [
+          {
+            "name": "users-count",
+            "sql": "select count(*) as total from users",
+            "expect": {
+              "rows": [
+                { "total": 1 }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

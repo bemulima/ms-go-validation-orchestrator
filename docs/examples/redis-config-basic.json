@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "workspace": {
+    "required_files": ["redis.conf"]
+  },
+  "stages": [
+    {
+      "id": "redis-config",
+      "engine": "cache.redis.config",
+      "mode": "both",
+      "targets": {
+        "files": ["redis.conf"]
+      },
+      "rules": {
+        "requiredConfigContains": ["appendonly yes"],
+        "requiredEntries": [
+          {
+            "key": "maxmemory-policy",
+            "valueContains": "allkeys-lru"
+          }
+        ]
+      }
+    }
+  ]
+}
