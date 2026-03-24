@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "workspace": {
+    "required_files": ["db/schema.sql"]
+  },
+  "stages": [
+    {
+      "id": "pg-schema",
+      "engine": "db.postgres.schema",
+      "targets": {
+        "files": ["db/schema.sql"]
+      },
+      "rules": {
+        "requiredTables": [
+          {
+            "name": "users",
+            "columns": [
+              { "name": "id", "typeContains": "bigint", "nullable": false },
+              { "name": "email", "typeContains": "varchar", "nullable": false }
+            ],
+            "indexes": [
+              { "name": "idx_users_email", "columns": ["email"], "unique": true }
+            ],
+            "constraints": [
+              { "type": "primary_key", "columns": ["id"] }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

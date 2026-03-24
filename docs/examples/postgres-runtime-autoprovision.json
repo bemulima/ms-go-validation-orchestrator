@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "stages": [
+    {
+      "id": "postgres-runtime",
+      "engine": "db.postgres.runtime",
+      "mode": "final",
+      "checks": {
+        "setupSql": [
+          "CREATE TABLE users (id bigint primary key, name text not null);",
+          "INSERT INTO users (id, name) VALUES (1, 'John'), (2, 'Jane');"
+        ],
+        "queries": [
+          {
+            "name": "users-count",
+            "sql": "select count(*) as total from users",
+            "expect": {
+              "rows": [
+                { "total": 2 }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

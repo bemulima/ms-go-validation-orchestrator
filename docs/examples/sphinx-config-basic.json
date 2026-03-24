@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "workspace": {
+    "required_files": ["sphinx.conf"]
+  },
+  "stages": [
+    {
+      "id": "sphinx",
+      "engine": "search.sphinx",
+      "mode": "both",
+      "targets": {
+        "files": ["sphinx.conf"]
+      },
+      "rules": {
+        "requiredSourceNames": ["articles_src"],
+        "requiredIndexNames": ["articles"]
+      }
+    }
+  ]
+}

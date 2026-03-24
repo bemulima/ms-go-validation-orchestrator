@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "workspace": {
+    "required_files": ["init.lua"]
+  },
+  "stages": [
+    {
+      "id": "tarantool-runtime",
+      "engine": "db.tarantool.runtime",
+      "mode": "final",
+      "targets": {
+        "files": ["init.lua"]
+      },
+      "checks": {
+        "assertions": [
+          {
+            "name": "users-space-exists",
+            "expression": "return box.space.users ~= nil",
+            "expectBoolean": true
+          }
+        ]
+      }
+    }
+  ]
+}

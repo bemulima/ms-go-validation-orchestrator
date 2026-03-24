@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "workspace": {
+    "required_files": ["init.lua"]
+  },
+  "stages": [
+    {
+      "id": "tarantool-schema",
+      "engine": "db.tarantool.schema",
+      "mode": "both",
+      "targets": {
+        "files": ["init.lua"]
+      },
+      "rules": {
+        "requiredLuaContains": ["box.schema.space.create('users'"],
+        "requiredSpaces": [
+          {
+            "name": "users",
+            "requiredFields": ["id", "email"],
+            "requiredIndexes": ["primary", "email"]
+          }
+        ]
+      }
+    }
+  ]
+}

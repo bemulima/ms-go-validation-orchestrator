@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "workspace": {
+    "required_files": ["manticore.conf"]
+  },
+  "stages": [
+    {
+      "id": "manticore-runtime",
+      "engine": "search.manticore",
+      "mode": "final",
+      "targets": {
+        "files": ["manticore.conf"]
+      },
+      "rules": {
+        "requiredIndexNames": ["products"]
+      },
+      "checks": {
+        "setupQueries": [
+          "TRUNCATE RTINDEX products",
+          "INSERT INTO products(id, title) VALUES (1, 'phone')"
+        ],
+        "queries": [
+          {
+            "name": "search-products",
+            "sql": "SELECT id, title FROM products WHERE MATCH('phone')",
+            "expect": {
+              "rows": [
+                { "id": 1, "title": "phone" }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

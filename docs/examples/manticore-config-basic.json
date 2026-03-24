@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "workspace": {
+    "required_files": ["manticore.conf"]
+  },
+  "stages": [
+    {
+      "id": "manticore",
+      "engine": "search.manticore",
+      "mode": "both",
+      "targets": {
+        "files": ["manticore.conf"]
+      },
+      "rules": {
+        "requiredConfigContains": ["type = mysql"],
+        "requiredSourceNames": ["products_src"],
+        "requiredIndexNames": ["products"]
+      }
+    }
+  ]
+}

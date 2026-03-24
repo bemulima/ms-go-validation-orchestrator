@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "stages": [
+    {
+      "id": "es-runtime",
+      "engine": "search.elasticsearch.runtime",
+      "mode": "final",
+      "checks": {
+        "setupRequests": [
+          {
+            "name": "create-products",
+            "method": "PUT",
+            "path": "/products",
+            "bodyJson": {
+              "mappings": {
+                "properties": {
+                  "title": { "type": "text" }
+                }
+              }
+            },
+            "expect": { "status": 200 }
+          },
+          {
+            "name": "insert-doc",
+            "method": "POST",
+            "path": "/products/_doc/1?refresh=true",
+            "bodyJson": {
+              "title": "phone"
+            },
+            "expect": { "status": 201 }
+          }
+        ],
+        "requests": [
+          {
+            "name": "search-products",
+            "method": "GET",
+            "path": "/products/_search",
+            "bodyJson": {
+              "query": {
+                "match": {
+                  "title": "phone"
+                }
+              }
+            },
+            "expect": {
+              "status": 200,
+              "bodyContains": ["phone"]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

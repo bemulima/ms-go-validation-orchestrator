@@ -27,9 +27,25 @@ This matrix shows what each engine supports today and where support is still int
 | `docker.compose` | Static Docker Compose structure validation | Yes | Yes | Yes | Implemented |
 | `python.core` | Python AST checks for imports, functions, classes, variables | Yes | Yes | Yes | Implemented |
 | `python.django` | Django project structure, settings, urls, models, views, templates | Task-dependent | Yes | Yes | Implemented subset |
+| `golang` | Go AST checks for imports, functions, structs, interfaces, methods | Yes | Yes | Yes | Implemented |
 | `go.core` | Go AST checks for imports, functions, structs, interfaces, methods | Yes | Yes | Yes | Implemented |
 | `go.gin` | Gin route and group structure validation | Task-dependent | Yes | Yes | Implemented subset |
 | `go.echo` | Echo route and group structure validation | Task-dependent | Yes | Yes | Implemented subset |
+| `db.postgres.schema` | PostgreSQL SQL schema validation from workspace files | Yes | Yes | Yes | Implemented subset |
+| `db.postgres.runtime` | PostgreSQL runtime queries with explicit DSN or auto-provisioned ephemeral DB | Task-dependent | Yes | Yes | Implemented |
+| `db.mysql.schema` | MySQL SQL schema validation from workspace files | Yes | Yes | Yes | Implemented subset |
+| `db.mysql.runtime` | MySQL runtime queries with explicit DSN or auto-provisioned ephemeral DB | Task-dependent | Yes | Yes | Implemented |
+| `db.tarantool.schema` | Tarantool spaces, indexes, Lua schema fragments from workspace files | Yes | Yes | Yes | Implemented subset |
+| `db.tarantool.runtime` | Tarantool Lua assertions against an explicit address or auto-provisioned temporary instance | Task-dependent | Yes | Yes | Implemented subset |
+| `linux.fs` | Files, directories, executable bits, forbidden paths, file content | Yes | Yes | Yes | Implemented |
+| `linux.cli` | Command execution with stdout/stderr and exit-code assertions | Task-dependent | Yes | Yes | Implemented |
+| `linux.runtime` | Simple command workflows with post-run filesystem assertions | No | Yes | Yes | Implemented subset |
+| `cache.redis.config` | Redis config fragments from workspace files | Yes | Yes | Yes | Implemented |
+| `cache.redis.runtime` | Redis commands against an explicit connection or auto-provisioned Redis | Task-dependent | Yes | Yes | Implemented |
+| `search.elasticsearch.mapping` | Elasticsearch mappings/settings from JSON files | Yes | Yes | Yes | Implemented |
+| `search.elasticsearch.runtime` | Elasticsearch HTTP assertions against an explicit base URL or auto-provisioned node | Task-dependent | Yes | Yes | Implemented subset |
+| `search.manticore` | Manticore config validation and runtime SphinxQL assertions | Task-dependent | Yes | Yes | Implemented subset |
+| `search.sphinx` | Sphinx config validation and runtime SphinxQL assertions | Task-dependent | Yes | Yes | Implemented subset |
 | `php.core` | Syntax + simple structural PHP checks | No | Yes | Yes | Implemented |
 | `nextjs.app` | App Router pages, layouts, API routes, client/server boundaries | No | Yes | Yes | Implemented subset |
 | `php.laravel` | Laravel workspace validation | Task-dependent | Yes | Yes | Implemented subset |
@@ -66,9 +82,30 @@ This matrix shows what each engine supports today and where support is still int
 
 ## Python / Go
 
-- `python.core` and `go.core` are AST-based validators.
+- `python.core`, `golang`, and `go.core` are AST-based validators.
 - `python.django`, `go.gin`, and `go.echo` validate framework structure.
 - `python.django.runtime`, `go.gin.runtime`, and `go.echo.runtime` add framework-aware runtime execution on top of `ms-go-http-runtime-validator`.
+
+## Databases
+
+- `db.postgres.schema` and `db.mysql.schema` work from SQL files in the workspace snapshot.
+- `db.postgres.runtime` and `db.mysql.runtime` execute runtime SQL assertions against an explicit connection DSN or an auto-provisioned ephemeral database.
+- `db.tarantool.schema` validates `init.lua`-style schema files for spaces and indexes.
+- `db.tarantool.runtime` executes Lua assertions against an explicit Tarantool address or an auto-provisioned temporary Tarantool instance.
+
+## Linux
+
+- `linux.fs` works against either `workspace.root_path` or a materialized JSON workspace.
+- `linux.cli` runs command assertions in the workspace root or a stage-level working directory.
+- `linux.runtime` is intended for small shell workflows and post-run file assertions, not for long-lived interactive terminal sessions.
+
+## Cache / Search
+
+- `cache.redis.config` validates static Redis config files.
+- `cache.redis.runtime` executes Redis commands against an explicit connection address or an auto-provisioned Redis container.
+- `search.elasticsearch.mapping` validates JSON mapping/settings files in the workspace.
+- `search.elasticsearch.runtime` executes HTTP assertions against an explicit Elasticsearch base URL or an auto-provisioned node.
+- `search.manticore` and `search.sphinx` validate config/index/source definitions and can additionally run SphinxQL assertions when `checks` are present.
 
 ## PHP
 

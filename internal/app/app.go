@@ -169,9 +169,43 @@ func buildEngineClients(
 	if cfg.Engines.Go != "" {
 		engineClients = append(
 			engineClients,
+			engines.NewWorkspaceFoundationClient(cfg.Engines.Go, httpClient, "golang"),
 			engines.NewWorkspaceFoundationClient(cfg.Engines.Go, httpClient, "go.core"),
 			engines.NewWorkspaceFoundationClient(cfg.Engines.Go, httpClient, "go.gin"),
 			engines.NewWorkspaceFoundationClient(cfg.Engines.Go, httpClient, "go.echo"),
+		)
+	}
+
+	if cfg.Engines.DB != "" {
+		engineClients = append(
+			engineClients,
+			engines.NewWorkspaceFoundationClient(cfg.Engines.DB, httpClient, "db.postgres.schema"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.DB, httpClient, "db.postgres.runtime"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.DB, httpClient, "db.mysql.schema"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.DB, httpClient, "db.mysql.runtime"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.DB, httpClient, "db.tarantool.schema"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.DB, httpClient, "db.tarantool.runtime"),
+		)
+	}
+
+	if cfg.Engines.Linux != "" {
+		engineClients = append(
+			engineClients,
+			engines.NewWorkspaceFoundationClient(cfg.Engines.Linux, httpClient, "linux.fs"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.Linux, httpClient, "linux.cli"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.Linux, httpClient, "linux.runtime"),
+		)
+	}
+
+	if cfg.Engines.CacheSearch != "" {
+		engineClients = append(
+			engineClients,
+			engines.NewWorkspaceFoundationClient(cfg.Engines.CacheSearch, httpClient, "cache.redis.config"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.CacheSearch, httpClient, "cache.redis.runtime"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.CacheSearch, httpClient, "search.elasticsearch.mapping"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.CacheSearch, httpClient, "search.elasticsearch.runtime"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.CacheSearch, httpClient, "search.manticore"),
+			engines.NewWorkspaceFoundationClient(cfg.Engines.CacheSearch, httpClient, "search.sphinx"),
 		)
 	}
 
