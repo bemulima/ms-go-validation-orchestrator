@@ -18,7 +18,7 @@ Read it together with:
 
 | Gate | Purpose |
 | --- | --- |
-| `VALIDATION_ORCHESTRATOR_URL` in `ms-go-task-answer` | Routes final validation of `ValidationContractV1` tasks through `ms-go-validation-orchestrator` |
+| `VALIDATION_ORCHESTRATOR_URL` in `ms-go-student` | Routes final validation of `ValidationContractV1` tasks through `ms-go-validation-orchestrator` |
 | `VALIDATION_ORCHESTRATOR_URL` in `ms-go-sandbox` | Routes live validation of `ValidationContractV1` tasks through `ms-go-validation-orchestrator` |
 | `NEXTJS_VALIDATOR_URL` in orchestrator | Enables `nextjs.app` execution |
 | `BROWSER_RUNTIME_VALIDATOR_URL` in orchestrator | Enables `browser.runtime` execution |
