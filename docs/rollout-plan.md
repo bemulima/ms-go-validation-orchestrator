@@ -5,7 +5,7 @@ This plan describes how to enable the new validation platform without breaking l
 It assumes the following architecture is already present:
 
 - `ms-go-course` stores both legacy and `ValidationContractV1` payloads
-- `ms-go-task-answer` routes new contracts through `ms-go-validation-orchestrator`
+- `ms-go-student` routes new contracts through `ms-go-validation-orchestrator`
 - `ms-go-sandbox` routes new live validation through `ms-go-validation-orchestrator`
 - admin and student frontends understand the new contract/report shape
 
@@ -25,7 +25,7 @@ Goal:
 Required checks:
 
 - `ms-gateway` proxies orchestrator routes
-- `VALIDATION_ORCHESTRATOR_URL` is set in `ms-go-task-answer` and `ms-go-sandbox`
+- `VALIDATION_ORCHESTRATOR_URL` is set in `ms-go-student` and `ms-go-sandbox`
 - orchestrator health endpoint is reachable
 - legacy tasks still pass through old validation path
 
