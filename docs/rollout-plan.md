@@ -24,7 +24,7 @@ Goal:
 
 Required checks:
 
-- `ms-getway` proxies orchestrator routes
+- `ms-gateway` proxies orchestrator routes
 - `VALIDATION_ORCHESTRATOR_URL` is set in `ms-go-task-answer` and `ms-go-sandbox`
 - orchestrator health endpoint is reachable
 - legacy tasks still pass through old validation path
