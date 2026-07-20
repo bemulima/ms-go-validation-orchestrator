@@ -34,6 +34,13 @@ func (client NodeClient) Validate(
 	input domain.EngineValidationInput,
 ) (domain.StageExecutionResult, error) {
 	staticMode, structureMode, runtimeMode := nodeStageModes(client.engine, input.Stage)
+	rules := map[string]any{
+		"static":    rawJSONOrEmptyObject(input.Stage.Rules),
+		"structure": rawJSONOrEmptyObject(input.Stage.Rules),
+	}
+	if runtimeMode {
+		rules["runtime"] = rawJSONOrEmptyObject(input.Stage.Checks)
+	}
 
 	responseBody, err := client.http.PostJSON(ctx, client.baseURL+"/api/v1/validate-node", map[string]any{
 		"language":  defaultString(input.Stage.Language, inferLanguageFromEngine(client.engine)),
@@ -50,11 +57,7 @@ func (client NodeClient) Validate(
 			"entrypoint": input.Stage.Targets.Entrypoint,
 			"files":      workspaceFilesAsMaps(input.Workspace.Files),
 		},
-		"rules": map[string]any{
-			"static":    rawJSONOrEmptyObject(input.Stage.Rules),
-			"structure": rawJSONOrEmptyObject(input.Stage.Rules),
-			"runtime":   rawJSONOrEmptyObject(input.Stage.Checks),
-		},
+		"rules": rules,
 	})
 	if err != nil {
 		return domain.StageExecutionResult{}, err
@@ -65,7 +68,7 @@ func (client NodeClient) Validate(
 
 func inferLanguageFromEngine(engine string) string {
 	switch engine {
-	case "ts.ast", "node.nest":
+	case "ts.ast", "ts.runtime", "node.nest":
 		return "ts"
 	default:
 		return "js"
@@ -89,7 +92,7 @@ func nodeStageModes(engine string, stage domain.ValidationStage) (bool, bool, bo
 	switch engine {
 	case "js.ast", "ts.ast":
 		return true, false, false
-	case "http.runtime":
+	case "http.runtime", "ts.runtime":
 		return false, false, true
 	default:
 		return true, hasPayload(stage.Rules), hasPayload(stage.Checks)

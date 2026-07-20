@@ -102,6 +102,9 @@ func filterStagesByMode(stages []domain.ValidationStage, mode string) []domain.V
 
 	filtered := make([]domain.ValidationStage, 0, len(stages))
 	for _, stage := range stages {
+		if stage.Engine == "ts.runtime" && mode != domain.ValidationModeFinal {
+			continue
+		}
 		if stageMatchesMode(stage.Mode, mode) {
 			filtered = append(filtered, stage)
 		}
