@@ -20,6 +20,7 @@ Read it together with:
 | --- | --- |
 | `VALIDATION_ORCHESTRATOR_URL` in `ms-go-student` | Routes final validation of `ValidationContractV1` tasks through `ms-go-validation-orchestrator` |
 | `VALIDATION_ORCHESTRATOR_URL` in `ms-go-sandbox` | Routes live validation of `ValidationContractV1` tasks through `ms-go-validation-orchestrator` |
+| `NODE_VALIDATOR_URL` in orchestrator | Enables `ts.ast`, final-only `ts.runtime`, and Node framework engines |
 | `NEXTJS_VALIDATOR_URL` in orchestrator | Enables `nextjs.app` execution |
 | `BROWSER_RUNTIME_VALIDATOR_URL` in orchestrator | Enables `browser.runtime` execution |
 | `PHP_FRAMEWORK_VALIDATOR_URL` in orchestrator | Reserved for future framework-aware PHP engines |
@@ -45,6 +46,7 @@ Read it together with:
 | `css.ast` single-file | Supported | Supported | Supported | Supported | Supported | `scss.ast` follows same path with subset support |
 | `js.ast` single-file | Supported | Supported | Supported | Supported | Supported | Routed through node validator |
 | `ts.ast` single-file | Supported | Supported | Supported | Supported | Supported | Routed through node validator |
+| `ts.ast` + `ts.runtime` CLI | Supported | Static only | Supported | Supported | Supported | Runtime is hard-gated to explicit final requests and requires a runtime-capable node validator |
 | `php.core` single-file | Supported | No | Supported | Supported | Partial | Final-ready engine; not intended for live |
 | `react.ast` component | Supported | Supported | Supported | Supported | Supported | Best for component-level tasks |
 | `nextjs.app` single workspace | Supported | No | Supported | Supported | Partial | Requires `NEXTJS_VALIDATOR_URL` |
@@ -95,6 +97,7 @@ Start production rollout with these task families:
 - `css.ast`
 - `js.ast`
 - `ts.ast`
+- `ts.ast` + `ts.runtime`
 - `react.ast`
 - `node.express`
 - `node.express` + `http.runtime`

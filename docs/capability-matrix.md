@@ -10,6 +10,7 @@ This matrix shows what each engine supports today and where support is still int
 | `react.ast` | Components, hooks, JSX tree, event handlers | Yes | Yes | Yes | Implemented |
 | `js.ast` | JS static checks through node validator | Yes | Yes | Yes | Implemented |
 | `ts.ast` | TS static checks through node validator | Yes | Yes | Yes | Implemented |
+| `ts.runtime` | TypeScript CLI exit code, stdout, and stderr | No | Yes | Yes | Implemented |
 | `node.express` | Express structure validation | Yes | Yes | Yes | Implemented |
 | `node.fastify` | Fastify structure validation | Yes | Yes | Yes | Implemented |
 | `node.nest` | NestJS structure validation | Yes | Yes | Yes | Implemented subset |
@@ -71,6 +72,7 @@ This matrix shows what each engine supports today and where support is still int
 ## Node / API
 
 - `js.ast` and `ts.ast` handle lightweight static checks.
+- `ts.runtime` adds final-only behavioral checks for dependency-free TypeScript CLI programs. Pair it with `ts.ast` in `both` mode.
 - `node.express`, `node.fastify`, and `node.nest` handle framework structure.
 - `http.runtime` should be used after structure stages, usually with `depends_on`.
 

@@ -68,6 +68,7 @@ Use Expert JSON when the task needs:
 - exact control over checks
 - foundation-only engines
 - hand-authored contract tuning
+- final TypeScript CLI behavior through `ts.runtime`
 
 This is the canonical editing mode when you need full control.
 
@@ -106,3 +107,14 @@ Always review the migrated contract before saving. Some legacy semantics are bes
 - Use `depends_on` to keep runtime stages behind structural ones.
 - Use links for simple workspace assertions, not for deep semantic validation.
 - Keep `code_structure_type` aligned with the dominant task profile, even though `code_structure` is now the main truth source.
+
+## TypeScript CLI runtime
+
+For a TypeScript sandbox task that needs immediate static feedback and authoritative behavioral validation:
+
+1. Add a `ts.ast` stage with `mode: "both"`.
+2. Add a `ts.runtime` stage with `mode: "final"` and `depends_on` pointing to the static stage.
+3. Put the relative `.ts`, `.mts`, or `.cts` entrypoint in `targets.entrypoint`.
+4. Put the constrained CLI contract in `checks`: `kind`, optional `args` and `timeoutMs`, then expected `exitCode` plus at least one stdout or stderr assertion.
+
+The orchestrator never runs `ts.runtime` during live validation, even if the authored stage mode is accidentally broader. The node validator uses a fixed command and does not install task dependencies. See `docs/examples/ts-cli-runtime.json` for the canonical contract.

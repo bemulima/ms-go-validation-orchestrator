@@ -24,6 +24,7 @@ This initial platform pass is intentionally conservative:
 - `cache.redis.config`, `cache.redis.runtime`, `search.elasticsearch.mapping`, and `search.elasticsearch.runtime` are now available when `CACHE_SEARCH_VALIDATOR_URL` points to `ms-go-cache-search-validator`.
 - `search.manticore` and `search.sphinx` are now available when `CACHE_SEARCH_VALIDATOR_URL` points to `ms-go-cache-search-validator`.
 - generic backend `http.runtime` is now available when `HTTP_RUNTIME_VALIDATOR_URL` points to `ms-go-http-runtime-validator`.
+- final-only `ts.runtime` is available with `ts.ast` when `NODE_VALIDATOR_URL` points to a TypeScript-runtime-capable `ms-node-validator`.
 
 ## Configuration
 
@@ -90,6 +91,7 @@ go test ./... -count=1
   - `react.ast`
   - `js.ast`
   - `ts.ast`
+  - `ts.runtime`
   - `node.express`
   - `node.nest`
   - `node.fastify`
@@ -150,6 +152,7 @@ go test ./... -count=1
 - `db.tarantool.runtime` can auto-provision a temporary Tarantool instance when the DB validator has Docker access and a runtime `init.lua` is available in the workspace.
 - `python.django.runtime`, `go.gin.runtime`, `go.echo.runtime`, `php.laravel.runtime`, `php.symfony.runtime`, `php.yii2.runtime`, and `php.yii3.runtime` are framework-aware runtime wrappers around `ms-go-http-runtime-validator`.
 - `http.runtime` remains available as the generic escape hatch when a task must provide an explicit `checks.command`.
+- `ts.runtime` executes only for an explicit `final` request. It supports dependency-free `.ts`, `.mts`, and `.cts` CLI entrypoints under the constrained Node validator contract; pair it with a `ts.ast` stage in `both` mode.
 
 ## HTTP API
 

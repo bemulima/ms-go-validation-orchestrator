@@ -15,7 +15,7 @@
 ## Stage fields
 
 - `id`: unique stage identifier.
-- `engine`: target engine, for example `html.dom`, `css.ast`, `react.ast`, `node.express`, `php.core`.
+- `engine`: target engine, for example `html.dom`, `css.ast`, `react.ast`, `node.express`, `ts.runtime`, `php.core`.
 - `language`: optional language hint.
 - `framework`: optional framework hint.
 - `mode`: `live`, `final`, or `both`.
@@ -25,6 +25,8 @@
 - `targets.entrypoint`: workspace entrypoint where relevant.
 - `rules`: engine-specific static/structural rules.
 - `checks`: engine-specific runtime checks.
+
+For `ts.runtime`, `checks` uses the node validator's constrained CLI payload: `kind: "cli"`, optional `args` and `timeoutMs`, and `expect` with `exitCode` plus at least one stdout or stderr assertion. The engine is final-only at orchestration time. Pair it with a `ts.ast` stage in `both` mode when live static feedback is required.
 
 ## Link fields
 
