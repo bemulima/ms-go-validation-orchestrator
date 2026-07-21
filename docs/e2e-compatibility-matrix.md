@@ -21,7 +21,7 @@ Read it together with:
 | `VALIDATION_ORCHESTRATOR_URL` in `ms-go-student` | Routes final validation of `ValidationContractV1` tasks through `ms-go-validation-orchestrator` |
 | `VALIDATION_ORCHESTRATOR_URL` in `ms-go-sandbox` | Routes live validation of `ValidationContractV1` tasks through `ms-go-validation-orchestrator` |
 | `NODE_VALIDATOR_URL` in orchestrator | Enables `ts.ast`, final-only `ts.runtime`, and Node framework engines |
-| `CODE_VALIDATOR_URL` in orchestrator | Enables Go engines plus Java `java.compile` and final-only `java.runtime`; legacy `GO_CODE_VALIDATOR_URL` remains a fallback |
+| `CODE_VALIDATOR_URL` in orchestrator | Enables Go engines plus Java/Kotlin compile and final-only runtime engines; legacy `GO_CODE_VALIDATOR_URL` remains a fallback |
 | `NEXTJS_VALIDATOR_URL` in orchestrator | Enables `nextjs.app` execution |
 | `BROWSER_RUNTIME_VALIDATOR_URL` in orchestrator | Enables `browser.runtime` execution |
 | `PHP_FRAMEWORK_VALIDATOR_URL` in orchestrator | Reserved for future framework-aware PHP engines |
@@ -49,6 +49,7 @@ Read it together with:
 | `ts.ast` single-file | Supported | Supported | Supported | Supported | Supported | Routed through node validator |
 | `ts.ast` + `ts.runtime` CLI | Supported | Static only | Supported | Supported | Supported | Runtime is hard-gated to explicit final requests and requires a runtime-capable node validator |
 | `java.compile` + `java.runtime` CLI | Supported | Compile only | Supported | Supported | Supported | Dependency-free Java 21 `Main.java`; runtime is hard-gated to explicit final requests |
+| `kotlin.compile` + `kotlin.runtime` CLI | Supported | Compile only | Supported | Supported | Supported | Dependency-free Kotlin 2.3.21/JDK 21 `Main.kt`; runtime is hard-gated to explicit final requests |
 | `php.core` single-file | Supported | No | Supported | Supported | Partial | Final-ready engine; not intended for live |
 | `react.ast` component | Supported | Supported | Supported | Supported | Supported | Best for component-level tasks |
 | `nextjs.app` single workspace | Supported | No | Supported | Supported | Partial | Requires `NEXTJS_VALIDATOR_URL` |
@@ -101,6 +102,7 @@ Start production rollout with these task families:
 - `ts.ast`
 - `ts.ast` + `ts.runtime`
 - `java.compile` + `java.runtime`
+- `kotlin.compile` + `kotlin.runtime`
 - `react.ast`
 - `node.express`
 - `node.express` + `http.runtime`

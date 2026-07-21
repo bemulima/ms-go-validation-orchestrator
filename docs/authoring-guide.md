@@ -70,6 +70,7 @@ Use Expert JSON when the task needs:
 - hand-authored contract tuning
 - final TypeScript CLI behavior through `ts.runtime`
 - Java 21 compile/runtime behavior through `java.compile` and `java.runtime`
+- Kotlin 2.3/JDK 21 compile/runtime behavior through `kotlin.compile` and `kotlin.runtime`
 
 This is the canonical editing mode when you need full control.
 
@@ -133,3 +134,17 @@ authoritative behavioral validation on Submit:
 The orchestrator never runs `java.runtime` during live validation, even when a
 bad contract marks it as `both`. The code validator owns the fixed `javac` and
 `java` commands. See `docs/examples/java-cli-runtime.json`.
+
+## Kotlin 2.3.21/JDK 21 CLI runtime
+
+For a Beginner Kotlin sandbox task that needs compiler feedback while editing
+and authoritative behavioral validation on Submit:
+
+1. Add `kotlin.compile` with `mode: "both"` and the exact `Main.kt` target and entrypoint.
+2. Add `kotlin.runtime` with `mode: "final"` and `depends_on` pointing to the compile stage.
+3. Use empty `rules` and a top-level `fun main()` or `fun main(args: Array<String>)`; packages, Gradle files, dependencies, classpaths, and compiler plugins are not supported.
+4. Put only constrained CLI fields in `checks`: `kind`, optional `args` and `timeoutMs`, then `expect.exitCode` plus at least one stdout or stderr assertion.
+
+The orchestrator never runs `kotlin.runtime` during live validation, even when
+a bad contract marks it as `both`. See
+`docs/examples/kotlin-cli-runtime.json` for the canonical contract.

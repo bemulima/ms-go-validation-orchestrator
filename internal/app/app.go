@@ -181,15 +181,17 @@ func buildEngineClients(
 		)
 	}
 
-	javaCodeValidatorURL := cfg.Engines.Code
-	if javaCodeValidatorURL == "" {
-		javaCodeValidatorURL = cfg.Engines.Go
+	jvmCodeValidatorURL := cfg.Engines.Code
+	if jvmCodeValidatorURL == "" {
+		jvmCodeValidatorURL = cfg.Engines.Go
 	}
-	if javaCodeValidatorURL != "" {
+	if jvmCodeValidatorURL != "" {
 		engineClients = append(
 			engineClients,
-			engines.NewWorkspaceFoundationClient(javaCodeValidatorURL, httpClient, "java.compile"),
-			engines.NewWorkspaceFoundationClient(javaCodeValidatorURL, httpClient, "java.runtime"),
+			engines.NewWorkspaceFoundationClient(jvmCodeValidatorURL, httpClient, "java.compile"),
+			engines.NewWorkspaceFoundationClient(jvmCodeValidatorURL, httpClient, "java.runtime"),
+			engines.NewWorkspaceFoundationClient(jvmCodeValidatorURL, httpClient, "kotlin.compile"),
+			engines.NewWorkspaceFoundationClient(jvmCodeValidatorURL, httpClient, "kotlin.runtime"),
 		)
 	}
 

@@ -85,6 +85,77 @@ func TestWorkspaceFoundationClientForwardsJavaChecksAndDiagnostics(t *testing.T)
 	}
 }
 
+func TestWorkspaceFoundationClientForwardsKotlinChecksAndDiagnostics(t *testing.T) {
+	t.Parallel()
+
+	httpClient := &fakeFoundationHTTPClient{
+		response: []byte(`{
+			"ok": false,
+			"isValid": false,
+			"errors": [{
+				"code": "KOTLIN_COMPILE_ERROR",
+				"message": "unresolved reference 'prntln'.",
+				"file": "Main.kt",
+				"line": 3,
+				"column": 9,
+				"hint": "Fix this compiler diagnostic in Main.kt."
+			}]
+		}`),
+	}
+	client := NewWorkspaceFoundationClient(
+		"http://code-validator",
+		httpClient,
+		"kotlin.runtime",
+	)
+
+	result, err := client.Validate(context.Background(), domain.EngineValidationInput{
+		TaskID: "kotlin-task",
+		Mode:   domain.ValidationModeFinal,
+		Stage: domain.ValidationStage{
+			ID:       "kotlin-runtime",
+			Engine:   "kotlin.runtime",
+			Language: "kotlin",
+			Mode:     domain.ValidationModeFinal,
+			Targets: domain.StageTargets{
+				Files:      []string{"Main.kt"},
+				Entrypoint: "Main.kt",
+			},
+			Rules: json.RawMessage(`{}`),
+			Checks: json.RawMessage(`{
+				"kind":"cli",
+				"expect":{"exitCode":0,"stdoutEquals":"Hello!\n"}
+			}`),
+		},
+		Workspace: domain.ValidationWorkspace{Files: []domain.WorkspaceFile{{
+			Path:    "Main.kt",
+			Content: "fun main() {}",
+		}}},
+	})
+	if err != nil {
+		t.Fatalf("validate: %v", err)
+	}
+	if result.Passed || len(result.Errors) != 1 {
+		t.Fatalf("expected one normalized Kotlin diagnostic, got %+v", result)
+	}
+	issue := result.Errors[0]
+	if issue.Code != "KOTLIN_COMPILE_ERROR" || issue.File != "Main.kt" ||
+		issue.Line != 3 || issue.Column != 9 || issue.Hint == "" {
+		t.Fatalf("unexpected normalized Kotlin diagnostic: %+v", issue)
+	}
+
+	stagePayload, ok := httpClient.lastPayload["stage"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected stage payload, got %#v", httpClient.lastPayload["stage"])
+	}
+	checks, ok := stagePayload["checks"].(map[string]any)
+	if !ok || checks["kind"] != "cli" {
+		t.Fatalf("expected constrained Kotlin CLI checks, got %#v", stagePayload["checks"])
+	}
+	if httpClient.lastURL != "http://code-validator/api/v1/validate" {
+		t.Fatalf("unexpected Kotlin validator URL %q", httpClient.lastURL)
+	}
+}
+
 func (client *fakeFoundationHTTPClient) PostJSON(
 	_ context.Context,
 	url string,
