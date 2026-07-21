@@ -434,3 +434,126 @@ func TestExecuteFailsClosedWhenJavaRuntimeIsUnavailable(t *testing.T) {
 		t.Fatalf("expected unavailable Java runtime to fail closed, got %+v", result)
 	}
 }
+
+func TestExecuteKotlinCompositeByMode(t *testing.T) {
+	t.Parallel()
+
+	contract := domain.ValidationContract{
+		Version: 1,
+		Kind:    "workspace_contract",
+		Stages: []domain.ValidationStage{
+			{ID: "kotlin-compile", Engine: "kotlin.compile", Mode: domain.ValidationModeBoth},
+			{
+				ID:        "kotlin-runtime",
+				Engine:    "kotlin.runtime",
+				Mode:      domain.ValidationModeFinal,
+				DependsOn: []string{"kotlin-compile"},
+			},
+		},
+	}
+	codeStructure, err := json.Marshal(contract)
+	if err != nil {
+		t.Fatalf("marshal contract: %v", err)
+	}
+
+	request := domain.ValidationRequest{
+		TaskID:        "task-kotlin-runtime",
+		CodeStructure: codeStructure,
+		Workspace: domain.ValidationWorkspace{
+			Files: []domain.WorkspaceFile{{Path: "Main.kt", Content: "fun main() {}"}},
+		},
+	}
+	parser := usecase.NewContractParser(usecase.NewDefaultLegacyContractAdapter())
+
+	liveCalls := []string{}
+	liveUseCase := usecase.NewOrchestrateValidationUseCase(parser, []domain.EngineClient{
+		trackingEngine{id: "kotlin.compile", passed: true, calls: &liveCalls},
+		trackingEngine{id: "kotlin.runtime", passed: true, calls: &liveCalls},
+	})
+	request.Mode = domain.ValidationModeLive
+	liveResult, err := liveUseCase.Execute(context.Background(), request)
+	if err != nil {
+		t.Fatalf("execute live: %v", err)
+	}
+	if !liveResult.Passed || len(liveCalls) != 1 || liveCalls[0] != "kotlin-compile" {
+		t.Fatalf("expected only Kotlin compile during live validation, calls=%v result=%+v", liveCalls, liveResult)
+	}
+
+	finalCalls := []string{}
+	finalUseCase := usecase.NewOrchestrateValidationUseCase(parser, []domain.EngineClient{
+		trackingEngine{id: "kotlin.compile", passed: true, calls: &finalCalls},
+		trackingEngine{id: "kotlin.runtime", passed: true, calls: &finalCalls},
+	})
+	request.Mode = domain.ValidationModeFinal
+	finalResult, err := finalUseCase.Execute(context.Background(), request)
+	if err != nil {
+		t.Fatalf("execute final: %v", err)
+	}
+	if !finalResult.Passed || len(finalCalls) != 2 ||
+		finalCalls[0] != "kotlin-compile" || finalCalls[1] != "kotlin-runtime" {
+		t.Fatalf("expected Kotlin compile then runtime, calls=%v result=%+v", finalCalls, finalResult)
+	}
+}
+
+func TestExecuteNeverRunsKotlinRuntimeDuringLiveValidation(t *testing.T) {
+	t.Parallel()
+
+	contract := domain.ValidationContract{
+		Version: 1,
+		Kind:    "workspace_contract",
+		Stages: []domain.ValidationStage{
+			{ID: "runtime", Engine: "kotlin.runtime", Mode: domain.ValidationModeBoth},
+		},
+	}
+	codeStructure, err := json.Marshal(contract)
+	if err != nil {
+		t.Fatalf("marshal contract: %v", err)
+	}
+
+	calls := []string{}
+	parser := usecase.NewContractParser(usecase.NewDefaultLegacyContractAdapter())
+	useCase := usecase.NewOrchestrateValidationUseCase(parser, []domain.EngineClient{
+		trackingEngine{id: "kotlin.runtime", passed: true, calls: &calls},
+	})
+	result, err := useCase.Execute(context.Background(), domain.ValidationRequest{
+		TaskID:        "task-kotlin-live-safety",
+		Mode:          domain.ValidationModeLive,
+		CodeStructure: codeStructure,
+	})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	if !result.Passed || len(calls) != 0 || len(result.Stages) != 0 {
+		t.Fatalf("expected Kotlin runtime to be skipped during live validation, calls=%v result=%+v", calls, result)
+	}
+}
+
+func TestExecuteFailsClosedWhenKotlinRuntimeIsUnavailable(t *testing.T) {
+	t.Parallel()
+
+	contract := domain.ValidationContract{
+		Version: 1,
+		Kind:    "workspace_contract",
+		Stages: []domain.ValidationStage{
+			{ID: "runtime", Engine: "kotlin.runtime", Mode: domain.ValidationModeFinal},
+		},
+	}
+	codeStructure, err := json.Marshal(contract)
+	if err != nil {
+		t.Fatalf("marshal contract: %v", err)
+	}
+
+	parser := usecase.NewContractParser(usecase.NewDefaultLegacyContractAdapter())
+	useCase := usecase.NewOrchestrateValidationUseCase(parser, nil)
+	result, err := useCase.Execute(context.Background(), domain.ValidationRequest{
+		TaskID:        "task-kotlin-runtime-unavailable",
+		Mode:          domain.ValidationModeFinal,
+		CodeStructure: codeStructure,
+	})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	if result.Passed || len(result.Stages) != 1 || result.Stages[0].Status != "failed" {
+		t.Fatalf("expected unavailable Kotlin runtime to fail closed, got %+v", result)
+	}
+}

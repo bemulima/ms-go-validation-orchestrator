@@ -74,7 +74,7 @@ func TestBuildEngineClientsRegistersGitAndDockerHooks(t *testing.T) {
 	}
 }
 
-func TestBuildEngineClientsRegistersPythonGoAndJavaHooks(t *testing.T) {
+func TestBuildEngineClientsRegistersPythonGoAndJVMHooks(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.Config{
@@ -99,6 +99,8 @@ func TestBuildEngineClientsRegistersPythonGoAndJavaHooks(t *testing.T) {
 		"go.echo",
 		"java.compile",
 		"java.runtime",
+		"kotlin.compile",
+		"kotlin.runtime",
 	} {
 		if _, ok := ids[engineID]; !ok {
 			t.Fatalf("expected engine hook %s to be registered", engineID)
@@ -106,7 +108,7 @@ func TestBuildEngineClientsRegistersPythonGoAndJavaHooks(t *testing.T) {
 	}
 }
 
-func TestBuildEngineClientsUsesGenericCodeValidatorForGoAndJava(t *testing.T) {
+func TestBuildEngineClientsUsesGenericCodeValidatorForGoAndJVM(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.Config{
@@ -121,7 +123,13 @@ func TestBuildEngineClientsUsesGenericCodeValidatorForGoAndJava(t *testing.T) {
 		ids[client.EngineID()] = struct{}{}
 	}
 
-	for _, engineID := range []string{"go.core", "java.compile", "java.runtime"} {
+	for _, engineID := range []string{
+		"go.core",
+		"java.compile",
+		"java.runtime",
+		"kotlin.compile",
+		"kotlin.runtime",
+	} {
 		if _, ok := ids[engineID]; !ok {
 			t.Fatalf("expected engine hook %s to be registered", engineID)
 		}

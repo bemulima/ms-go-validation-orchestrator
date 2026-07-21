@@ -118,6 +118,42 @@ func TestJavaRuntimeExampleUsesLiveCompileAndFinalRuntime(t *testing.T) {
 	}
 }
 
+func TestKotlinRuntimeExampleUsesLiveCompileAndFinalRuntime(t *testing.T) {
+	t.Parallel()
+
+	data, err := os.ReadFile(filepath.Join("..", "..", "docs", "examples", "kotlin-cli-runtime.json"))
+	if err != nil {
+		t.Fatalf("read Kotlin runtime example: %v", err)
+	}
+
+	var contract domain.ValidationContract
+	if err := json.Unmarshal(data, &contract); err != nil {
+		t.Fatalf("unmarshal Kotlin runtime example: %v", err)
+	}
+	if len(contract.Stages) != 2 {
+		t.Fatalf("expected two Kotlin stages, got %d", len(contract.Stages))
+	}
+
+	compileStage := contract.Stages[0]
+	runtimeStage := contract.Stages[1]
+	if compileStage.Engine != "kotlin.compile" || compileStage.Mode != domain.ValidationModeBoth {
+		t.Fatalf("expected kotlin.compile in both mode, got %+v", compileStage)
+	}
+	if runtimeStage.Engine != "kotlin.runtime" || runtimeStage.Mode != domain.ValidationModeFinal {
+		t.Fatalf("expected kotlin.runtime in final mode, got %+v", runtimeStage)
+	}
+	if compileStage.Targets.Entrypoint != "Main.kt" || runtimeStage.Targets.Entrypoint != "Main.kt" {
+		t.Fatalf("expected Main.kt entrypoints, got compile=%+v runtime=%+v", compileStage.Targets, runtimeStage.Targets)
+	}
+	if len(runtimeStage.DependsOn) != 1 || runtimeStage.DependsOn[0] != compileStage.ID {
+		t.Fatalf("expected runtime to depend on compile stage, got %+v", runtimeStage.DependsOn)
+	}
+	if !strings.Contains(string(runtimeStage.Checks), `"kind": "cli"`) ||
+		!strings.Contains(string(runtimeStage.Checks), `"stdoutEquals"`) {
+		t.Fatalf("expected constrained Kotlin CLI behavioral checks, got %s", runtimeStage.Checks)
+	}
+}
+
 func validateContractInvariants(t *testing.T, name string, contract domain.ValidationContract) {
 	t.Helper()
 
