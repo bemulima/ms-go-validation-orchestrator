@@ -167,13 +167,29 @@ func buildEngineClients(
 		)
 	}
 
-	if cfg.Engines.Go != "" {
+	goCodeValidatorURL := cfg.Engines.Go
+	if goCodeValidatorURL == "" {
+		goCodeValidatorURL = cfg.Engines.Code
+	}
+	if goCodeValidatorURL != "" {
 		engineClients = append(
 			engineClients,
-			engines.NewWorkspaceFoundationClient(cfg.Engines.Go, httpClient, "golang"),
-			engines.NewWorkspaceFoundationClient(cfg.Engines.Go, httpClient, "go.core"),
-			engines.NewWorkspaceFoundationClient(cfg.Engines.Go, httpClient, "go.gin"),
-			engines.NewWorkspaceFoundationClient(cfg.Engines.Go, httpClient, "go.echo"),
+			engines.NewWorkspaceFoundationClient(goCodeValidatorURL, httpClient, "golang"),
+			engines.NewWorkspaceFoundationClient(goCodeValidatorURL, httpClient, "go.core"),
+			engines.NewWorkspaceFoundationClient(goCodeValidatorURL, httpClient, "go.gin"),
+			engines.NewWorkspaceFoundationClient(goCodeValidatorURL, httpClient, "go.echo"),
+		)
+	}
+
+	javaCodeValidatorURL := cfg.Engines.Code
+	if javaCodeValidatorURL == "" {
+		javaCodeValidatorURL = cfg.Engines.Go
+	}
+	if javaCodeValidatorURL != "" {
+		engineClients = append(
+			engineClients,
+			engines.NewWorkspaceFoundationClient(javaCodeValidatorURL, httpClient, "java.compile"),
+			engines.NewWorkspaceFoundationClient(javaCodeValidatorURL, httpClient, "java.runtime"),
 		)
 	}
 
