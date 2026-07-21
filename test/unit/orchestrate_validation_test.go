@@ -355,6 +355,39 @@ func TestExecuteNeverRunsTypeScriptRuntimeDuringLiveValidation(t *testing.T) {
 	}
 }
 
+func TestExecuteNeverRunsBrowserRuntimeDuringLiveValidation(t *testing.T) {
+	t.Parallel()
+
+	contract := domain.ValidationContract{
+		Version: 1,
+		Kind:    "workspace_contract",
+		Stages: []domain.ValidationStage{
+			{ID: "browser", Engine: "browser.runtime", Mode: domain.ValidationModeBoth},
+		},
+	}
+	codeStructure, err := json.Marshal(contract)
+	if err != nil {
+		t.Fatalf("marshal contract: %v", err)
+	}
+
+	calls := []string{}
+	parser := usecase.NewContractParser(usecase.NewDefaultLegacyContractAdapter())
+	useCase := usecase.NewOrchestrateValidationUseCase(parser, []domain.EngineClient{
+		trackingEngine{id: "browser.runtime", passed: true, calls: &calls},
+	})
+	result, err := useCase.Execute(context.Background(), domain.ValidationRequest{
+		TaskID:        "task-browser-live-safety",
+		Mode:          domain.ValidationModeLive,
+		CodeStructure: codeStructure,
+	})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	if !result.Passed || len(calls) != 0 || len(result.Stages) != 0 {
+		t.Fatalf("expected browser runtime to be skipped during live validation, calls=%v result=%+v", calls, result)
+	}
+}
+
 func TestExecuteFailsClosedWhenTypeScriptRuntimeIsUnavailable(t *testing.T) {
 	t.Parallel()
 

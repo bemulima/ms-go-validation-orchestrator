@@ -1,10 +1,10 @@
 {
   "version": 1,
   "kind": "workspace_contract",
-  "profile": "html-css-js-browser",
-  "profiles": ["html5", "css", "javascript"],
+  "profile": "browser-input-javascript",
+  "profiles": ["html5", "javascript", "browser-runtime"],
   "workspace": {
-    "required_files": ["index.html", "styles.css", "app.js"]
+    "required_files": ["index.html", "app.js"]
   },
   "stages": [
     {
@@ -20,41 +20,19 @@
         "body": {
           "roots": [
             {
-              "tag": { "value": "main", "errorMessage": "Need <main>" },
-              "children": [
-                {
-                  "tag": { "value": "button", "errorMessage": "Need theme toggle button" },
-                  "attributes": [
-                    { "name": "id", "value": "toggle-theme", "errorMessage": "Use id toggle-theme" }
-                  ]
-                }
+              "tag": { "value": "input", "errorMessage": "Need the name input" },
+              "attributes": [
+                { "name": "id", "value": "name", "errorMessage": "Use id name" }
+              ]
+            },
+            {
+              "tag": { "value": "p", "errorMessage": "Need a visible status" },
+              "attributes": [
+                { "name": "id", "value": "status", "errorMessage": "Use id status" }
               ]
             }
           ]
         }
-      }
-    },
-    {
-      "id": "css",
-      "engine": "css.ast",
-      "language": "css",
-      "mode": "both",
-      "depends_on": ["html"],
-      "targets": {
-        "files": ["styles.css"]
-      },
-      "rules": {
-        "rules": [
-          {
-            "selector": { "value": ".dark" },
-            "declarations": [
-              {
-                "property": { "value": "background-color" },
-                "anyOfValues": [{ "value": "#111827" }, { "value": "black" }]
-              }
-            ]
-          }
-        ]
       }
     },
     {
@@ -68,50 +46,45 @@
         "entrypoint": "app.js"
       },
       "rules": {
-        "maxFileSizeKb": 64
+        "maxFileSizeKb": 32
       }
     },
     {
       "id": "browser-runtime",
-      "name": "Browser runtime foundation",
+      "name": "Text input behavior",
       "engine": "browser.runtime",
       "language": "js",
       "mode": "final",
-      "depends_on": ["html", "css", "javascript"],
+      "depends_on": ["html", "javascript"],
       "targets": {
-        "files": ["index.html", "styles.css", "app.js"],
+        "files": ["index.html", "app.js"],
         "entrypoint": "index.html"
       },
       "checks": {
         "interactions": [
           {
-            "selector": "#toggle-theme",
-            "action": "click",
-            "expectClassToggle": {
-              "selector": "body",
-              "className": "dark"
+            "selector": "#name",
+            "action": "fill",
+            "value": "Ada",
+            "expectValue": { "value": "Ada" },
+            "expectTextContains": {
+              "selector": "#status",
+              "value": "Hello, Ada"
             }
-          }
-        ],
-        "computedStyles": [
+          },
           {
-            "selector": "body.dark",
-            "property": "background-color"
+            "selector": "#name",
+            "action": "fill",
+            "value": "",
+            "expectValue": { "value": "" },
+            "expectTextContains": {
+              "selector": "#status",
+              "value": "Name is required"
+            }
           }
         ]
       }
     }
   ],
-  "links": [
-    {
-      "id": "javascript-uses-toggle-selector",
-      "kind": "workspace.file_contains",
-      "depends_on": ["javascript"],
-      "config": {
-        "file": "app.js",
-        "needle": "toggle-theme",
-        "message": "app.js should reference the toggle-theme selector"
-      }
-    }
-  ]
+  "links": []
 }

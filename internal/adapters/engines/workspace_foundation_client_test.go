@@ -3,6 +3,7 @@ package engines
 import (
 	"context"
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
@@ -12,6 +13,83 @@ type fakeFoundationHTTPClient struct {
 	lastURL     string
 	lastPayload map[string]any
 	response    []byte
+}
+
+func TestWorkspaceFoundationClientPreservesBrowserInputAndFormChecks(t *testing.T) {
+	t.Parallel()
+
+	httpClient := &fakeFoundationHTTPClient{response: []byte(`{"ok":true,"isValid":true}`)}
+	client := NewWorkspaceFoundationClient(
+		"http://browser-runtime-validator",
+		httpClient,
+		"browser.runtime",
+	)
+
+	checks := json.RawMessage(`{
+		"build":{"kind":"typescript","entrypoint":"app.ts","output":"app.js"},
+		"networkMocks":[{
+			"url":"https://api.example.test/profile",
+			"method":"POST",
+			"expectedRequests":2,
+			"responses":[
+				{"status":200,"body":"{\"message\":\"Saved\"}","delayMs":75},
+				{"status":422,"body":"{\"message\":\"Invalid\"}","delayMs":75}
+			]
+		}],
+		"interactions":[
+			{"selector":"#email","action":"fill","value":"ada@example.test","expectValue":{"value":"ada@example.test"}},
+			{"selector":"#profile-form","action":"submit","expectTextSequence":[
+				{"selector":"#status","value":"Saving"},
+				{"selector":"#status","value":"Saved"}
+			]}
+		]
+	}`)
+
+	result, err := client.Validate(context.Background(), domain.EngineValidationInput{
+		TaskID: "browser-form-task",
+		Locale: "en",
+		Mode:   domain.ValidationModeFinal,
+		Stage: domain.ValidationStage{
+			ID:       "browser-final",
+			Engine:   "browser.runtime",
+			Language: "ts",
+			Mode:     domain.ValidationModeFinal,
+			Targets: domain.StageTargets{
+				Files:      []string{"index.html", "app.ts"},
+				Entrypoint: "index.html",
+			},
+			Checks: checks,
+		},
+		Workspace: domain.ValidationWorkspace{Files: []domain.WorkspaceFile{
+			{Path: "index.html", Content: `<form id="profile-form"></form>`},
+			{Path: "app.ts", Content: `const ready: boolean = true;`},
+		}},
+	})
+	if err != nil {
+		t.Fatalf("validate: %v", err)
+	}
+	if !result.Passed {
+		t.Fatalf("expected passed browser result, got %+v", result)
+	}
+	if httpClient.lastURL != "http://browser-runtime-validator/api/v1/validate" {
+		t.Fatalf("unexpected browser validator URL %q", httpClient.lastURL)
+	}
+
+	stagePayload, ok := httpClient.lastPayload["stage"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected stage payload, got %#v", httpClient.lastPayload["stage"])
+	}
+	forwardedChecks, ok := stagePayload["checks"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected browser checks map, got %#v", stagePayload["checks"])
+	}
+	var expectedChecks map[string]any
+	if err := json.Unmarshal(checks, &expectedChecks); err != nil {
+		t.Fatalf("unmarshal expected checks: %v", err)
+	}
+	if !reflect.DeepEqual(forwardedChecks, expectedChecks) {
+		t.Fatalf("browser checks changed during forwarding:\nwant %#v\ngot  %#v", expectedChecks, forwardedChecks)
+	}
 }
 
 func TestWorkspaceFoundationClientForwardsJavaChecksAndDiagnostics(t *testing.T) {
