@@ -17,7 +17,8 @@ This initial platform pass is intentionally conservative:
 - `git.core` is now available when `GIT_VALIDATOR_URL` points to `ms-go-git-validator`.
 - `docker.dockerfile` and `docker.compose` are now available when `DOCKER_VALIDATOR_URL` points to `ms-go-docker-validator`.
 - `python.core` and `python.django` are now available when `PYTHON_VALIDATOR_URL` points to `ms-py-validator`.
-- `golang`, `go.core`, `go.gin`, and `go.echo` are now available when `GO_CODE_VALIDATOR_URL` points to `ms-go-code-validator`.
+- `golang`, `go.core`, `go.gin`, and `go.echo` are available through `CODE_VALIDATOR_URL`; existing `GO_CODE_VALIDATOR_URL` deployments remain supported.
+- `java.compile` and final-only `java.runtime` are available when `CODE_VALIDATOR_URL` points to a Java-capable `ms-go-code-validator`; `GO_CODE_VALIDATOR_URL` remains a compatibility fallback.
 - `db.postgres.schema`, `db.postgres.runtime`, `db.mysql.schema`, and `db.mysql.runtime` are now available when `DB_VALIDATOR_URL` points to `ms-go-db-validator`.
 - `db.tarantool.schema` and `db.tarantool.runtime` are now available when `DB_VALIDATOR_URL` points to `ms-go-db-validator`.
 - `linux.fs`, `linux.cli`, and `linux.runtime` are now available when `LINUX_VALIDATOR_URL` points to `ms-go-linux-validator`.
@@ -46,7 +47,8 @@ Environment variables:
 | `GIT_VALIDATOR_URL` | `""` | Base URL of `ms-go-git-validator` |
 | `DOCKER_VALIDATOR_URL` | `""` | Base URL of `ms-go-docker-validator` |
 | `PYTHON_VALIDATOR_URL` | `""` | Base URL of `ms-py-validator` |
-| `GO_CODE_VALIDATOR_URL` | `""` | Base URL of `ms-go-code-validator` |
+| `CODE_VALIDATOR_URL` | `""` | Preferred base URL of `ms-go-code-validator` for Go and Java engines |
+| `GO_CODE_VALIDATOR_URL` | `""` | Legacy Go endpoint and fallback when `CODE_VALIDATOR_URL` is empty |
 | `DB_VALIDATOR_URL` | `""` | Base URL of `ms-go-db-validator` |
 | `LINUX_VALIDATOR_URL` | `""` | Base URL of `ms-go-linux-validator` |
 | `CACHE_SEARCH_VALIDATOR_URL` | `""` | Base URL of `ms-go-cache-search-validator` |
@@ -119,6 +121,8 @@ go test ./... -count=1
 - `go.core`
 - `go.gin`
 - `go.echo`
+- `java.compile`
+- `java.runtime`
 - `db.postgres.schema`
 - `db.postgres.runtime`
 - `db.mysql.schema`
@@ -153,6 +157,7 @@ go test ./... -count=1
 - `python.django.runtime`, `go.gin.runtime`, `go.echo.runtime`, `php.laravel.runtime`, `php.symfony.runtime`, `php.yii2.runtime`, and `php.yii3.runtime` are framework-aware runtime wrappers around `ms-go-http-runtime-validator`.
 - `http.runtime` remains available as the generic escape hatch when a task must provide an explicit `checks.command`.
 - `ts.runtime` executes only for an explicit `final` request. It supports dependency-free `.ts`, `.mts`, and `.cts` CLI entrypoints under the constrained Node validator contract; pair it with a `ts.ast` stage in `both` mode.
+- `java.compile` supports dependency-free Java 21 `Main.java` tasks in live and final validation. `java.runtime` is hard-gated to explicit final requests, accepts only constrained CLI expectations, and must depend on the compile stage.
 
 ## HTTP API
 

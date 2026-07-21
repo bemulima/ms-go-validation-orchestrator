@@ -102,7 +102,7 @@ func filterStagesByMode(stages []domain.ValidationStage, mode string) []domain.V
 
 	filtered := make([]domain.ValidationStage, 0, len(stages))
 	for _, stage := range stages {
-		if stage.Engine == "ts.runtime" && mode != domain.ValidationModeFinal {
+		if isFinalOnlyEngine(stage.Engine) && mode != domain.ValidationModeFinal {
 			continue
 		}
 		if stageMatchesMode(stage.Mode, mode) {
@@ -111,6 +111,15 @@ func filterStagesByMode(stages []domain.ValidationStage, mode string) []domain.V
 	}
 
 	return filtered
+}
+
+func isFinalOnlyEngine(engine string) bool {
+	switch engine {
+	case "ts.runtime", "java.runtime":
+		return true
+	default:
+		return false
+	}
 }
 
 func filterLinksByStageIDs(links []domain.ValidationLink, stageIDs map[string]struct{}) []domain.ValidationLink {

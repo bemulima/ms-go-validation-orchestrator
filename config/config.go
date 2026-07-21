@@ -24,6 +24,7 @@ type EngineEndpoints struct {
 	Git          string
 	Docker       string
 	Python       string
+	Code         string
 	Go           string
 	DB           string
 	Linux        string
@@ -41,6 +42,12 @@ func Load() (Config, error) {
 	port, err := intFromEnv("PORT", 8080)
 	if err != nil {
 		return Config{}, err
+	}
+
+	goCodeURL := trimURL(os.Getenv("GO_CODE_VALIDATOR_URL"))
+	codeURL := trimURL(os.Getenv("CODE_VALIDATOR_URL"))
+	if codeURL == "" {
+		codeURL = goCodeURL
 	}
 
 	cfg := Config{
@@ -61,7 +68,8 @@ func Load() (Config, error) {
 			Git:          trimURL(os.Getenv("GIT_VALIDATOR_URL")),
 			Docker:       trimURL(os.Getenv("DOCKER_VALIDATOR_URL")),
 			Python:       trimURL(os.Getenv("PYTHON_VALIDATOR_URL")),
-			Go:           trimURL(os.Getenv("GO_CODE_VALIDATOR_URL")),
+			Code:         codeURL,
+			Go:           goCodeURL,
 			DB:           trimURL(os.Getenv("DB_VALIDATOR_URL")),
 			Linux:        trimURL(os.Getenv("LINUX_VALIDATOR_URL")),
 			CacheSearch:  trimURL(os.Getenv("CACHE_SEARCH_VALIDATOR_URL")),

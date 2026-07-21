@@ -74,7 +74,7 @@ func TestBuildEngineClientsRegistersGitAndDockerHooks(t *testing.T) {
 	}
 }
 
-func TestBuildEngineClientsRegistersPythonAndGoHooks(t *testing.T) {
+func TestBuildEngineClientsRegistersPythonGoAndJavaHooks(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.Config{
@@ -90,7 +90,38 @@ func TestBuildEngineClientsRegistersPythonAndGoHooks(t *testing.T) {
 		ids[client.EngineID()] = struct{}{}
 	}
 
-	for _, engineID := range []string{"python.core", "python.django", "golang", "go.core", "go.gin", "go.echo"} {
+	for _, engineID := range []string{
+		"python.core",
+		"python.django",
+		"golang",
+		"go.core",
+		"go.gin",
+		"go.echo",
+		"java.compile",
+		"java.runtime",
+	} {
+		if _, ok := ids[engineID]; !ok {
+			t.Fatalf("expected engine hook %s to be registered", engineID)
+		}
+	}
+}
+
+func TestBuildEngineClientsUsesGenericCodeValidatorForGoAndJava(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.Config{
+		Engines: config.EngineEndpoints{
+			Code: "http://ms-go-code-validator:8080",
+		},
+	}
+
+	clients := buildEngineClients(cfg, engines.NewHTTPClient(0))
+	ids := make(map[string]struct{}, len(clients))
+	for _, client := range clients {
+		ids[client.EngineID()] = struct{}{}
+	}
+
+	for _, engineID := range []string{"go.core", "java.compile", "java.runtime"} {
 		if _, ok := ids[engineID]; !ok {
 			t.Fatalf("expected engine hook %s to be registered", engineID)
 		}

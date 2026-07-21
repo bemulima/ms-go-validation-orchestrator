@@ -82,6 +82,42 @@ func TestTypeScriptRuntimeExampleUsesLiveStaticAndFinalRuntime(t *testing.T) {
 	}
 }
 
+func TestJavaRuntimeExampleUsesLiveCompileAndFinalRuntime(t *testing.T) {
+	t.Parallel()
+
+	data, err := os.ReadFile(filepath.Join("..", "..", "docs", "examples", "java-cli-runtime.json"))
+	if err != nil {
+		t.Fatalf("read Java runtime example: %v", err)
+	}
+
+	var contract domain.ValidationContract
+	if err := json.Unmarshal(data, &contract); err != nil {
+		t.Fatalf("unmarshal Java runtime example: %v", err)
+	}
+	if len(contract.Stages) != 2 {
+		t.Fatalf("expected two Java stages, got %d", len(contract.Stages))
+	}
+
+	compileStage := contract.Stages[0]
+	runtimeStage := contract.Stages[1]
+	if compileStage.Engine != "java.compile" || compileStage.Mode != domain.ValidationModeBoth {
+		t.Fatalf("expected java.compile in both mode, got %+v", compileStage)
+	}
+	if runtimeStage.Engine != "java.runtime" || runtimeStage.Mode != domain.ValidationModeFinal {
+		t.Fatalf("expected java.runtime in final mode, got %+v", runtimeStage)
+	}
+	if compileStage.Targets.Entrypoint != "Main.java" || runtimeStage.Targets.Entrypoint != "Main.java" {
+		t.Fatalf("expected Main.java entrypoints, got compile=%+v runtime=%+v", compileStage.Targets, runtimeStage.Targets)
+	}
+	if len(runtimeStage.DependsOn) != 1 || runtimeStage.DependsOn[0] != compileStage.ID {
+		t.Fatalf("expected runtime to depend on compile stage, got %+v", runtimeStage.DependsOn)
+	}
+	if !strings.Contains(string(runtimeStage.Checks), `"kind": "cli"`) ||
+		!strings.Contains(string(runtimeStage.Checks), `"stdoutEquals"`) {
+		t.Fatalf("expected constrained Java CLI behavioral checks, got %s", runtimeStage.Checks)
+	}
+}
+
 func validateContractInvariants(t *testing.T, name string, contract domain.ValidationContract) {
 	t.Helper()
 

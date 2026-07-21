@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "java-21-cli",
+  "profiles": ["java", "java-21-cli"],
+  "workspace": {
+    "required_files": ["Main.java"]
+  },
+  "stages": [
+    {
+      "id": "java-compile",
+      "name": "Java 21 compilation",
+      "engine": "java.compile",
+      "language": "java",
+      "mode": "both",
+      "targets": {
+        "files": ["Main.java"],
+        "entrypoint": "Main.java"
+      },
+      "rules": {}
+    },
+    {
+      "id": "java-runtime",
+      "name": "Java CLI behavior",
+      "engine": "java.runtime",
+      "language": "java",
+      "mode": "final",
+      "depends_on": ["java-compile"],
+      "targets": {
+        "files": ["Main.java"],
+        "entrypoint": "Main.java"
+      },
+      "rules": {},
+      "checks": {
+        "kind": "cli",
+        "args": [],
+        "timeoutMs": 3000,
+        "expect": {
+          "exitCode": 0,
+          "stdoutEquals": "Hello, Ada!\n"
+        }
+      }
+    }
+  ]
+}

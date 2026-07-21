@@ -2,6 +2,7 @@ package engines
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
@@ -11,6 +12,77 @@ type fakeFoundationHTTPClient struct {
 	lastURL     string
 	lastPayload map[string]any
 	response    []byte
+}
+
+func TestWorkspaceFoundationClientForwardsJavaChecksAndDiagnostics(t *testing.T) {
+	t.Parallel()
+
+	httpClient := &fakeFoundationHTTPClient{
+		response: []byte(`{
+			"ok": false,
+			"isValid": false,
+			"errors": [{
+				"code": "JAVA_COMPILE_ERROR",
+				"message": "compiler.err.expected: ';'",
+				"file": "Main.java",
+				"line": 3,
+				"column": 27,
+				"hint": "Fix this compiler diagnostic in Main.java."
+			}]
+		}`),
+	}
+	client := NewWorkspaceFoundationClient(
+		"http://code-validator",
+		httpClient,
+		"java.runtime",
+	)
+
+	result, err := client.Validate(context.Background(), domain.EngineValidationInput{
+		TaskID: "java-task",
+		Mode:   domain.ValidationModeFinal,
+		Stage: domain.ValidationStage{
+			ID:       "java-runtime",
+			Engine:   "java.runtime",
+			Language: "java",
+			Mode:     domain.ValidationModeFinal,
+			Targets: domain.StageTargets{
+				Files:      []string{"Main.java"},
+				Entrypoint: "Main.java",
+			},
+			Rules: json.RawMessage(`{}`),
+			Checks: json.RawMessage(`{
+				"kind":"cli",
+				"expect":{"exitCode":0,"stdoutEquals":"Hello!\\n"}
+			}`),
+		},
+		Workspace: domain.ValidationWorkspace{Files: []domain.WorkspaceFile{{
+			Path:    "Main.java",
+			Content: "public class Main {}",
+		}}},
+	})
+	if err != nil {
+		t.Fatalf("validate: %v", err)
+	}
+	if result.Passed || len(result.Errors) != 1 {
+		t.Fatalf("expected one normalized Java diagnostic, got %+v", result)
+	}
+	issue := result.Errors[0]
+	if issue.Code != "JAVA_COMPILE_ERROR" || issue.File != "Main.java" ||
+		issue.Line != 3 || issue.Column != 27 || issue.Hint == "" {
+		t.Fatalf("unexpected normalized Java diagnostic: %+v", issue)
+	}
+
+	stagePayload, ok := httpClient.lastPayload["stage"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected stage payload, got %#v", httpClient.lastPayload["stage"])
+	}
+	checks, ok := stagePayload["checks"].(map[string]any)
+	if !ok || checks["kind"] != "cli" {
+		t.Fatalf("expected constrained Java CLI checks, got %#v", stagePayload["checks"])
+	}
+	if httpClient.lastURL != "http://code-validator/api/v1/validate" {
+		t.Fatalf("unexpected Java validator URL %q", httpClient.lastURL)
+	}
 }
 
 func (client *fakeFoundationHTTPClient) PostJSON(

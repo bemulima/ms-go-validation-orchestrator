@@ -69,6 +69,7 @@ Use Expert JSON when the task needs:
 - foundation-only engines
 - hand-authored contract tuning
 - final TypeScript CLI behavior through `ts.runtime`
+- Java 21 compile/runtime behavior through `java.compile` and `java.runtime`
 
 This is the canonical editing mode when you need full control.
 
@@ -118,3 +119,17 @@ For a TypeScript sandbox task that needs immediate static feedback and authorita
 4. Put the constrained CLI contract in `checks`: `kind`, optional `args` and `timeoutMs`, then expected `exitCode` plus at least one stdout or stderr assertion.
 
 The orchestrator never runs `ts.runtime` during live validation, even if the authored stage mode is accidentally broader. The node validator uses a fixed command and does not install task dependencies. See `docs/examples/ts-cli-runtime.json` for the canonical contract.
+
+## Java 21 CLI runtime
+
+For a Beginner Java sandbox task that needs compiler feedback while editing and
+authoritative behavioral validation on Submit:
+
+1. Add `java.compile` with `mode: "both"` and the exact `Main.java` target and entrypoint.
+2. Add `java.runtime` with `mode: "final"` and `depends_on` pointing to the compile stage.
+3. Use empty `rules`; the Beginner profile does not expose packages, dependencies, classpaths, or compiler plugins.
+4. Put only constrained CLI fields in `checks`: `kind`, optional `args` and `timeoutMs`, then `expect.exitCode` plus at least one stdout or stderr assertion.
+
+The orchestrator never runs `java.runtime` during live validation, even when a
+bad contract marks it as `both`. The code validator owns the fixed `javac` and
+`java` commands. See `docs/examples/java-cli-runtime.json`.
