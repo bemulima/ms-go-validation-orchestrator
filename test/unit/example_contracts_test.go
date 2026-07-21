@@ -154,6 +154,31 @@ func TestKotlinRuntimeExampleUsesLiveCompileAndFinalRuntime(t *testing.T) {
 	}
 }
 
+func TestPHPExampleUsesLiveAndFinalStaticValidation(t *testing.T) {
+	t.Parallel()
+
+	data, err := os.ReadFile(filepath.Join("..", "..", "docs", "examples", "php-single-file.json"))
+	if err != nil {
+		t.Fatalf("read PHP example: %v", err)
+	}
+
+	var contract domain.ValidationContract
+	if err := json.Unmarshal(data, &contract); err != nil {
+		t.Fatalf("unmarshal PHP example: %v", err)
+	}
+	if len(contract.Stages) != 1 {
+		t.Fatalf("expected one PHP stage, got %d", len(contract.Stages))
+	}
+
+	stage := contract.Stages[0]
+	if stage.Engine != "php.core" || stage.Mode != domain.ValidationModeBoth {
+		t.Fatalf("expected php.core in both mode, got %+v", stage)
+	}
+	if len(stage.Targets.Files) != 1 || stage.Targets.Files[0] != "index.php" {
+		t.Fatalf("expected single index.php target, got %+v", stage.Targets)
+	}
+}
+
 func validateContractInvariants(t *testing.T, name string, contract domain.ValidationContract) {
 	t.Helper()
 
