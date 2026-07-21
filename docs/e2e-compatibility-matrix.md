@@ -63,7 +63,10 @@ Read it together with:
 | `html.dom` + `css.ast` + `js.ast` | Supported | Supported | Supported | Supported | Supported | Use links only for light workspace assertions |
 | `html.dom` + `scss.ast` + `ts.ast` | Supported | Supported | Supported | Supported | Partial | Depends on SCSS subset and task rule design |
 | `html.dom` + Bootstrap + jQuery | Supported | Supported | Supported | Supported | Partial | Implement with profiles plus browser/runtime only when needed |
-| `html.dom` + `css.ast` + `browser.runtime` | Supported | Task-dependent | Supported | Supported | Partial | Requires Playwright-compatible browser and careful runtime scope |
+| `html.dom` + `js.ast` + `browser.runtime` text input | Supported | Static only | Supported | Supported | Supported | Final browser stage checks non-empty and empty values plus visible feedback |
+| `html.dom` + `js.ast` + `browser.runtime` form submit | Supported | Static only | Supported | Supported | Supported | Offline response sequence proves pending, success/error, and exact request count |
+| `html.dom` + `ts.ast` + `browser.runtime` text/form | Supported | Static only | Supported | Supported | Supported | Final browser stage compiles `app.ts` to generated `app.js`; no custom build commands |
+| `html.dom` + `css.ast` + `browser.runtime` | Supported | Static only | Supported | Supported | Partial | Other browser behaviors remain limited to the documented interaction/assertion subset |
 
 ## Backend and framework tasks
 
@@ -110,10 +113,11 @@ Start production rollout with these task families:
 - `node.express` + `http.runtime`
 - `html.dom` + `css.ast`
 - `html.dom` + `css.ast` + `js.ast`
+- browser text input and form submission with live static prerequisites
 
 Hold these behind stricter rollout gates:
 
-- `browser.runtime`
+- undocumented `browser.runtime` behaviors outside the input/form/click/style subset
 - `nextjs.app`
 - `node.nest`
 - `php.core` composites
