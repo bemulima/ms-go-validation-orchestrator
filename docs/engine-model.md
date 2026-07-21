@@ -40,6 +40,7 @@ Each engine validates one technology concern:
 - `react.ast`
 - `js.ast`
 - `ts.ast`
+- `ts.runtime`
 - `node.express`
 - `node.fastify`
 - `node.nest`
@@ -107,6 +108,11 @@ Or:
 - `python.django`
 - `python.django.runtime`
 
+Or, for a beginner TypeScript CLI task:
+
+- `ts.ast` in `both` mode
+- `ts.runtime` in `final` mode, depending on `ts.ast`
+
 ### Fullstack task
 
 - backend or framework stage
@@ -165,6 +171,7 @@ Examples:
 
 - `html.dom`, `css.ast`, `react.ast` are usually `both`
 - `http.runtime` is usually `final`
+- `ts.runtime` is always final-only; the orchestrator skips it for live requests regardless of the authored stage mode
 - `python.django.runtime`, `go.gin.runtime`, `go.echo.runtime`, `php.laravel.runtime`, `php.symfony.runtime`, `php.yii2.runtime`, and `php.yii3.runtime` are usually `final`
 - `nextjs.app` is currently used as `final`
 - `browser.runtime` can be `final` or `both` depending on task cost

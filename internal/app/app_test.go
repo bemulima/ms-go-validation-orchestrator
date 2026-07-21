@@ -29,6 +29,28 @@ func TestBuildEngineClientsRegistersPHPFrameworkHooks(t *testing.T) {
 	}
 }
 
+func TestBuildEngineClientsRegistersTypeScriptRuntime(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.Config{
+		Engines: config.EngineEndpoints{
+			Node: "http://ms-node-validator:8080",
+		},
+	}
+
+	clients := buildEngineClients(cfg, engines.NewHTTPClient(0))
+	ids := make(map[string]struct{}, len(clients))
+	for _, client := range clients {
+		ids[client.EngineID()] = struct{}{}
+	}
+
+	for _, engineID := range []string{"ts.ast", "ts.runtime"} {
+		if _, ok := ids[engineID]; !ok {
+			t.Fatalf("expected engine hook %s to be registered", engineID)
+		}
+	}
+}
+
 func TestBuildEngineClientsRegistersGitAndDockerHooks(t *testing.T) {
 	t.Parallel()
 

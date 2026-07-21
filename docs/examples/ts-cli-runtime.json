@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "typescript-runtime",
+  "profiles": ["typescript", "typescript-runtime"],
+  "workspace": {
+    "required_files": ["src/main.ts"]
+  },
+  "stages": [
+    {
+      "id": "typescript-static",
+      "name": "TypeScript static checks",
+      "engine": "ts.ast",
+      "language": "ts",
+      "mode": "both",
+      "targets": {
+        "files": ["src/main.ts"],
+        "entrypoint": "src/main.ts"
+      },
+      "rules": {
+        "requiredDependencies": [],
+        "forbiddenGlobals": ["document"],
+        "maxFileSizeKb": 64
+      }
+    },
+    {
+      "id": "typescript-runtime",
+      "name": "TypeScript CLI behavior",
+      "engine": "ts.runtime",
+      "language": "ts",
+      "mode": "final",
+      "depends_on": ["typescript-static"],
+      "targets": {
+        "files": ["src/main.ts"],
+        "entrypoint": "src/main.ts"
+      },
+      "checks": {
+        "kind": "cli",
+        "args": [],
+        "timeoutMs": 3000,
+        "expect": {
+          "exitCode": 0,
+          "stdoutEquals": "Hello, Ada!\n"
+        }
+      }
+    }
+  ]
+}

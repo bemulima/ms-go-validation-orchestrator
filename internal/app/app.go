@@ -80,6 +80,7 @@ func buildEngineClients(
 			engineClients,
 			engines.NewNodeClient(cfg.Engines.Node, httpClient, "js.ast"),
 			engines.NewNodeClient(cfg.Engines.Node, httpClient, "ts.ast"),
+			engines.NewNodeClient(cfg.Engines.Node, httpClient, "ts.runtime"),
 			engines.NewNodeClient(cfg.Engines.Node, httpClient, "node.express"),
 			engines.NewNodeClient(cfg.Engines.Node, httpClient, "node.fastify"),
 			engines.NewNodeClient(cfg.Engines.Node, httpClient, "node.nest"),

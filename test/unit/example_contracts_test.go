@@ -49,6 +49,39 @@ func TestExampleContractsAreWellFormed(t *testing.T) {
 	}
 }
 
+func TestTypeScriptRuntimeExampleUsesLiveStaticAndFinalRuntime(t *testing.T) {
+	t.Parallel()
+
+	data, err := os.ReadFile(filepath.Join("..", "..", "docs", "examples", "ts-cli-runtime.json"))
+	if err != nil {
+		t.Fatalf("read TypeScript runtime example: %v", err)
+	}
+
+	var contract domain.ValidationContract
+	if err := json.Unmarshal(data, &contract); err != nil {
+		t.Fatalf("unmarshal TypeScript runtime example: %v", err)
+	}
+	if len(contract.Stages) != 2 {
+		t.Fatalf("expected two TypeScript stages, got %d", len(contract.Stages))
+	}
+
+	staticStage := contract.Stages[0]
+	runtimeStage := contract.Stages[1]
+	if staticStage.Engine != "ts.ast" || staticStage.Mode != domain.ValidationModeBoth {
+		t.Fatalf("expected ts.ast in both mode, got %+v", staticStage)
+	}
+	if runtimeStage.Engine != "ts.runtime" || runtimeStage.Mode != domain.ValidationModeFinal {
+		t.Fatalf("expected ts.runtime in final mode, got %+v", runtimeStage)
+	}
+	if len(runtimeStage.DependsOn) != 1 || runtimeStage.DependsOn[0] != staticStage.ID {
+		t.Fatalf("expected runtime to depend on static stage, got %+v", runtimeStage.DependsOn)
+	}
+	if !strings.Contains(string(runtimeStage.Checks), `"kind": "cli"`) ||
+		!strings.Contains(string(runtimeStage.Checks), `"stdoutEquals"`) {
+		t.Fatalf("expected constrained CLI behavioral checks, got %s", runtimeStage.Checks)
+	}
+}
+
 func validateContractInvariants(t *testing.T, name string, contract domain.ValidationContract) {
 	t.Helper()
 
