@@ -66,7 +66,7 @@ Required checks:
 
 Success criteria:
 
-- reference tasks exist for HTML, CSS, JS, TS, React, Express, Next.js, PHP foundation, and composites
+- reference tasks exist for HTML, CSS, JS, TS, Java 21 CLI, React, Express, Next.js, PHP foundation, and composites
 - seed validation scripts pass in CI/local verification
 
 ## Phase 3. Final validation rollout
@@ -81,6 +81,8 @@ Recommended first stacks:
 - `css.ast`
 - `js.ast`
 - `ts.ast`
+- `java.compile`
+- `java.compile` + `java.runtime`
 - `react.ast`
 - `node.express`
 - `html.dom` + `css.ast`
@@ -111,6 +113,7 @@ Recommended live stage families:
 - `react.ast`
 - `js.ast`
 - `ts.ast`
+- `java.compile`
 - `node.express`
 - `node.fastify`
 - simple `workspace.*` links
@@ -118,6 +121,7 @@ Recommended live stage families:
 Keep final-only by default:
 
 - `http.runtime`
+- `java.runtime`
 - `php.core`
 - `nextjs.app`
 - `browser.runtime`
@@ -185,14 +189,15 @@ Success criteria:
 2. CSS / SCSS
 3. JS / TS
 4. React
-5. Express
-6. HTML + CSS
-7. HTML + CSS + JS
-8. Express + HTTP runtime
-9. Next.js
-10. Browser runtime tasks
-11. PHP core
-12. PHP framework families
+5. Java 21 CLI
+6. Express
+7. HTML + CSS
+8. HTML + CSS + JS
+9. Express + HTTP runtime
+10. Next.js
+11. Browser runtime tasks
+12. PHP core
+13. PHP framework families
 
 ## Rollback strategy
 

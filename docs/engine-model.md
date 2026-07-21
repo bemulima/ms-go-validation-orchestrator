@@ -62,6 +62,8 @@ Each engine validates one technology concern:
 - `go.core`
 - `go.gin`
 - `go.echo`
+- `java.compile`
+- `java.runtime`
 - `php.core`
 - `php.laravel`
 - `php.yii2`
@@ -112,6 +114,11 @@ Or, for a beginner TypeScript CLI task:
 
 - `ts.ast` in `both` mode
 - `ts.runtime` in `final` mode, depending on `ts.ast`
+
+Or, for a Beginner Java 21 CLI task:
+
+- `java.compile` in `both` mode
+- `java.runtime` in `final` mode, depending on `java.compile`
 
 ### Fullstack task
 
@@ -172,6 +179,7 @@ Examples:
 - `html.dom`, `css.ast`, `react.ast` are usually `both`
 - `http.runtime` is usually `final`
 - `ts.runtime` is always final-only; the orchestrator skips it for live requests regardless of the authored stage mode
+- `java.runtime` is always final-only; use `java.compile` for live compiler feedback
 - `python.django.runtime`, `go.gin.runtime`, `go.echo.runtime`, `php.laravel.runtime`, `php.symfony.runtime`, `php.yii2.runtime`, and `php.yii3.runtime` are usually `final`
 - `nextjs.app` is currently used as `final`
 - `browser.runtime` can be `final` or `both` depending on task cost

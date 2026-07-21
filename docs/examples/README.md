@@ -7,6 +7,7 @@ These examples show canonical `ValidationContractV1` payloads for the main task 
 - `js-single-file.json`
 - `ts-single-file.json`
 - `ts-cli-runtime.json`
+- `java-cli-runtime.json`
 - `php-single-file.json`
 - `react-component.json`
 - `express-route.json`
@@ -54,6 +55,7 @@ These examples show canonical `ValidationContractV1` payloads for the main task 
 Notes:
 
 - `ts-cli-runtime.json` is the canonical live-static/final-runtime TypeScript CLI pipeline. `ts.runtime` is never executed during live validation.
+- `java-cli-runtime.json` is the canonical live-compile/final-runtime Java 21 CLI pipeline. It is limited to dependency-free `Main.java` tasks.
 - `php-laravel-foundation.json`, `php-yii2-foundation.json`, `php-yii3-foundation.json`, and `php-symfony-foundation.json` are backed by a dedicated static framework validator. The matching `*-runtime.json` examples show how each framework is now composed with dedicated runtime engines on top of the same runtime service.
 - `php-css-js-foundation.json` is a foundation example for a future cross-stack task.
 - `nextjs-basic-foundation.json` and `browser-runtime-foundation.json` are now backed by dedicated engines, but they still intentionally cover only the currently implemented subset of checks.

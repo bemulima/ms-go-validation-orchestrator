@@ -15,7 +15,7 @@
 ## Stage fields
 
 - `id`: unique stage identifier.
-- `engine`: target engine, for example `html.dom`, `css.ast`, `react.ast`, `node.express`, `ts.runtime`, `php.core`.
+- `engine`: target engine, for example `html.dom`, `css.ast`, `react.ast`, `node.express`, `ts.runtime`, `java.compile`, `java.runtime`, `php.core`.
 - `language`: optional language hint.
 - `framework`: optional framework hint.
 - `mode`: `live`, `final`, or `both`.
@@ -27,6 +27,13 @@
 - `checks`: engine-specific runtime checks.
 
 For `ts.runtime`, `checks` uses the node validator's constrained CLI payload: `kind: "cli"`, optional `args` and `timeoutMs`, and `expect` with `exitCode` plus at least one stdout or stderr assertion. The engine is final-only at orchestration time. Pair it with a `ts.ast` stage in `both` mode when live static feedback is required.
+
+For Beginner Java 21 tasks, pair `java.compile` in `both` mode with
+`java.runtime` in `final` mode. Both stages target the exact dependency-free
+`Main.java` entrypoint. Runtime `checks` uses the same constrained CLI field
+shape as above, but commands, classpaths, JVM flags, packages, dependencies,
+and compiler plugins are not authorable. The orchestrator hard-gates
+`java.runtime` to final requests.
 
 ## Link fields
 

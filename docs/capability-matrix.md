@@ -32,6 +32,8 @@ This matrix shows what each engine supports today and where support is still int
 | `go.core` | Go AST checks for imports, functions, structs, interfaces, methods | Yes | Yes | Yes | Implemented |
 | `go.gin` | Gin route and group structure validation | Task-dependent | Yes | Yes | Implemented subset |
 | `go.echo` | Echo route and group structure validation | Task-dependent | Yes | Yes | Implemented subset |
+| `java.compile` | Dependency-free Java 21 `Main.java` compilation | Yes | Yes | Yes | Implemented |
+| `java.runtime` | Java 21 CLI exit code, stdout, and stderr | No | Yes | Yes | Implemented |
 | `db.postgres.schema` | PostgreSQL SQL schema validation from workspace files | Yes | Yes | Yes | Implemented subset |
 | `db.postgres.runtime` | PostgreSQL runtime queries with explicit DSN or auto-provisioned ephemeral DB | Task-dependent | Yes | Yes | Implemented |
 | `db.mysql.schema` | MySQL SQL schema validation from workspace files | Yes | Yes | Yes | Implemented subset |
@@ -82,11 +84,12 @@ This matrix shows what each engine supports today and where support is still int
 - `docker.dockerfile` and `docker.compose` are static validators today.
 - Docker runtime, build, and daemon-backed checks are intentionally out of scope for the first pass.
 
-## Python / Go
+## Python / Go / Java
 
 - `python.core`, `golang`, and `go.core` are AST-based validators.
 - `python.django`, `go.gin`, and `go.echo` validate framework structure.
 - `python.django.runtime`, `go.gin.runtime`, and `go.echo.runtime` add framework-aware runtime execution on top of `ms-go-http-runtime-validator`.
+- `java.compile` provides live compiler diagnostics for a single dependency-free `Main.java`; `java.runtime` adds final-only behavior checks and must depend on it.
 
 ## Databases
 
