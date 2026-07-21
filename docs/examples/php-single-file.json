@@ -12,7 +12,7 @@
       "name": "PHP core checks",
       "engine": "php.core",
       "language": "php",
-      "mode": "final",
+      "mode": "both",
       "targets": {
         "files": ["index.php"]
       },

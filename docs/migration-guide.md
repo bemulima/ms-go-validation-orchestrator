@@ -57,6 +57,8 @@ Some legacy semantics do not map one-to-one.
 
 - `php.core` migration is intentionally conservative
 - complex legacy PHP rules may require manual cleanup after migration
+- use `mode: "both"` for migrated syntax/token/structural checks when the task advertises live validation
+- keep output and other behavioral execution in a separate final-only runtime stage
 
 ## Old-to-new mapping overview
 

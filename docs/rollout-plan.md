@@ -117,6 +117,7 @@ Recommended live stage families:
 - `ts.ast`
 - `java.compile`
 - `kotlin.compile`
+- `php.core`
 - `node.express`
 - `node.fastify`
 - simple `workspace.*` links
@@ -126,7 +127,6 @@ Keep final-only by default:
 - `http.runtime`
 - `java.runtime`
 - `kotlin.runtime`
-- `php.core`
 - `nextjs.app`
 - `browser.runtime`
 

@@ -51,7 +51,7 @@ This matrix shows what each engine supports today and where support is still int
 | `search.elasticsearch.runtime` | Elasticsearch HTTP assertions against an explicit base URL or auto-provisioned node | Task-dependent | Yes | Yes | Implemented subset |
 | `search.manticore` | Manticore config validation and runtime SphinxQL assertions | Task-dependent | Yes | Yes | Implemented subset |
 | `search.sphinx` | Sphinx config validation and runtime SphinxQL assertions | Task-dependent | Yes | Yes | Implemented subset |
-| `php.core` | Syntax + simple structural PHP checks | No | Yes | Yes | Implemented |
+| `php.core` | Syntax + simple structural PHP checks | Yes | Yes | Yes | Implemented |
 | `nextjs.app` | App Router pages, layouts, API routes, client/server boundaries | No | Yes | Yes | Implemented subset |
 | `php.laravel` | Laravel workspace validation | Task-dependent | Yes | Yes | Implemented subset |
 | `php.yii2` | Yii2 workspace validation | Task-dependent | Yes | Yes | Implemented subset |
@@ -117,7 +117,8 @@ This matrix shows what each engine supports today and where support is still int
 
 ## PHP
 
-- `php.core` is still the most mature PHP engine.
+- `php.core` is still the most mature PHP engine. Its syntax, token, and structural checks are safe for `live` or `both` stages because the validator does not execute student code.
+- PHP output and other behavioral checks belong in a separate runtime stage with `mode: "final"`.
 - `php.laravel`, `php.yii2`, `php.yii3`, and `php.symfony` validate framework structure.
 - `php.laravel.runtime`, `php.symfony.runtime`, `php.yii2.runtime`, and `php.yii3.runtime` provide framework-aware runtime execution, but coverage is still a subset rather than full framework lifecycle validation.
 

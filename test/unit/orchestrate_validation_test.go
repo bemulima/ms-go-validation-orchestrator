@@ -187,6 +187,79 @@ func TestExecuteFiltersStagesByMode(t *testing.T) {
 	}
 }
 
+func TestExecutePHPStaticStageProvidesLiveDiagnostics(t *testing.T) {
+	t.Parallel()
+
+	contract := domain.ValidationContract{
+		Version: 1,
+		Kind:    "workspace_contract",
+		Stages: []domain.ValidationStage{
+			{ID: "php-static", Engine: "php.core", Mode: domain.ValidationModeBoth},
+		},
+	}
+	codeStructure, err := json.Marshal(contract)
+	if err != nil {
+		t.Fatalf("marshal contract: %v", err)
+	}
+
+	parser := usecase.NewContractParser(usecase.NewDefaultLegacyContractAdapter())
+	useCase := usecase.NewOrchestrateValidationUseCase(parser, []domain.EngineClient{
+		fakeEngine{id: "php.core", passed: false, message: "Class UserService is required."},
+	})
+	result, err := useCase.Execute(context.Background(), domain.ValidationRequest{
+		TaskID:        "task-php-live",
+		Mode:          domain.ValidationModeLive,
+		CodeStructure: codeStructure,
+		Workspace: domain.ValidationWorkspace{
+			Files: []domain.WorkspaceFile{{Path: "index.php", Content: "<?php echo 'draft';"}},
+		},
+	})
+	if err != nil {
+		t.Fatalf("execute live: %v", err)
+	}
+
+	if result.Passed || len(result.Stages) != 1 || result.Stages[0].StageID != "php-static" {
+		t.Fatalf("expected failing PHP live stage, got %+v", result)
+	}
+	if len(result.Errors) != 1 || result.Errors[0].Engine != "php.core" || result.Errors[0].Message == "" {
+		t.Fatalf("expected structured PHP live diagnostic, got %+v", result.Errors)
+	}
+}
+
+func TestExecuteSkipsFinalOnlyPHPStageDuringLiveValidation(t *testing.T) {
+	t.Parallel()
+
+	contract := domain.ValidationContract{
+		Version: 1,
+		Kind:    "workspace_contract",
+		Stages: []domain.ValidationStage{
+			{ID: "php-final", Engine: "php.core", Mode: domain.ValidationModeFinal},
+		},
+	}
+	codeStructure, err := json.Marshal(contract)
+	if err != nil {
+		t.Fatalf("marshal contract: %v", err)
+	}
+
+	calls := []string{}
+	parser := usecase.NewContractParser(usecase.NewDefaultLegacyContractAdapter())
+	useCase := usecase.NewOrchestrateValidationUseCase(parser, []domain.EngineClient{
+		trackingEngine{id: "php.core", passed: true, calls: &calls},
+	})
+	result, err := useCase.Execute(context.Background(), domain.ValidationRequest{
+		TaskID:        "task-php-final-only",
+		Mode:          domain.ValidationModeLive,
+		CodeStructure: codeStructure,
+	})
+	if err != nil {
+		t.Fatalf("execute live: %v", err)
+	}
+
+	if !result.Passed || len(calls) != 0 || len(result.Stages) != 0 {
+		t.Fatalf("expected final-only PHP stage to be skipped, calls=%v result=%+v", calls, result)
+	}
+}
+
 func TestExecuteTypeScriptCompositeByMode(t *testing.T) {
 	t.Parallel()
 
