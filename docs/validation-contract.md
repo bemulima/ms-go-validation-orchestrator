@@ -15,7 +15,7 @@
 ## Stage fields
 
 - `id`: unique stage identifier.
-- `engine`: target engine, for example `html.dom`, `css.ast`, `react.ast`, `node.express`, `ts.runtime`, `java.compile`, `java.runtime`, `php.core`.
+- `engine`: target engine, for example `html.dom`, `css.ast`, `react.ast`, `node.express`, `ts.runtime`, `java.compile`, `java.runtime`, `kotlin.compile`, `kotlin.runtime`, `php.core`.
 - `language`: optional language hint.
 - `framework`: optional framework hint.
 - `mode`: `live`, `final`, or `both`.
@@ -34,6 +34,13 @@ For Beginner Java 21 tasks, pair `java.compile` in `both` mode with
 shape as above, but commands, classpaths, JVM flags, packages, dependencies,
 and compiler plugins are not authorable. The orchestrator hard-gates
 `java.runtime` to final requests.
+
+For Beginner Kotlin 2.3.21/JDK 21 tasks, pair `kotlin.compile` in `both`
+mode with `kotlin.runtime` in `final` mode. Both stages target the exact
+dependency-free `Main.kt` entrypoint and use empty `rules`. Runtime `checks`
+uses the constrained CLI shape; packages, Gradle files, dependencies,
+compiler flags, custom commands, and custom classpaths are outside this
+profile. The orchestrator hard-gates `kotlin.runtime` to final requests.
 
 ## Link fields
 

@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "kotlin-2.3-jdk21-cli",
+  "profiles": ["kotlin", "kotlin-2.3-jdk21-cli"],
+  "workspace": {
+    "required_files": ["Main.kt"]
+  },
+  "stages": [
+    {
+      "id": "kotlin-compile",
+      "name": "Kotlin 2.3.21 compilation",
+      "engine": "kotlin.compile",
+      "language": "kotlin",
+      "mode": "both",
+      "targets": {
+        "files": ["Main.kt"],
+        "entrypoint": "Main.kt"
+      },
+      "rules": {}
+    },
+    {
+      "id": "kotlin-runtime",
+      "name": "Kotlin CLI behavior",
+      "engine": "kotlin.runtime",
+      "language": "kotlin",
+      "mode": "final",
+      "depends_on": ["kotlin-compile"],
+      "targets": {
+        "files": ["Main.kt"],
+        "entrypoint": "Main.kt"
+      },
+      "rules": {},
+      "checks": {
+        "kind": "cli",
+        "args": [],
+        "timeoutMs": 3000,
+        "expect": {
+          "exitCode": 0,
+          "stdoutEquals": "Hello, Ada!\n"
+        }
+      }
+    }
+  ]
+}
