@@ -26,6 +26,7 @@ This initial platform pass is intentionally conservative:
 - `search.manticore` and `search.sphinx` are now available when `CACHE_SEARCH_VALIDATOR_URL` points to `ms-go-cache-search-validator`.
 - generic backend `http.runtime` is now available when `HTTP_RUNTIME_VALIDATOR_URL` points to `ms-go-http-runtime-validator`.
 - final-only `ts.runtime` is available with `ts.ast` when `NODE_VALIDATOR_URL` points to a TypeScript-runtime-capable `ms-node-validator`.
+- live+final static `php.core` validation is available when `PHP_VALIDATOR_URL` points to `ms-go-php-validator`; behavioral PHP execution remains a separate final-only concern.
 
 ## Configuration
 

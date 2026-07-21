@@ -148,3 +148,19 @@ and authoritative behavioral validation on Submit:
 The orchestrator never runs `kotlin.runtime` during live validation, even when
 a bad contract marks it as `both`. See
 `docs/examples/kotlin-cli-runtime.json` for the canonical contract.
+
+## PHP static and runtime split
+
+For a PHP sandbox task that needs immediate syntax or structural feedback and
+authoritative behavioral validation on Submit:
+
+1. Add `php.core` with `mode: "both"` so the same prerequisite is available during Live and Submit.
+2. Target the exact PHP file and keep syntax, token, and structural requirements in `rules`.
+3. Put output, HTTP, or other behavioral execution in a separate runtime stage with `mode: "final"` and `depends_on` pointing to the static stage.
+
+`php.core` runs `php -l` and static analyzers but never executes student code.
+This makes it suitable for live editor feedback; it is not a replacement for a
+final runtime assertion. See `docs/examples/php-single-file.json` for the
+single-stage form and `docs/examples/php-css-js-foundation.json` for a
+composite static contract. A standalone static stage may use `mode: "live"`,
+but a final stage cannot depend on a live-only prerequisite.

@@ -188,6 +188,7 @@ Examples:
 - `ts.runtime` is always final-only; the orchestrator skips it for live requests regardless of the authored stage mode
 - `java.runtime` is always final-only; use `java.compile` for live compiler feedback
 - `kotlin.runtime` is always final-only; use `kotlin.compile` for live compiler feedback
+- `php.core` is safe in `live` or `both` mode for syntax, token, and structural checks; it does not execute student code
 - `python.django.runtime`, `go.gin.runtime`, `go.echo.runtime`, `php.laravel.runtime`, `php.symfony.runtime`, `php.yii2.runtime`, and `php.yii3.runtime` are usually `final`
 - `nextjs.app` is currently used as `final`
 - `browser.runtime` can be `final` or `both` depending on task cost

@@ -22,6 +22,7 @@ Read it together with:
 | `VALIDATION_ORCHESTRATOR_URL` in `ms-go-sandbox` | Routes live validation of `ValidationContractV1` tasks through `ms-go-validation-orchestrator` |
 | `NODE_VALIDATOR_URL` in orchestrator | Enables `ts.ast`, final-only `ts.runtime`, and Node framework engines |
 | `CODE_VALIDATOR_URL` in orchestrator | Enables Go engines plus Java/Kotlin compile and final-only runtime engines; legacy `GO_CODE_VALIDATOR_URL` remains a fallback |
+| `PHP_VALIDATOR_URL` in orchestrator | Enables live+final static `php.core` validation through `ms-go-php-validator` |
 | `NEXTJS_VALIDATOR_URL` in orchestrator | Enables `nextjs.app` execution |
 | `BROWSER_RUNTIME_VALIDATOR_URL` in orchestrator | Enables `browser.runtime` execution |
 | `PHP_FRAMEWORK_VALIDATOR_URL` in orchestrator | Reserved for future framework-aware PHP engines |
@@ -50,7 +51,7 @@ Read it together with:
 | `ts.ast` + `ts.runtime` CLI | Supported | Static only | Supported | Supported | Supported | Runtime is hard-gated to explicit final requests and requires a runtime-capable node validator |
 | `java.compile` + `java.runtime` CLI | Supported | Compile only | Supported | Supported | Supported | Dependency-free Java 21 `Main.java`; runtime is hard-gated to explicit final requests |
 | `kotlin.compile` + `kotlin.runtime` CLI | Supported | Compile only | Supported | Supported | Supported | Dependency-free Kotlin 2.3.21/JDK 21 `Main.kt`; runtime is hard-gated to explicit final requests |
-| `php.core` single-file | Supported | No | Supported | Supported | Partial | Final-ready engine; not intended for live |
+| `php.core` single-file | Supported | Supported | Supported | Supported | Supported | Static syntax, token, and structural checks; no student-code execution |
 | `react.ast` component | Supported | Supported | Supported | Supported | Supported | Best for component-level tasks |
 | `nextjs.app` single workspace | Supported | No | Supported | Supported | Partial | Requires `NEXTJS_VALIDATOR_URL` |
 
@@ -73,7 +74,7 @@ Read it together with:
 | `node.fastify` only | Supported | Supported | Supported | Supported | Supported | Same execution model as Express |
 | `node.nest` only | Supported | Supported | Supported | Supported | Partial | Current structure subset is usable but not exhaustive |
 | `react.ast` + `nextjs.app` | Supported | Partial | Supported | Supported | Partial | Use `react.ast` for component rules and `nextjs.app` for workspace rules |
-| `php.core` + `css.ast` + `js.ast` | Supported | Partial | Supported | Supported | Partial | Good foundation pattern for mixed beginner fullstack tasks |
+| `php.core` + `css.ast` + `js.ast` | Supported | Supported | Supported | Supported | Partial | All three static stages can run live; behavioral runtime stages remain final-only |
 | `php.laravel` | Supported | No | No | Supported | Foundation | Contract and authoring ready; no real framework engine yet |
 | `php.yii2` | Supported | No | No | Supported | Foundation | Contract and authoring ready; no real framework engine yet |
 | `php.yii3` | Supported | No | No | Supported | Foundation | Contract and authoring ready; no real framework engine yet |
@@ -103,6 +104,7 @@ Start production rollout with these task families:
 - `ts.ast` + `ts.runtime`
 - `java.compile` + `java.runtime`
 - `kotlin.compile` + `kotlin.runtime`
+- `php.core`
 - `react.ast`
 - `node.express`
 - `node.express` + `http.runtime`

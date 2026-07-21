@@ -42,6 +42,11 @@ uses the constrained CLI shape; packages, Gradle files, dependencies,
 compiler flags, custom commands, and custom classpaths are outside this
 profile. The orchestrator hard-gates `kotlin.runtime` to final requests.
 
+For `php.core`, `rules` contain syntax, token, and structural assertions for a
+single PHP target. The engine does not execute student code and may use
+`mode: "live"` or `mode: "both"`. Output and other behavioral assertions must
+use a separate runtime engine in `mode: "final"`.
+
 ## Link fields
 
 - `id`: unique link identifier.
