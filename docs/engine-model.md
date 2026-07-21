@@ -191,7 +191,7 @@ Examples:
 - `php.core` is safe in `live` or `both` mode for syntax, token, and structural checks; it does not execute student code
 - `python.django.runtime`, `go.gin.runtime`, `go.echo.runtime`, `php.laravel.runtime`, `php.symfony.runtime`, `php.yii2.runtime`, and `php.yii3.runtime` are usually `final`
 - `nextjs.app` is currently used as `final`
-- `browser.runtime` can be `final` or `both` depending on task cost
+- `browser.runtime` is final-only; pair it with live/both HTML and JS/TS static stages
 - `git.core` is currently most reliable in sandbox-backed `final` mode because it needs a real `.git`
 - `docker.dockerfile` and `docker.compose` are usually `both`
 - `python.core`, `golang`, and `go.core` are usually `both`

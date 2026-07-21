@@ -149,6 +149,34 @@ The orchestrator never runs `kotlin.runtime` during live validation, even when
 a bad contract marks it as `both`. See
 `docs/examples/kotlin-cli-runtime.json` for the canonical contract.
 
+## Browser input and form runtime
+
+Browser behavior is final-only. Pair `browser.runtime` with `html.dom` plus
+`js.ast` or `ts.ast` in `both` mode so Live can return static feedback without
+setting the authoritative behavioral result.
+
+The supported interaction actions are `click`, `fill`, `type`, `submit`, and
+the legacy `input` alias for `fill`. Every interaction must assert an
+observable class, text, exact input value, or ordered text transition. Text
+input tasks should exercise both non-empty and empty values.
+
+Form tasks declare exact offline `networkMocks` with a method, deterministic
+response sequence, optional short delay, and `expectedRequests`. Use
+`expectTextSequence` to observe pending followed by success or error. The
+request count rejects missing and duplicate submission handlers; undeclared
+external HTTP(S) requests are blocked by the validator.
+
+For TypeScript browser tasks, add the constrained build only:
+
+```json
+{"kind":"typescript","entrypoint":"app.ts","output":"app.js"}
+```
+
+The generated JavaScript file is not a student file. Custom shell commands,
+compiler flags, imports, packages, and dependency installation are outside the
+Beginner browser profile. See `docs/examples/browser-runtime-foundation.json`
+and `docs/examples/browser-form-runtime.json`.
+
 ## PHP static and runtime split
 
 For a PHP sandbox task that needs immediate syntax or structural feedback and

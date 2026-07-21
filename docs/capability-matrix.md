@@ -22,7 +22,7 @@ This matrix shows what each engine supports today and where support is still int
 | `php.symfony.runtime` | Symfony runtime boot + HTTP assertions | No | Yes | Yes | Implemented subset |
 | `php.yii2.runtime` | Yii2 runtime boot + HTTP assertions | No | Yes | Yes | Implemented subset |
 | `php.yii3.runtime` | Yii3 runtime boot + HTTP assertions | No | Yes | Yes | Implemented subset |
-| `browser.runtime` | DOM interactions and computed styles in real browser | Task-dependent | Yes | Yes | Implemented subset |
+| `browser.runtime` | Click/input/form interactions, offline responses, ordered visible states, exact values, and computed styles | No | Yes | Yes | Implemented subset |
 | `git.core` | Branch, clean state, tracked/ignored files, tags, commits | Sandbox-dependent | Yes | Yes | Implemented subset |
 | `docker.dockerfile` | Static Dockerfile instruction validation | Yes | Yes | Yes | Implemented |
 | `docker.compose` | Static Docker Compose structure validation | Yes | Yes | Yes | Implemented |
@@ -64,8 +64,9 @@ This matrix shows what each engine supports today and where support is still int
 ## HTML / CSS / Browser
 
 - `html.dom` and `css.ast` are the main building blocks for frontend composites.
-- `browser.runtime` is used when the task depends on actual DOM behavior or computed styles.
+- `browser.runtime` is used when the task depends on actual DOM behavior or computed styles. Its production subset includes non-empty/empty input, form submit, deterministic success/error responses, pending/result transitions, request counts, and constrained TypeScript browser compilation.
 - `browser.runtime` should not replace `html.dom` or `css.ast`; it complements them.
+- Keep `browser.runtime` final-only. Use `html.dom`, `js.ast`, or `ts.ast` for Live feedback.
 
 ## React / Next.js
 

@@ -47,6 +47,14 @@ single PHP target. The engine does not execute student code and may use
 `mode: "live"` or `mode: "both"`. Output and other behavioral assertions must
 use a separate runtime engine in `mode: "final"`.
 
+For `browser.runtime`, use `mode: "final"`. `checks.interactions` supports
+`click`, `input`, `fill`, `type`, and `submit`, with class, text, exact value,
+or ordered text-transition assertions. `checks.networkMocks` provides exact
+offline response sequences and request counts. TypeScript tasks may use only
+the constrained `checks.build` shape with `kind: "typescript"`, a relative
+`.ts` entrypoint, and a generated `.js` output. Pair the stage with live/both
+`html.dom` and `js.ast` or `ts.ast` prerequisites.
+
 ## Link fields
 
 - `id`: unique link identifier.

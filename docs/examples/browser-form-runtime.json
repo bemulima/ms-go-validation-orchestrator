@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "kind": "workspace_contract",
+  "profile": "browser-form-typescript",
+  "profiles": ["html5", "typescript", "browser-runtime"],
+  "workspace": {
+    "required_files": ["index.html", "app.ts"]
+  },
+  "stages": [
+    {
+      "id": "html",
+      "engine": "html.dom",
+      "language": "html",
+      "mode": "both",
+      "targets": {
+        "files": ["index.html"]
+      },
+      "rules": {
+        "version": 2,
+        "body": {
+          "roots": [
+            {
+              "tag": { "value": "form" },
+              "attributes": [{ "name": "id", "value": "profile-form" }],
+              "children": [
+                {
+                  "tag": { "value": "input" },
+                  "attributes": [{ "name": "id", "value": "email" }]
+                },
+                { "tag": { "value": "button" } }
+              ]
+            },
+            {
+              "tag": { "value": "p" },
+              "attributes": [{ "name": "id", "value": "status" }]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "typescript",
+      "engine": "ts.ast",
+      "language": "ts",
+      "mode": "both",
+      "depends_on": ["html"],
+      "targets": {
+        "files": ["app.ts"],
+        "entrypoint": "app.ts"
+      },
+      "rules": {
+        "requiredDependencies": [],
+        "maxFileSizeKb": 32
+      }
+    },
+    {
+      "id": "browser-runtime",
+      "name": "Form submission behavior",
+      "engine": "browser.runtime",
+      "language": "ts",
+      "mode": "final",
+      "depends_on": ["html", "typescript"],
+      "targets": {
+        "files": ["index.html", "app.ts"],
+        "entrypoint": "index.html"
+      },
+      "checks": {
+        "build": {
+          "kind": "typescript",
+          "entrypoint": "app.ts",
+          "output": "app.js"
+        },
+        "networkMocks": [
+          {
+            "url": "https://api.example.test/profile",
+            "method": "POST",
+            "expectedRequests": 2,
+            "responses": [
+              {
+                "status": 200,
+                "contentType": "application/json",
+                "body": "{\"message\":\"Profile saved\"}",
+                "delayMs": 75
+              },
+              {
+                "status": 422,
+                "contentType": "application/json",
+                "body": "{\"message\":\"Email is already registered\"}",
+                "delayMs": 75
+              }
+            ]
+          }
+        ],
+        "interactions": [
+          {
+            "selector": "#email",
+            "action": "fill",
+            "value": "ada@example.test",
+            "expectValue": { "value": "ada@example.test" }
+          },
+          {
+            "selector": "#profile-form",
+            "action": "submit",
+            "expectTextSequence": [
+              { "selector": "#status", "value": "Saving" },
+              { "selector": "#status", "value": "Profile saved" }
+            ]
+          },
+          {
+            "selector": "#email",
+            "action": "fill",
+            "value": "taken@example.test",
+            "expectValue": { "value": "taken@example.test" }
+          },
+          {
+            "selector": "#profile-form",
+            "action": "submit",
+            "expectTextSequence": [
+              { "selector": "#status", "value": "Saving" },
+              { "selector": "#status", "value": "Email is already registered" }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "links": []
+}

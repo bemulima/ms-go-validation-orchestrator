@@ -179,6 +179,34 @@ func TestPHPExampleUsesLiveAndFinalStaticValidation(t *testing.T) {
 	}
 }
 
+func TestBrowserFormExampleUsesLiveStaticAndFinalBehavior(t *testing.T) {
+	t.Parallel()
+
+	data, err := os.ReadFile(filepath.Join("..", "..", "docs", "examples", "browser-form-runtime.json"))
+	if err != nil {
+		t.Fatalf("read browser form example: %v", err)
+	}
+
+	var contract domain.ValidationContract
+	if err := json.Unmarshal(data, &contract); err != nil {
+		t.Fatalf("unmarshal browser form example: %v", err)
+	}
+	if len(contract.Stages) != 3 {
+		t.Fatalf("expected HTML, TypeScript, and browser stages, got %d", len(contract.Stages))
+	}
+
+	runtimeStage := contract.Stages[2]
+	if runtimeStage.Engine != "browser.runtime" || runtimeStage.Mode != domain.ValidationModeFinal {
+		t.Fatalf("expected final browser.runtime stage, got %+v", runtimeStage)
+	}
+	checks := string(runtimeStage.Checks)
+	for _, required := range []string{`"kind": "typescript"`, `"networkMocks"`, `"expectedRequests"`, `"submit"`, `"expectTextSequence"`} {
+		if !strings.Contains(checks, required) {
+			t.Fatalf("expected browser form checks to contain %s, got %s", required, checks)
+		}
+	}
+}
+
 func validateContractInvariants(t *testing.T, name string, contract domain.ValidationContract) {
 	t.Helper()
 

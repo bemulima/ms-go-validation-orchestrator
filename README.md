@@ -150,7 +150,7 @@ go test ./... -count=1
 - Cross-stage links are intentionally minimal in this platform pass.
 - `php.laravel`, `php.yii2`, `php.yii3`, and `php.symfony` are now backed by a dedicated static workspace validator, but they still cover a limited subset of framework checks.
 - `nextjs.app` requires `ms-ts-nextjs-validator`.
-- `browser.runtime` requires `ms-ts-browser-runtime-validator` and a Playwright-compatible browser.
+- `browser.runtime` requires `ms-ts-browser-runtime-validator` and a Playwright-compatible browser. The supported final-only subset covers click, non-empty/empty input, form submit with offline success/error responses, ordered visible states, request counts, computed styles, and constrained TypeScript browser compilation.
 - `git.core` requires `workspace.root_path` with a real `.git` repository; JSON file snapshots alone are not enough.
 - `docker.dockerfile` and `docker.compose` are static-only in this first pass; they do not run Docker builds or compose stacks.
 - `db.postgres.runtime` and `db.mysql.runtime` can auto-provision ephemeral databases when the DB validator has Docker access. Explicit DSN is still supported.

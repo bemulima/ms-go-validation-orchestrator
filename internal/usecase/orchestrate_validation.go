@@ -115,7 +115,7 @@ func filterStagesByMode(stages []domain.ValidationStage, mode string) []domain.V
 
 func isFinalOnlyEngine(engine string) bool {
 	switch engine {
-	case "ts.runtime", "java.runtime", "kotlin.runtime":
+	case "ts.runtime", "java.runtime", "kotlin.runtime", "browser.runtime":
 		return true
 	default:
 		return false

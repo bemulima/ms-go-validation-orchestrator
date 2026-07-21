@@ -14,6 +14,7 @@ These examples show canonical `ValidationContractV1` payloads for the main task 
 - `express-route.json`
 - `nextjs-basic-foundation.json`
 - `browser-runtime-foundation.json`
+- `browser-form-runtime.json`
 - `git-core-basic.json`
 - `docker-dockerfile-basic.json`
 - `docker-compose-basic.json`
@@ -59,9 +60,11 @@ Notes:
 - `java-cli-runtime.json` is the canonical live-compile/final-runtime Java 21 CLI pipeline. It is limited to dependency-free `Main.java` tasks.
 - `kotlin-cli-runtime.json` is the canonical live-compile/final-runtime Kotlin 2.3.21/JDK 21 CLI pipeline. It is limited to dependency-free `Main.kt` tasks.
 - `php-single-file.json` uses `php.core` in `both` mode for live+final static checks. PHP behavioral execution belongs in a separate final-only runtime stage.
+- `browser-runtime-foundation.json` is the canonical JavaScript text-input contract: live HTML/JS checks followed by final non-empty and empty browser interactions.
+- `browser-form-runtime.json` is the canonical TypeScript form contract: live HTML/TS checks, constrained `app.ts` compilation, offline success/error responses, ordered pending/result assertions, and an exact request count.
 - `php-laravel-foundation.json`, `php-yii2-foundation.json`, `php-yii3-foundation.json`, and `php-symfony-foundation.json` are backed by a dedicated static framework validator. The matching `*-runtime.json` examples show how each framework is now composed with dedicated runtime engines on top of the same runtime service.
 - `php-css-js-foundation.json` is a composite static example whose PHP, CSS, and JavaScript stages can all run live.
-- `nextjs-basic-foundation.json` and `browser-runtime-foundation.json` are now backed by dedicated engines, but they still intentionally cover only the currently implemented subset of checks.
+- `nextjs-basic-foundation.json` remains a focused framework subset; browser input and form examples cover the production-ready interaction subset of `browser.runtime`.
 - `git-core-basic.json` requires a real repository path at runtime. JSON file snapshots alone are not enough for full Git validation.
 - `python-django-runtime.json`, `go-gin-runtime.json`, and `go-echo-runtime.json` show how to compose framework structure validation with generic `http.runtime`.
 - `postgres-schema-basic.json`, `postgres-runtime-autoprovision.json`, and `mysql-runtime-basic.json` show the database validator family, including auto-provisioned runtime.
