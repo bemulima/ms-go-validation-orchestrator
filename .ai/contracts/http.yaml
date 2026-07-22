@@ -1,0 +1,27 @@
+schema_version: 1
+contracts:
+    - name: http_definition
+      value: ValidateRequest
+      confidence: 0.95
+      source_path: dto/validation.go
+      explanation: Semantic proposal with a verified repository quote. The DTO defines the principal fields accepted by the validation operation.
+    - name: http_definition
+      value: ValidationResultV1
+      confidence: 0.95
+      source_path: internal/domain/result.go
+      explanation: Semantic proposal with a verified repository quote. The domain type defines the normalized validation result shape.
+    - name: http_route
+      value: GET /health
+      confidence: 0.72
+      source_path: transport/http/internal/router.go
+      explanation: An unrestricted net/http health handler exposes the conventional GET health operation.
+    - name: http_route
+      value: GET /internal/health
+      confidence: 0.9059838515927332
+      source_path: transport/http/internal/router.go
+      explanation: Semantic proposal with a verified repository quote. The internal router exposes a health handler.
+    - name: http_route
+      value: POST /api/v1/validate
+      confidence: 0.95
+      source_path: transport/http/api/v1/router.go
+      explanation: Semantic proposal with a verified repository quote. The API router registers the validation endpoint.
