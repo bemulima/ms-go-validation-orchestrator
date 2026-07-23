@@ -1,0 +1,22 @@
+schema_version: 1
+commands:
+    - name: format
+      run: task fmt
+      source_path: README.md
+      confidence: 0.95
+    - name: run_service
+      run: go run ./cmd/ms-go-validation-orchestrator
+      source_path: README.md
+      confidence: 0.95
+    - name: task_run
+      run: task run
+      source_path: README.md
+      confidence: 0.95
+    - name: task_test
+      run: task test
+      source_path: README.md
+      confidence: 0.95
+    - name: test_all
+      run: go test ./... -count=1
+      source_path: README.md
+      confidence: 0.95

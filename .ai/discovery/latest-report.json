@@ -1,0 +1,672 @@
+{
+  "schema_version": 9,
+  "project_id": "0574eb7d-9c1e-485f-94e1-45a19782ebef",
+  "project_name": "ms-go-validation-orchestrator",
+  "repository_role": "service",
+  "repository_path": ".",
+  "commit_sha": "17a33f0eaf54e7ada109d54425e99c6e67da168b",
+  "branch": "main",
+  "is_dirty": false,
+  "content_checksum": "9f99403e149f481e438cedc6aab1fde74044883e992e8e17499a542997dccbaf",
+  "started_at": "2026-07-22T19:14:32.941596043Z",
+  "completed_at": "2026-07-22T19:14:32.952402918Z",
+  "inventory": {
+    "files_visited": 113,
+    "files_analyzed": 112,
+    "bytes_analyzed": 272396,
+    "content_checksum": "9f99403e149f481e438cedc6aab1fde74044883e992e8e17499a542997dccbaf",
+    "truncated": false,
+    "excluded_paths": 1,
+    "skipped_large_files": 0
+  },
+  "facts": [
+    {
+      "category": "business_process",
+      "name": "orchestrate_validation",
+      "value": "Parse, filter, order, execute stages, then evaluate links",
+      "confidence": 0.95,
+      "source_path": "internal/usecase/orchestrate_validation.go",
+      "explanation": "Semantic proposal with a verified repository quote. Execution parses the contract, filters stages by mode, and orders them before running validation."
+    },
+    {
+      "category": "business_rule",
+      "name": "code_structure_required",
+      "value": "code_structure is required",
+      "confidence": 0.95,
+      "source_path": "internal/usecase/contract_parser.go",
+      "explanation": "Semantic proposal with a verified repository quote. A validation request without code_structure is rejected."
+    },
+    {
+      "category": "business_rule",
+      "name": "failed_stage_dependency",
+      "value": "Skip a stage after dependency failure",
+      "confidence": 0.95,
+      "source_path": "internal/usecase/orchestrate_validation.go",
+      "explanation": "Semantic proposal with a verified repository quote. A stage is skipped when one of its declared dependencies failed."
+    },
+    {
+      "category": "business_rule",
+      "name": "final_only_engines",
+      "value": "ts.runtime, java.runtime, kotlin.runtime, and browser.runtime execute only in final mode",
+      "confidence": 0.95,
+      "source_path": "internal/usecase/orchestrate_validation.go",
+      "explanation": "Semantic proposal with a verified repository quote. The implementation explicitly classifies these engines as final-only."
+    },
+    {
+      "category": "business_rule",
+      "name": "known_stage_dependency",
+      "value": "Stage dependencies must reference known stage ids",
+      "confidence": 0.95,
+      "source_path": "internal/usecase/orchestrate_validation.go",
+      "explanation": "Semantic proposal with a verified repository quote. Every stage dependency must resolve to another included stage."
+    },
+    {
+      "category": "business_rule",
+      "name": "legacy_contract_fallback",
+      "value": "Adapt non-V1 payloads through the legacy adapter",
+      "confidence": 0.95,
+      "source_path": "internal/usecase/contract_parser.go",
+      "explanation": "Semantic proposal with a verified repository quote. Payloads that do not satisfy the new format check are sent to the legacy adapter."
+    },
+    {
+      "category": "business_rule",
+      "name": "legacy_execution_unavailable",
+      "value": "Adapted legacy contracts return a compatibility error",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The README states the intended behavior for legacy execution."
+    },
+    {
+      "category": "business_rule",
+      "name": "required_link_failure",
+      "value": "A failed non-optional link fails the result",
+      "confidence": 0.95,
+      "source_path": "internal/usecase/orchestrate_validation.go",
+      "explanation": "Semantic proposal with a verified repository quote. Only failure of a non-optional link directly makes the overall result fail."
+    },
+    {
+      "category": "business_rule",
+      "name": "required_stage_failure",
+      "value": "A failed non-optional stage fails the result",
+      "confidence": 0.95,
+      "source_path": "internal/usecase/orchestrate_validation.go",
+      "explanation": "Semantic proposal with a verified repository quote. Only failure of a non-optional stage directly makes the overall result fail."
+    },
+    {
+      "category": "business_rule",
+      "name": "stage_identity_required",
+      "value": "Every stage requires an id and engine",
+      "confidence": 0.95,
+      "source_path": "internal/usecase/orchestrate_validation.go",
+      "explanation": "Semantic proposal with a verified repository quote. Each stage must identify itself and its engine."
+    },
+    {
+      "category": "business_rule",
+      "name": "unique_stage_id",
+      "value": "Stage identifiers must be unique",
+      "confidence": 0.95,
+      "source_path": "internal/usecase/orchestrate_validation.go",
+      "explanation": "Semantic proposal with a verified repository quote. Duplicate stage identifiers make the contract invalid."
+    },
+    {
+      "category": "capability",
+      "name": "business capability",
+      "value": "Evaluate file-content and selector-existence links",
+      "confidence": 0.95,
+      "source_path": "internal/usecase/link_validator.go",
+      "explanation": "Semantic proposal with a verified repository quote. The link evaluator implements two workspace assertion kinds."
+    },
+    {
+      "category": "capability",
+      "name": "business capability",
+      "value": "Orchestrate staged validation",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The README describes the end-to-end orchestration capability."
+    },
+    {
+      "category": "capability",
+      "name": "http_route",
+      "value": "GET /health",
+      "confidence": 0.72,
+      "source_path": "transport/http/internal/router.go",
+      "explanation": "An unrestricted net/http health handler exposes the conventional GET health operation."
+    },
+    {
+      "category": "capability",
+      "name": "http_route",
+      "value": "GET /internal/health",
+      "confidence": 0.9059838515927332,
+      "source_path": "transport/http/internal/router.go",
+      "explanation": "Semantic proposal with a verified repository quote. The internal router exposes a health handler."
+    },
+    {
+      "category": "capability",
+      "name": "http_route",
+      "value": "POST /api/v1/validate",
+      "confidence": 0.95,
+      "source_path": "transport/http/api/v1/router.go",
+      "explanation": "Semantic proposal with a verified repository quote. The API router registers the validation endpoint."
+    },
+    {
+      "category": "classification",
+      "name": "service_kind",
+      "value": "backend_service",
+      "confidence": 0.8,
+      "source_path": ".",
+      "explanation": "Detected runtime source or manifests identify a backend service, with no stronger specialized kind signal."
+    },
+    {
+      "category": "command",
+      "name": "format",
+      "value": "task fmt",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The README documents the formatting task command."
+    },
+    {
+      "category": "command",
+      "name": "run_service",
+      "value": "go run ./cmd/ms-go-validation-orchestrator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The README documents the direct service run command."
+    },
+    {
+      "category": "command",
+      "name": "task_run",
+      "value": "task run",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The README documents the Taskfile run command."
+    },
+    {
+      "category": "command",
+      "name": "task_test",
+      "value": "task test",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The README documents the Taskfile test command."
+    },
+    {
+      "category": "command",
+      "name": "test_all",
+      "value": "go test ./... -count=1",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The README documents the direct test command."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "BROWSER_RUNTIME_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "CACHE_SEARCH_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "CODE_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "CSS_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "DB_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "DOCKER_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "GIT_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "GO_CODE_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "HOST",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "HTML_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "HTTP_RUNTIME_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "LINUX_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "NEXTJS_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "NODE_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "PHP_FRAMEWORK_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "PHP_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "PORT",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "PYTHON_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "REACT_VALIDATOR_URL",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "configuration",
+      "name": "environment_key",
+      "value": "SERVICE_NAME",
+      "confidence": 0.95,
+      "source_path": ".env.example",
+      "explanation": "An environment example declares this key; values are intentionally not collected."
+    },
+    {
+      "category": "contract",
+      "name": "http_consume",
+      "value": "POST /api/v1/validate-node",
+      "confidence": 0.95,
+      "source_path": "internal/adapters/engines/node_client.go",
+      "explanation": "Semantic proposal with a verified repository quote. The Node engine adapter consumes this operation."
+    },
+    {
+      "category": "contract",
+      "name": "http_consume",
+      "value": "POST /api/v1/validate/rules",
+      "confidence": 0.95,
+      "source_path": "internal/adapters/engines/php_client.go",
+      "explanation": "Semantic proposal with a verified repository quote. The PHP engine adapter consumes this rules-validation operation."
+    },
+    {
+      "category": "contract",
+      "name": "http_consume",
+      "value": "POST /api/v1/validate",
+      "confidence": 0.95,
+      "source_path": "internal/adapters/engines/workspace_foundation_client.go",
+      "explanation": "Semantic proposal with a verified repository quote. The generic workspace engine adapter consumes this validator operation."
+    },
+    {
+      "category": "contract",
+      "name": "http_consume",
+      "value": "POST /validate",
+      "confidence": 0.95,
+      "source_path": "internal/adapters/engines/html_client.go",
+      "explanation": "Semantic proposal with a verified repository quote. The HTML engine adapter consumes this operation."
+    },
+    {
+      "category": "contract",
+      "name": "http_definition",
+      "value": "ValidateRequest",
+      "confidence": 0.95,
+      "source_path": "dto/validation.go",
+      "explanation": "Semantic proposal with a verified repository quote. The DTO defines the principal fields accepted by the validation operation."
+    },
+    {
+      "category": "contract",
+      "name": "http_definition",
+      "value": "ValidationResultV1",
+      "confidence": 0.95,
+      "source_path": "internal/domain/result.go",
+      "explanation": "Semantic proposal with a verified repository quote. The domain type defines the normalized validation result shape."
+    },
+    {
+      "category": "contract",
+      "name": "http_produce",
+      "value": "GET /health",
+      "confidence": 0.72,
+      "source_path": "transport/http/internal/router.go",
+      "explanation": "The service implementation provides this HTTP contract."
+    },
+    {
+      "category": "contract",
+      "name": "http_produce",
+      "value": "GET /internal/health",
+      "confidence": 0.9053980435053739,
+      "source_path": "transport/http/internal/router.go",
+      "explanation": "Semantic proposal with a verified repository quote. The internal router is mounted under /internal and produces this health operation."
+    },
+    {
+      "category": "contract",
+      "name": "http_produce",
+      "value": "POST /api/v1/validate",
+      "confidence": 0.95,
+      "source_path": "transport/http/api/v1/router.go",
+      "explanation": "Semantic proposal with a verified repository quote. The service produces this HTTP operation."
+    },
+    {
+      "category": "entity",
+      "name": "ValidationContractV1",
+      "value": "Versioned contract containing workspace, stages, and links",
+      "confidence": 0.95,
+      "source_path": "internal/domain/contract.go",
+      "explanation": "Semantic proposal with a verified repository quote. This type is the central validation contract entity."
+    },
+    {
+      "category": "entity",
+      "name": "ValidationLink",
+      "value": "Cross-stage workspace assertion",
+      "confidence": 0.95,
+      "source_path": "internal/domain/contract.go",
+      "explanation": "Semantic proposal with a verified repository quote. The domain model explicitly defines a cross-stage validation link."
+    },
+    {
+      "category": "entity",
+      "name": "ValidationStage",
+      "value": "Engine-backed validation stage",
+      "confidence": 0.95,
+      "source_path": "internal/domain/contract.go",
+      "explanation": "Semantic proposal with a verified repository quote. The domain model explicitly defines a validation stage."
+    },
+    {
+      "category": "infrastructure",
+      "name": "compose_service",
+      "value": "ms-go-validation-orchestrator",
+      "confidence": 0.96,
+      "source_path": "docker-compose.yml",
+      "explanation": "Docker Compose declares this service."
+    },
+    {
+      "category": "infrastructure",
+      "name": "dependency identifier",
+      "value": "Go 1.25.0",
+      "confidence": 0.95,
+      "source_path": "go.mod",
+      "explanation": "Semantic proposal with a verified repository quote. The module manifest declares Go 1.25.0."
+    },
+    {
+      "category": "infrastructure",
+      "name": "dependency identifier",
+      "value": "alpine:3.20",
+      "confidence": 0.95,
+      "source_path": "Dockerfile",
+      "explanation": "Semantic proposal with a verified repository quote. The runtime container is based on Alpine 3.20."
+    },
+    {
+      "category": "infrastructure",
+      "name": "dependency identifier",
+      "value": "golang:1.25-alpine",
+      "confidence": 0.95,
+      "source_path": "Dockerfile",
+      "explanation": "Semantic proposal with a verified repository quote. The container build uses a Go 1.25 Alpine build image."
+    },
+    {
+      "category": "infrastructure",
+      "name": "dependency identifier",
+      "value": "ms-net",
+      "confidence": 0.95,
+      "source_path": "docker-compose.yml",
+      "explanation": "Semantic proposal with a verified repository quote. Docker Compose attaches the service to an external network."
+    },
+    {
+      "category": "instruction",
+      "name": "instruction_file",
+      "value": "185314f18937de6dd189e3b1242c85d2c7dd6b0c6ac233652d421f5fbc715bca",
+      "confidence": 0.98,
+      "source_path": "AGENTS.md",
+      "explanation": "The file contains repository or agent instructions; only its checksum is collected."
+    },
+    {
+      "category": "instruction",
+      "name": "instruction_file",
+      "value": "ad38d49dc0d8ea99da6d71951b8b449c776c59ba642db1cfa5c310d5f4fc39c5",
+      "confidence": 0.98,
+      "source_path": "prompts/git-workflow.md",
+      "explanation": "The file contains repository or agent instructions; only its checksum is collected."
+    },
+    {
+      "category": "purpose",
+      "name": "summary",
+      "value": "Stage-based task validation orchestrator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The README directly states the service purpose."
+    },
+    {
+      "category": "purpose",
+      "name": "summary",
+      "value": "Validation orchestrator for stage-based task validation.",
+      "confidence": 0.85,
+      "source_path": "README.md",
+      "explanation": "The first prose paragraph in the root README describes the repository purpose."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-go-cache-search-validator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The repository identifies the cache/search validator project as an engine dependency."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-go-code-validator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The configuration table identifies CODE_VALIDATOR_URL as the base URL of ms-go-code-validator."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-go-db-validator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The repository identifies the database validator project as an engine dependency."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-go-docker-validator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The repository identifies the Docker validator project as an engine dependency."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-go-git-validator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The repository identifies the Git validator project as an engine dependency."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-go-http-runtime-validator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The repository identifies the HTTP runtime validator project as an engine dependency."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-go-linux-validator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The repository identifies the Linux validator project as an engine dependency."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-go-php-validator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The repository identifies the PHP validator project as an engine dependency."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-node-validator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The repository identifies the Node validator project as an engine dependency."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-py-validator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The repository identifies the Python validator project as an engine dependency."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-ts-browser-runtime-validator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The repository identifies the browser runtime validator project as an engine dependency."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-ts-css-validator",
+      "confidence": 0.9059018343641799,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The configuration documentation identifies the CSS validator project."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-ts-html-validator",
+      "confidence": 0.9059045365449964,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The configuration documentation identifies the HTML validator project."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-ts-nextjs-validator",
+      "confidence": 0.95,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The repository identifies the Next.js validator project as an engine dependency."
+    },
+    {
+      "category": "relation",
+      "name": "depends_on",
+      "value": "ms-ts-react-validator",
+      "confidence": 0.9058007219315342,
+      "source_path": "README.md",
+      "explanation": "Semantic proposal with a verified repository quote. The configuration documentation identifies the React validator project."
+    },
+    {
+      "category": "stack",
+      "name": "container",
+      "value": "docker",
+      "confidence": 0.95,
+      "source_path": "Dockerfile",
+      "explanation": "A Dockerfile defines a container build."
+    },
+    {
+      "category": "stack",
+      "name": "language",
+      "value": "go",
+      "confidence": 1,
+      "source_path": "go.mod",
+      "explanation": "go.mod is the canonical Go module manifest."
+    },
+    {
+      "category": "stack",
+      "name": "orchestration",
+      "value": "docker_compose",
+      "confidence": 0.98,
+      "source_path": "docker-compose.yml",
+      "explanation": "A Docker Compose manifest defines local infrastructure or runtime services."
+    }
+  ]
+}
