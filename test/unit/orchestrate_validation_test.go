@@ -3,6 +3,7 @@ package unit
 import (
 	"context"
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
@@ -13,6 +14,23 @@ type fakeEngine struct {
 	id      string
 	passed  bool
 	message string
+}
+
+func TestConfiguredEngineIDsAreSortedAndUnique(t *testing.T) {
+	t.Parallel()
+
+	parser := usecase.NewContractParser(usecase.NewDefaultLegacyContractAdapter())
+	useCase := usecase.NewOrchestrateValidationUseCase(parser, []domain.EngineClient{
+		fakeEngine{id: "linux.runtime", passed: true},
+		fakeEngine{id: "go.core", passed: true},
+		fakeEngine{id: "linux.runtime", passed: false},
+		fakeEngine{id: "java.compile", passed: true},
+	})
+
+	want := []string{"go.core", "java.compile", "linux.runtime"}
+	if got := useCase.ConfiguredEngineIDs(); !reflect.DeepEqual(got, want) {
+		t.Fatalf("expected engines %v, got %v", want, got)
+	}
 }
 
 type trackingEngine struct {

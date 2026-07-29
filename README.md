@@ -165,6 +165,20 @@ go test ./... -count=1
 
 ## HTTP API
 
+### `GET /api/v1/engines`
+
+Returns the deterministic list of engine IDs registered by the current
+orchestrator configuration. Deployment tooling can use this read-only endpoint
+to fail before importing sandbox tasks that reference an unconfigured engine.
+The endpoint does not add or change task, manifest, or validation-contract
+fields.
+
+```json
+{
+  "engines": ["go.core", "java.compile", "linux.runtime"]
+}
+```
+
 ### `POST /api/v1/validate`
 
 Request:

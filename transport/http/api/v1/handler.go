@@ -12,6 +12,7 @@ import (
 
 type validationExecutor interface {
 	Execute(ctx context.Context, request domain.ValidationRequest) (domain.ValidationResult, error)
+	ConfiguredEngineIDs() []string
 }
 
 type logger interface {
@@ -29,6 +30,12 @@ func NewHandler(useCase validationExecutor, logger logger) Handler {
 		useCase: useCase,
 		logger:  logger,
 	}
+}
+
+func (handler Handler) ListEngines(responseWriter http.ResponseWriter, _ *http.Request) {
+	writeJSON(responseWriter, http.StatusOK, map[string]any{
+		"engines": handler.useCase.ConfiguredEngineIDs(),
+	})
 }
 
 func (handler Handler) Validate(responseWriter http.ResponseWriter, request *http.Request) {

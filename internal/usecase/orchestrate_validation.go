@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"sort"
 	"time"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
@@ -27,6 +28,18 @@ func NewOrchestrateValidationUseCase(
 		parser:  parser,
 		engines: engines,
 	}
+}
+
+// ConfiguredEngineIDs returns the engine identifiers registered in this
+// orchestrator instance. The result is stable so deployment checks can compare
+// it without depending on map iteration order.
+func (useCase OrchestrateValidationUseCase) ConfiguredEngineIDs() []string {
+	engineIDs := make([]string, 0, len(useCase.engines))
+	for engineID := range useCase.engines {
+		engineIDs = append(engineIDs, engineID)
+	}
+	sort.Strings(engineIDs)
+	return engineIDs
 }
 
 func (useCase OrchestrateValidationUseCase) Execute(
