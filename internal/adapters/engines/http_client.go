@@ -48,7 +48,7 @@ func (client HTTPClient) PostJSON(
 		return nil, fmt.Errorf("read response: %w", err)
 	}
 
-	if response.StatusCode >= http.StatusBadRequest {
+	if response.StatusCode >= http.StatusBadRequest && response.StatusCode != http.StatusUnprocessableEntity {
 		return responseBody, fmt.Errorf("unexpected status %d", response.StatusCode)
 	}
 

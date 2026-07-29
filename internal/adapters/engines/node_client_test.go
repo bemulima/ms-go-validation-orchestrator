@@ -166,6 +166,35 @@ func TestNodeClientOmitsRuntimeRulesForStaticStage(t *testing.T) {
 	}
 }
 
+func TestNodeClientNormalizesJavaScriptAuthoringLanguage(t *testing.T) {
+	t.Parallel()
+
+	httpClient := &fakeNodeHTTPClient{
+		response: []byte(`{"ok": true, "summary": {"staticOk": true, "structureOk": true, "runtimeOk": true}, "errors": []}`),
+	}
+	client := NewNodeClient("http://node-validator", httpClient, "js.ast")
+	_, err := client.Validate(context.Background(), domain.EngineValidationInput{
+		Stage: domain.ValidationStage{
+			ID:       "javascript-static",
+			Engine:   "js.ast",
+			Language: "javascript",
+			Targets: domain.StageTargets{
+				Entrypoint: "main.js",
+			},
+		},
+		Workspace: domain.ValidationWorkspace{
+			Files: []domain.WorkspaceFile{{Path: "main.js", Content: "console.log('ok');"}},
+		},
+	})
+	if err != nil {
+		t.Fatalf("validate: %v", err)
+	}
+
+	if got := httpClient.lastPayload["language"]; got != "js" {
+		t.Fatalf("expected JavaScript alias to normalize to js, got %#v", got)
+	}
+}
+
 func TestNodeClientMapsTypeScriptRuntimeContractAndFailure(t *testing.T) {
 	t.Parallel()
 
