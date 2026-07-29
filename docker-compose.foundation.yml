@@ -1,0 +1,148 @@
+services:
+  ms-go-validation-orchestrator:
+    ports:
+      - "${FOUNDATION_ORCHESTRATOR_BIND_ADDRESS:-127.0.0.1}:${FOUNDATION_ORCHESTRATOR_PORT:-18080}:8080"
+    environment:
+      HTML_VALIDATOR_URL: http://foundation-html-validator:3000
+      NODE_VALIDATOR_URL: http://foundation-node-validator:8080
+      BROWSER_RUNTIME_VALIDATOR_URL: http://foundation-browser-validator:3016
+      PHP_VALIDATOR_URL: http://foundation-php-validator:8080
+      PYTHON_VALIDATOR_URL: http://foundation-python-validator:8080
+      CODE_VALIDATOR_URL: http://foundation-code-validator:8080
+      LINUX_VALIDATOR_URL: http://foundation-linux-validator:8090
+    depends_on:
+      foundation-html-validator:
+        condition: service_healthy
+      foundation-node-validator:
+        condition: service_healthy
+      foundation-browser-validator:
+        condition: service_healthy
+      foundation-php-validator:
+        condition: service_healthy
+      foundation-python-validator:
+        condition: service_healthy
+      foundation-code-validator:
+        condition: service_healthy
+      foundation-linux-validator:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/internal/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 5s
+
+  foundation-html-validator:
+    image: foundation-ms-ts-html-validator:36feaf2da1aa
+    build:
+      context: ${HTML_VALIDATOR_BUILD_CONTEXT:-.cache/foundation-sources/ms-ts-html-validator}
+      dockerfile: docker/Dockerfile
+    environment:
+      HTTP_PORT: 3000
+      NATS_URL: ${FOUNDATION_NATS_URL:-nats://ms-infra-nats:4222}
+    restart: unless-stopped
+    networks:
+      - default
+      - ms-net
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 10s
+
+  foundation-node-validator:
+    image: foundation-ms-node-validator:93d0eb75b41e
+    build:
+      context: ${NODE_VALIDATOR_BUILD_CONTEXT:-.cache/foundation-sources/ms-node-validator}
+      dockerfile: Dockerfile
+    environment:
+      PORT: 8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 10s
+
+  foundation-browser-validator:
+    image: foundation-ms-ts-browser-runtime-validator:068601a3bf0c
+    build:
+      context: ${BROWSER_VALIDATOR_BUILD_CONTEXT:-.cache/foundation-sources/ms-ts-browser-runtime-validator}
+      dockerfile: Dockerfile
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3016
+      LOG_LEVEL: info
+      PLAYWRIGHT_BROWSER: chromium
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3016/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 15s
+
+  foundation-php-validator:
+    image: foundation-ms-go-php-validator:e1b9556ccd85
+    build:
+      context: ${PHP_VALIDATOR_BUILD_CONTEXT:-.cache/foundation-sources/ms-go-php-validator}
+      dockerfile: Dockerfile
+    environment:
+      HTTP_PORT: 8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/internal/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 5s
+
+  foundation-python-validator:
+    image: foundation-ms-py-validator:1826c0aac30c
+    build:
+      context: ${PYTHON_VALIDATOR_BUILD_CONTEXT:-.cache/foundation-sources/ms-py-validator}
+      dockerfile: Dockerfile
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 5s
+
+  foundation-code-validator:
+    image: foundation-ms-go-code-validator:b4750c0de0ad
+    build:
+      context: ${CODE_VALIDATOR_BUILD_CONTEXT:-.cache/foundation-sources/ms-go-code-validator}
+      dockerfile: Dockerfile
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 10s
+
+  foundation-linux-validator:
+    image: foundation-ms-go-linux-validator:fe8a1ed76c0d
+    build:
+      context: ${LINUX_VALIDATOR_BUILD_CONTEXT:-.cache/foundation-sources/ms-go-linux-validator}
+      dockerfile: Dockerfile
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8090
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 10s

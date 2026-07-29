@@ -61,6 +61,47 @@ Environment variables:
 go run ./cmd/ms-go-validation-orchestrator
 ```
 
+## Persistent Foundation sandbox stack
+
+The base `docker-compose.yml` still starts the orchestrator by itself. Add the
+Foundation overlay to start the complete validator path used by Foundation
+Beginner tasks:
+
+```bash
+task foundation:prepare
+task foundation:config
+task foundation:up
+task foundation:verify
+```
+
+The stack contains the orchestrator plus the HTML, Node/TypeScript, browser,
+PHP, Python, Go/JVM, and Linux validators. Every service has an HTTP
+healthcheck and `restart: unless-stopped`; the orchestrator waits for all seven
+validators to become healthy before it starts. Only the orchestrator is
+published to the host, on `127.0.0.1:18080` by default. Override the host port
+with `FOUNDATION_ORCHESTRATOR_PORT` when necessary.
+
+`foundation:prepare` exports immutable pinned commits from the seven sibling
+Git repositories into the ignored `.cache/foundation-sources` directory. It
+does not switch their branches or read their working trees, so the stack does
+not depend on current branches or uncommitted changes. The required sibling
+repositories must exist next to this repository and contain the pinned
+commits. A developer can override an individual Compose build context for
+local work, for example:
+
+```bash
+NODE_VALIDATOR_BUILD_CONTEXT=../ms-node-validator task foundation:up
+```
+
+The shared external Docker network `ms-net` must exist. The HTML validator uses
+`nats://ms-infra-nats:4222` by default; override it with
+`FOUNDATION_NATS_URL` if the shared broker has a different address.
+
+After a Docker daemon or machine restart, Docker restores the containers
+automatically. Use `task foundation:verify` to confirm all eight services and
+the fourteen engines required by the imported Foundation tasks. To stop and
+remove only this Compose stack, run `task foundation:down`.
+
 ## Test
 
 ```bash

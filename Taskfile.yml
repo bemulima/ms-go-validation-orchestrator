@@ -12,3 +12,30 @@ tasks:
   run:
     cmds:
       - go run ./cmd/ms-go-validation-orchestrator
+
+  foundation:prepare:
+    desc: Export pinned validator commits into the local build cache
+    cmds:
+      - ./scripts/prepare-foundation-sources.sh
+
+  foundation:config:
+    desc: Render and validate the persistent Foundation sandbox stack
+    deps: [foundation:prepare]
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.foundation.yml config
+
+  foundation:up:
+    desc: Build and start the persistent Foundation sandbox stack
+    deps: [foundation:prepare]
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.foundation.yml up -d --build --wait
+
+  foundation:verify:
+    desc: Verify Foundation service health and required engines
+    cmds:
+      - ./scripts/verify-foundation-stack.sh
+
+  foundation:down:
+    desc: Stop and remove the persistent Foundation sandbox stack
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.foundation.yml down
