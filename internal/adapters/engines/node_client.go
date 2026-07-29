@@ -3,6 +3,7 @@ package engines
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
 )
@@ -43,7 +44,7 @@ func (client NodeClient) Validate(
 	}
 
 	responseBody, err := client.http.PostJSON(ctx, client.baseURL+"/api/v1/validate-node", map[string]any{
-		"language":  defaultString(input.Stage.Language, inferLanguageFromEngine(client.engine)),
+		"language":  nodeLanguage(client.engine, input.Stage.Language),
 		"framework": defaultString(input.Stage.Framework, inferFrameworkFromEngine(client.engine)),
 		"mode": map[string]bool{
 			"static":    staticMode,
@@ -64,6 +65,19 @@ func (client NodeClient) Validate(
 	}
 
 	return parseNodeValidationResponse(responseBody, input.Stage)
+}
+
+func nodeLanguage(engine string, configured string) string {
+	switch strings.ToLower(strings.TrimSpace(configured)) {
+	case "javascript", "js":
+		return "js"
+	case "typescript", "ts":
+		return "ts"
+	case "":
+		return inferLanguageFromEngine(engine)
+	default:
+		return configured
+	}
 }
 
 func inferLanguageFromEngine(engine string) string {
