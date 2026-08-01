@@ -52,6 +52,13 @@ for service in "${services[@]}"; do
   fi
 done
 
+linux_validator_id=$("${compose[@]}" ps -q foundation-linux-validator)
+workspace_mount=$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/workspaces"}}{{.Source}}{{end}}{{end}}' "$linux_validator_id")
+if [[ -z "$workspace_mount" ]]; then
+  echo "foundation-linux-validator does not mount the shared /workspaces namespace" >&2
+  exit 1
+fi
+
 engines=$("${compose[@]}" exec -T ms-go-validation-orchestrator \
   wget -q -O - http://127.0.0.1:8080/api/v1/engines)
 
@@ -62,4 +69,4 @@ for engine in "${required_engines[@]}"; do
   fi
 done
 
-echo "Foundation stack is healthy: ${#services[@]} services, ${#required_engines[@]} required engines."
+echo "Foundation stack is healthy: ${#services[@]} services, ${#required_engines[@]} required engines, shared workspaces mounted."
