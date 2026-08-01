@@ -97,6 +97,13 @@ The shared external Docker network `ms-net` must exist. The HTML validator uses
 `nats://ms-infra-nats:4222` by default; override it with
 `FOUNDATION_NATS_URL` if the shared broker has a different address.
 
+Runtime validators use `/workspaces/<sandbox-id>` as the shared in-container
+namespace for `workspace.root_path`. The Foundation overlay mounts the sibling
+`ms-go-sandbox/workspaces` directory into the Linux validator at `/workspaces`.
+Set `FOUNDATION_SANDBOX_WORKSPACES_DIR` when the sandbox repository is stored
+elsewhere. Keep Docker host-path discovery inside `ms-go-sandbox`; API clients
+and validator containers should exchange the stable `/workspaces/...` path.
+
 After a Docker daemon or machine restart, Docker restores the containers
 automatically. Use `task foundation:verify` to confirm all eight services and
 the fourteen engines required by the imported Foundation tasks. To stop and

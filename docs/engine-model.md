@@ -73,6 +73,12 @@ Each engine validates one technology concern:
 - `php.symfony`
 - `nextjs.app`
 
+Engines that execute directly against a sandbox workspace share the portable
+`/workspaces/<sandbox-id>` namespace. Deployments must mount the same sandbox
+workspace directory at `/workspaces` in those validator containers. A host
+filesystem path used by the Docker daemon is infrastructure detail and is not
+the `workspace.root_path` contract between services.
+
 ## Stage model
 
 One task can contain many stages. Typical patterns:
