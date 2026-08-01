@@ -139,6 +139,8 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 8090
+    volumes:
+      - "${FOUNDATION_SANDBOX_WORKSPACES_DIR:-../ms-go-sandbox/workspaces}:/workspaces"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/health', timeout=2)"]
