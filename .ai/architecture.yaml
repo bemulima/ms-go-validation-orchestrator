@@ -1,119 +1,43 @@
 schema_version: 1
-stack:
-    - name: container
-      value: docker
-      confidence: 0.95
-      source_path: Dockerfile
-      explanation: A Dockerfile defines a container build.
-    - name: language
-      value: go
-      confidence: 1
-      source_path: go.mod
-      explanation: go.mod is the canonical Go module manifest.
-    - name: orchestration
-      value: docker_compose
-      confidence: 0.98
-      source_path: docker-compose.yml
-      explanation: A Docker Compose manifest defines local infrastructure or runtime services.
-relations:
-    - name: depends_on
-      value: ms-go-cache-search-validator
-      confidence: 0.95
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The repository identifies the cache/search validator project as an engine dependency.
-    - name: depends_on
-      value: ms-go-code-validator
-      confidence: 0.95
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The configuration table identifies CODE_VALIDATOR_URL as the base URL of ms-go-code-validator.
-    - name: depends_on
-      value: ms-go-db-validator
-      confidence: 0.95
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The repository identifies the database validator project as an engine dependency.
-    - name: depends_on
-      value: ms-go-docker-validator
-      confidence: 0.95
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The repository identifies the Docker validator project as an engine dependency.
-    - name: depends_on
-      value: ms-go-git-validator
-      confidence: 0.95
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The repository identifies the Git validator project as an engine dependency.
-    - name: depends_on
-      value: ms-go-http-runtime-validator
-      confidence: 0.95
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The repository identifies the HTTP runtime validator project as an engine dependency.
-    - name: depends_on
-      value: ms-go-linux-validator
-      confidence: 0.95
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The repository identifies the Linux validator project as an engine dependency.
-    - name: depends_on
-      value: ms-go-php-validator
-      confidence: 0.95
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The repository identifies the PHP validator project as an engine dependency.
-    - name: depends_on
-      value: ms-node-validator
-      confidence: 0.95
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The repository identifies the Node validator project as an engine dependency.
-    - name: depends_on
-      value: ms-py-validator
-      confidence: 0.95
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The repository identifies the Python validator project as an engine dependency.
-    - name: depends_on
-      value: ms-ts-browser-runtime-validator
-      confidence: 0.95
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The repository identifies the browser runtime validator project as an engine dependency.
-    - name: depends_on
-      value: ms-ts-css-validator
-      confidence: 0.9059018343641799
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The configuration documentation identifies the CSS validator project.
-    - name: depends_on
-      value: ms-ts-html-validator
-      confidence: 0.9059045365449964
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The configuration documentation identifies the HTML validator project.
-    - name: depends_on
-      value: ms-ts-nextjs-validator
-      confidence: 0.95
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The repository identifies the Next.js validator project as an engine dependency.
-    - name: depends_on
-      value: ms-ts-react-validator
-      confidence: 0.9058007219315342
-      source_path: README.md
-      explanation: Semantic proposal with a verified repository quote. The configuration documentation identifies the React validator project.
-infrastructure:
-    - name: compose_service
-      value: ms-go-validation-orchestrator
-      confidence: 0.96
-      source_path: docker-compose.yml
-      explanation: Docker Compose declares this service.
-    - name: dependency identifier
-      value: Go 1.25.0
-      confidence: 0.95
-      source_path: go.mod
-      explanation: Semantic proposal with a verified repository quote. The module manifest declares Go 1.25.0.
-    - name: dependency identifier
-      value: alpine:3.20
-      confidence: 0.95
-      source_path: Dockerfile
-      explanation: Semantic proposal with a verified repository quote. The runtime container is based on Alpine 3.20.
-    - name: dependency identifier
-      value: golang:1.25-alpine
-      confidence: 0.95
-      source_path: Dockerfile
-      explanation: Semantic proposal with a verified repository quote. The container build uses a Go 1.25 Alpine build image.
-    - name: dependency identifier
-      value: ms-net
-      confidence: 0.95
-      source_path: docker-compose.yml
-      explanation: Semantic proposal with a verified repository quote. Docker Compose attaches the service to an external network.
+style: ports_and_adapters
+layers:
+  - name: domain
+    paths: [internal/domain]
+    owns: [validation contract, request, result, engine port, errors]
+  - name: usecase
+    paths: [internal/usecase]
+    owns: [parsing, legacy adaptation, filtering, dependency ordering, orchestration, links]
+  - name: adapters
+    paths: [internal/adapters/engines]
+    owns: [validator-specific request mapping and response normalization]
+  - name: transport
+    paths: [transport/http, dto, mapper, public]
+    owns: [HTTP API, DTO mapping, public client]
+  - name: composition
+    paths: [internal/app, config, cmd]
+    owns: [configuration, engine registration, server lifecycle]
+execution_flow:
+  - decode request
+  - parse V1 contract or adapt legacy payload
+  - filter stages by requested mode
+  - topologically order retained stages
+  - execute stages sequentially
+  - evaluate retained links
+  - aggregate normalized result
+invariants:
+  - domain and usecase packages do not depend on HTTP transport
+  - engine-specific validation remains outside this service
+  - stage IDs are unique and dependencies resolve within the retained stage set
+  - dependency cycles reject the request
+  - configured engine IDs are returned in sorted order
+known_limits:
+  - contract parsing is permissive and does not enforce the complete authored schema
+  - only ts.runtime, java.runtime, kotlin.runtime, and browser.runtime are hard final-only
+  - omitted request mode runs every authored stage, including final-only engines
+  - stage timeout_seconds is forwarded but not enforced by a per-stage context
+  - stages have no concurrency
+  - links with dependencies removed by mode filtering are silently omitted
+  - duplicate or empty link IDs and empty link search values are not rejected
+  - workspace.required_files is not enforced
+  - HTTP request and response bodies are not size-bounded
+  - duplicate engine IDs overwrite earlier registrations

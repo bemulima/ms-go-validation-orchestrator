@@ -1,22 +1,35 @@
 schema_version: 1
 commands:
-    - name: format
-      run: task fmt
-      source_path: README.md
-      confidence: 0.95
-    - name: run_service
-      run: go run ./cmd/ms-go-validation-orchestrator
-      source_path: README.md
-      confidence: 0.95
-    - name: task_run
-      run: task run
-      source_path: README.md
-      confidence: 0.95
-    - name: task_test
-      run: task test
-      source_path: README.md
-      confidence: 0.95
-    - name: test_all
-      run: go test ./... -count=1
-      source_path: README.md
-      confidence: 0.95
+  - name: policy
+    run: ./scripts/check-agent-policy.sh
+    requires_approval: false
+  - name: format_check
+    run: test -z "$(gofmt -l $(git ls-files '*.go'))"
+    requires_approval: false
+  - name: vet
+    run: go vet ./...
+    requires_approval: false
+  - name: test
+    run: go test ./... -count=1
+    requires_approval: false
+  - name: build
+    run: go build -o /tmp/ms-go-validation-orchestrator-agent-build ./cmd/ms-go-validation-orchestrator
+    requires_approval: false
+  - name: run
+    run: go run ./cmd/ms-go-validation-orchestrator
+    requires_approval: true
+  - name: foundation_prepare
+    run: task foundation:prepare
+    requires_approval: true
+  - name: foundation_config
+    run: task foundation:config
+    requires_approval: true
+  - name: foundation_up
+    run: task foundation:up
+    requires_approval: true
+  - name: foundation_verify
+    run: task foundation:verify
+    requires_approval: true
+  - name: foundation_down
+    run: task foundation:down
+    requires_approval: true

@@ -1,27 +1,32 @@
 schema_version: 1
-contracts:
-    - name: http_definition
-      value: ValidateRequest
-      confidence: 0.95
-      source_path: dto/validation.go
-      explanation: Semantic proposal with a verified repository quote. The DTO defines the principal fields accepted by the validation operation.
-    - name: http_definition
-      value: ValidationResultV1
-      confidence: 0.95
-      source_path: internal/domain/result.go
-      explanation: Semantic proposal with a verified repository quote. The domain type defines the normalized validation result shape.
-    - name: http_route
-      value: GET /health
-      confidence: 0.72
-      source_path: transport/http/internal/router.go
-      explanation: An unrestricted net/http health handler exposes the conventional GET health operation.
-    - name: http_route
-      value: GET /internal/health
-      confidence: 0.9059838515927332
-      source_path: transport/http/internal/router.go
-      explanation: Semantic proposal with a verified repository quote. The internal router exposes a health handler.
-    - name: http_route
-      value: POST /api/v1/validate
-      confidence: 0.95
-      source_path: transport/http/api/v1/router.go
-      explanation: Semantic proposal with a verified repository quote. The API router registers the validation endpoint.
+owned_http:
+  - method: GET
+    path: /api/v1/engines
+    response: sorted configured engine IDs
+    source: transport/http/api/v1/router.go
+  - method: POST
+    path: /api/v1/validate
+    request: dto.ValidateRequest
+    response: internal/domain.ValidationResult
+    invalid_request_status: 400
+    source: transport/http/api/v1/handler.go
+  - method: GET
+    path: /internal/health
+    response: '{"status":"ok"}'
+    source: transport/http/router.go
+authentication: none
+limits:
+  server_read_timeout: 30s
+  server_write_timeout: 30s
+  server_idle_timeout: 60s
+  inbound_body_limit: none
+  strict_unknown_field_rejection: false
+public_client:
+  path: public/client.go
+  default_timeout_when_client_is_nil: none
+  response_body_limit: none
+consumed_http:
+  transport: internal/adapters/engines/http_client.go
+  timeout: 30s
+  accepted_validation_statuses: [200, 422]
+  response_body_limit: none

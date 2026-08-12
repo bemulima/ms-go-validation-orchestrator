@@ -1,0 +1,31 @@
+schema_version: 1
+registration:
+  source: internal/app/app.go
+  always_registered: [legacy.generic]
+  duplicate_id_behavior: later client overwrites earlier client
+  discovery_endpoint: GET /api/v1/engines
+families:
+  html: [html.dom]
+  css: [css.ast, scss.ast]
+  react: [react.ast]
+  node: [js.ast, ts.ast, ts.runtime, node.express, node.fastify, node.nest, http.runtime]
+  php: [php.core, php.laravel, php.yii2, php.yii3, php.symfony]
+  web_runtime: [http.runtime, python.django.runtime, go.gin.runtime, go.echo.runtime, php.laravel.runtime, php.symfony.runtime, php.yii2.runtime, php.yii3.runtime]
+  web_app: [nextjs.app, browser.runtime]
+  repository: [git.core]
+  docker: [docker.dockerfile, docker.compose]
+  python: [python.core, python.django]
+  go: [golang, go.core, go.gin, go.echo]
+  jvm: [java.compile, java.runtime, kotlin.compile, kotlin.runtime]
+  database: [db.postgres.schema, db.postgres.runtime, db.mysql.schema, db.mysql.runtime, db.tarantool.schema, db.tarantool.runtime]
+  linux: [linux.fs, linux.cli, linux.runtime]
+  cache_search: [cache.redis.config, cache.redis.runtime, search.elasticsearch.mapping, search.elasticsearch.runtime, search.manticore, search.sphinx]
+adapter_rules:
+  workspace_root_path: passed through without containment checks
+  common_response_passes_when: any of ok, isValid, or valid is true
+  http_runtime_dispatch: generic client when checks.command exists; Node client otherwise when both are configured
+  workspace_foundation_payload: forwards stage rules and checks
+source_of_truth:
+  registration: internal/app/app.go
+  adapters: internal/adapters/engines
+  detailed_capabilities: docs/capability-matrix.md

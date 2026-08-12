@@ -219,6 +219,6 @@ Do not use links as a substitute for rich structural validation when a real engi
 
 ## Backward compatibility
 
-Legacy `code_structure` payloads still exist. The orchestrator wraps them into a temporary `legacy.generic` stage so platform services can route legacy and new tasks through one entrypoint.
+Legacy `code_structure` payloads still exist. The orchestrator wraps them into a temporary `legacy.generic` stage, but the current legacy engine always returns `LEGACY_CONTRACT_NOT_MIGRATED`. The service therefore supports legacy parsing and adaptation, not successful legacy execution; callers must retain their previous fallback until migration is complete.
 
 That compatibility path is transitional. New authoring should target `ValidationContractV1`.

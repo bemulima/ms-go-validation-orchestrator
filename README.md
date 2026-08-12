@@ -119,16 +119,18 @@ go test ./... -count=1
 
 ## Documentation
 
-- [Docs Index](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/README.md)
-- [Validation Contract V1](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/validation-contract.md)
-- [Validation Result V1](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/validation-result.md)
-- [Engine Model](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/engine-model.md)
-- [Capability Matrix](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/capability-matrix.md)
-- [E2E Compatibility Matrix](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/e2e-compatibility-matrix.md)
-- [Rollout Plan](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/rollout-plan.md)
-- [Admin Authoring Guide](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/authoring-guide.md)
-- [Legacy Migration Guide](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/migration-guide.md)
-- [Example Contracts](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/examples/README.md)
+- [Docs Index](docs/README.md)
+- [Architecture](docs/architecture.md)
+- [Implementation Limits](docs/implementation-limits.md)
+- [Validation Contract V1](docs/validation-contract.md)
+- [Validation Result V1](docs/validation-result.md)
+- [Engine Model](docs/engine-model.md)
+- [Capability Matrix](docs/capability-matrix.md)
+- [E2E Compatibility Matrix](docs/e2e-compatibility-matrix.md)
+- [Rollout Plan](docs/rollout-plan.md)
+- [Admin Authoring Guide](docs/authoring-guide.md)
+- [Legacy Migration Guide](docs/migration-guide.md)
+- [Example Contracts](docs/examples/README.md)
 
 ## Current scope
 

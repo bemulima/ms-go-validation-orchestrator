@@ -1,9 +1,10 @@
 schema_version: 1
 name: change-contract
-requires_approval: true
 steps:
-    - identify producers and consumers
-    - update versioned contract evidence
-    - check compatibility and drift
-    - run repository verification
-    - request independent review
+  - identify contract owner, producers, consumers, and affected engine IDs
+  - classify the change as compatible or breaking
+  - update domain types, mapping, adapters, examples, and local contract documentation together
+  - test legacy adaptation, mode filtering, dependencies, aggregation, and downstream payload mapping as affected
+  - run repository verification
+  - coordinate cross-repository rollout explicitly
+  - request independent review

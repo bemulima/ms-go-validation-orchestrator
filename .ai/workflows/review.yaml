@@ -1,0 +1,9 @@
+schema_version: 1
+name: review
+steps:
+  - read the issue, contracts, and actual diff
+  - inspect correctness, security, compatibility, and ownership boundaries
+  - inspect mode filtering, dependencies, optional semantics, adapter normalization, and failure paths
+  - verify tests and repository-owned documentation cover observable changes
+  - report findings by severity with exact file and line
+  - state remaining verification gaps

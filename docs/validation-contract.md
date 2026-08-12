@@ -72,12 +72,12 @@ Advanced cross-stage links will be added incrementally after engines expose stro
 
 ## Examples
 
-Canonical contract examples live in [docs/examples](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/examples/README.md). They cover single-file tasks, composite stacks, and future-foundation contracts such as Next.js and PHP multi-stack tasks.
+Canonical contract examples live in [examples](examples/README.md). They cover single-file tasks, composite stacks, and future-foundation contracts such as Next.js and PHP multi-stack tasks.
 
 ## Related docs
 
-- [Validation Result V1](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/validation-result.md)
-- [Engine Model](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/engine-model.md)
-- [Capability Matrix](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/capability-matrix.md)
-- [Admin Authoring Guide](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/authoring-guide.md)
-- [Legacy Migration Guide](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/migration-guide.md)
+- [Validation Result V1](validation-result.md)
+- [Engine Model](engine-model.md)
+- [Capability Matrix](capability-matrix.md)
+- [Admin Authoring Guide](authoring-guide.md)
+- [Legacy Migration Guide](migration-guide.md)

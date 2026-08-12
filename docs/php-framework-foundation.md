@@ -1,6 +1,6 @@
 # PHP Framework Foundation
 
-`php.core` remains the most mature PHP engine today. It is intended for single-file and simple structural validation in [ms-go-php-validator](/Users/marat/Developments/microservices/ms-go-php-validator).
+`php.core` remains the most mature PHP engine today. It is intended for single-file and simple structural validation in [ms-go-php-validator](https://github.com/bemulima/ms-go-php-validator).
 
 Framework-aware PHP validation is a separate capability family:
 

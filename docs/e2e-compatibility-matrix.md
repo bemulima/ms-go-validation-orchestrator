@@ -4,9 +4,9 @@ This matrix describes end-to-end platform behavior, not just isolated engine cap
 
 Read it together with:
 
-- [Capability Matrix](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/capability-matrix.md)
-- [Legacy Migration Guide](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/migration-guide.md)
-- [Example Contracts](/Users/marat/Developments/microservices/ms-go-validation-orchestrator/docs/examples/README.md)
+- [Capability Matrix](capability-matrix.md)
+- [Legacy Migration Guide](migration-guide.md)
+- [Example Contracts](examples/README.md)
 
 ## Legend
 

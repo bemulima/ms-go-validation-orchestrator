@@ -77,7 +77,7 @@ Some legacy semantics do not map one-to-one.
 
 `ms-go-course` now contains a dedicated route fixture course:
 
-- [validation-contracts-lab.json](/Users/marat/Developments/microservices/ms-go-course/db/seeds/sids/routes/validation-contracts-lab.json)
+- [validation-contracts-lab.json](https://github.com/bemulima/ms-go-course/blob/main/db/seeds/sids/routes/validation-contracts-lab.json)
 
 Use it as the canonical seed reference for:
 

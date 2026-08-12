@@ -1,6 +1,8 @@
 schema_version: 1
 name: test
-requires_approval: false
 steps:
-    - go test ./... -count=1
-    - task test
+  - ./scripts/check-agent-policy.sh
+  - test -z "$(gofmt -l $(git ls-files '*.go'))"
+  - go vet ./...
+  - go test ./... -count=1
+  - go build -o /tmp/ms-go-validation-orchestrator-agent-build ./cmd/ms-go-validation-orchestrator

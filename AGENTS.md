@@ -1,52 +1,21 @@
 # Repository Guidelines
 
-<!-- codex-agent-bootstrap:start -->
-## Agent Bootstrap
-- Before planning or changing files, read all available project instructions:
-  - `docs/*`
-  - `prompts/*`
-- Treat `prompts/git-workflow.md` as the required workflow for issue, branch, commit, push, Pull Request, merge, and issue-closing behavior.
-- If a listed directory does not exist, continue with the instructions that are present.
-<!-- codex-agent-bootstrap:end -->
+## Agent bootstrap
 
-<!-- codex-shared-policy:start -->
-## Codex Shared Policy (Managed)
+Read `.ai/rules/common.md`, `.ai/service.yaml`, `docs/README.md`, and the affected contracts before changing files. Code, tests, examples, and repository-owned documentation are authoritative.
 
-Source of truth: `prompts/codex-shared-agents.md`
+## Architecture invariants
 
-This file is the canonical shared policy for repo-level `AGENTS.md` files in
-git-backed repositories under `/Users/marat/Developments/microservices`.
+- Domain types and ports live in `internal/domain`; orchestration belongs in `internal/usecase`; engine integrations belong in `internal/adapters/engines`; HTTP transport and wiring stay at the edges.
+- This service coordinates validators. It must not absorb language-, framework-, browser-, database-, or infrastructure-specific validation logic.
+- `ValidationContractV1`, normalized results, stage ordering/mode filtering, engine IDs, link semantics, and outbound validator payloads are versioned contracts.
+- Stages execute sequentially in deterministic topological order. Do not claim parallelism, per-stage timeout enforcement, strict contract-schema validation, authentication, or workspace path containment unless the implementation adds and tests them.
+- Legacy payloads are adapted to `legacy.generic`, but that engine intentionally returns `LEGACY_CONTRACT_NOT_MIGRATED`; adaptation is not successful legacy execution.
+- `workspace.selector_exists` and `workspace.file_contains` currently use literal substring matching. `workspace.required_files` is declared but not enforced here.
+- Preserve the current optional-stage edge case in documentation: validation failure can be optional, but an engine/transport execution error currently fails the aggregate result.
 
-## Cache policy
-- Use only repo-local `.cache` for temporary build and tool artifacts.
-- Do not create or rely on repo-local `.gocache`.
-- For Go commands, prefer these locations:
-  - `XDG_CACHE_HOME=$PWD/.cache`
-  - `GOCACHE=$PWD/.cache/go-build`
-  - `GOMODCACHE=$PWD/.cache/gomod`
-  - `GOBIN=$PWD/.cache/bin`
-- Put disposable local binaries in `.cache/bin`.
-- Treat `.cache` as disposable local state. Do not commit it.
+## Verification and delivery
 
-## Workspace hygiene
-- Do not introduce extra cache directories when `.cache` can be used instead.
-- Keep temporary logs, generated reports, and ad-hoc tooling output under
-  `.cache` when practical.
-- Do not store persistent project data in `.cache`.
-- If a repo has stricter local requirements, document them in that repo's
-  `AGENTS.md` below the managed shared block.
-
-## Scope
-- This policy is synced into repo-level `AGENTS.md` files by
-  `prompts/scripts/sync_agents.py`.
-- The canonical source of truth is this file, not the generated copies.
-<!-- codex-shared-policy:end -->
-
-## Repository-Specific Notes
-- Add repo-specific instructions here when needed.
-
-<!-- agent-orchestrator:start -->
-## Agent Orchestrator (Managed)
-
-Read `.ai/service.yaml` before repository work. Follow every linked repository instruction and prompt. Do not edit files outside an explicitly approved write scope.
-<!-- agent-orchestrator:end -->
+- Use `.ai/commands.yaml`; run policy, tracked-file `gofmt`, `go vet ./...`, `go test ./... -count=1`, and build verification.
+- Contract, mode/filtering, dependency, aggregation, adapter normalization, or engine-registration changes require focused tests and synchronized repository docs/examples.
+- Do not start Docker/Foundation stacks, contact validators, create networks, or run commands marked `requires_approval: true` without approval.

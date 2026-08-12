@@ -1,0 +1,32 @@
+schema_version: 1
+contract_detection:
+  v1_when: version > 0, kind is non-empty, and stages is non-empty
+  otherwise: adapt as legacy.generic
+  strict_schema_validation: false
+stage_execution:
+  order: deterministic topological order by stage ID among ready stages
+  concurrency: 1
+  dependency_failure: skip dependent stage
+  final_only_engines: [ts.runtime, java.runtime, kotlin.runtime, browser.runtime]
+  empty_request_mode: runs all authored stages without final-only filtering
+  timeout_seconds: forwarded to downstream adapters; not enforced by orchestrator context
+aggregation:
+  required_validation_failure: fails result
+  optional_validation_failure: does not fail result
+  execution_error: fails result even when the stage is optional
+  report_errors: also copied into the top-level errors array
+links:
+  supported: [workspace.file_contains, workspace.selector_exists]
+  matching: literal substring
+  execution_order: authored order after stage filtering
+  missing_filtered_dependency: link omitted without a report
+  required_files_enforced: false
+legacy:
+  adaptation: supported
+  execution: unsupported
+  issue_code: LEGACY_CONTRACT_NOT_MIGRATED
+sources:
+  - internal/usecase/contract_parser.go
+  - internal/usecase/orchestrate_validation.go
+  - internal/usecase/link_validator.go
+  - internal/adapters/engines/legacy_generic_engine.go
