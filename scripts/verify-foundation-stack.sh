@@ -13,6 +13,7 @@ compose=(
 services=(
   ms-go-validation-orchestrator
   foundation-html-validator
+  foundation-css-validator
   foundation-node-validator
   foundation-browser-validator
   foundation-php-validator
@@ -23,6 +24,7 @@ services=(
 
 required_engines=(
   browser.runtime
+  css.ast
   go.core
   html.dom
   java.compile

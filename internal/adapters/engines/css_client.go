@@ -8,10 +8,10 @@ import (
 
 type CSSClient struct {
 	baseURL string
-	http    HTTPClient
+	http    jsonPoster
 }
 
-func NewCSSClient(baseURL string, httpClient HTTPClient) CSSClient {
+func NewCSSClient(baseURL string, httpClient jsonPoster) CSSClient {
 	return CSSClient{
 		baseURL: baseURL,
 		http:    httpClient,
@@ -42,7 +42,7 @@ func (client CSSClient) Validate(
 		}, nil
 	}
 
-	responseBody, err := client.http.PostJSON(ctx, client.baseURL+"/api/v1/validate", map[string]any{
+	responseBody, err := client.http.PostJSON(ctx, client.baseURL+"/validate", map[string]any{
 		"language": defaultString(input.Stage.Language, "css"),
 		"code":     body,
 		"rules":    rawJSONOrEmptyObject(input.Stage.Rules),
