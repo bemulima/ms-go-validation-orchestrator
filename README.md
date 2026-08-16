@@ -74,14 +74,14 @@ task foundation:up
 task foundation:verify
 ```
 
-The stack contains the orchestrator plus the HTML, Node/TypeScript, browser,
-PHP, Python, Go/JVM, and Linux validators. Every service has an HTTP
-healthcheck and `restart: unless-stopped`; the orchestrator waits for all seven
+The stack contains the orchestrator plus the HTML, CSS/SCSS, Node/TypeScript,
+browser, PHP, Python, Go/JVM, and Linux validators. Every service has an HTTP
+healthcheck and `restart: unless-stopped`; the orchestrator waits for all eight
 validators to become healthy before it starts. Only the orchestrator is
 published to the host, on `127.0.0.1:18080` by default. Override the host port
 with `FOUNDATION_ORCHESTRATOR_PORT` when necessary.
 
-`foundation:prepare` exports immutable pinned commits from the seven sibling
+`foundation:prepare` exports immutable pinned commits from the eight sibling
 Git repositories into the ignored `.cache/foundation-sources` directory. It
 does not switch their branches or read their working trees, so the stack does
 not depend on current branches or uncommitted changes. The required sibling
@@ -93,8 +93,8 @@ local work, for example:
 NODE_VALIDATOR_BUILD_CONTEXT=../ms-node-validator task foundation:up
 ```
 
-The shared external Docker network `ms-net` must exist. The HTML validator uses
-`nats://ms-infra-nats:4222` by default; override it with
+The shared external Docker network `ms-net` must exist. The HTML and CSS
+validators use `nats://ms-infra-nats:4222` by default; override it with
 `FOUNDATION_NATS_URL` if the shared broker has a different address.
 
 Runtime validators use `/workspaces/<sandbox-id>` as the shared in-container

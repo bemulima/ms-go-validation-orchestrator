@@ -17,8 +17,9 @@ trap cleanup EXIT
 
 sources=(
   "ms-ts-html-validator 36feaf2da1aabcfc2b80c9c9b695c2172bc49212"
+  "ms-ts-css-validator 3afd5cd9eb3ba76fca246f26b24701d1bc63bc11"
   "ms-node-validator 93d0eb75b41e8f0ca30652a184baf1cd34de579a"
-  "ms-ts-browser-runtime-validator 068601a3bf0c65797b2ef8ff042f34363305f9b2"
+  "ms-ts-browser-runtime-validator 510496919361a82acbae6ebb2fed0c7d277c3a4f"
   "ms-go-php-validator e1b9556ccd85a9028671ea0092a77f3470b78aa9"
   "ms-py-validator 1826c0aac30cfafe457eca965c5e441d0cd8e58d"
   "ms-go-code-validator b4750c0de0ad2522d6ca1bad19c1a829826e97da"

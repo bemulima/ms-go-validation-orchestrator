@@ -4,6 +4,7 @@ services:
       - "${FOUNDATION_ORCHESTRATOR_BIND_ADDRESS:-127.0.0.1}:${FOUNDATION_ORCHESTRATOR_PORT:-18080}:8080"
     environment:
       HTML_VALIDATOR_URL: http://foundation-html-validator:3000
+      CSS_VALIDATOR_URL: http://foundation-css-validator:3000
       NODE_VALIDATOR_URL: http://foundation-node-validator:8080
       BROWSER_RUNTIME_VALIDATOR_URL: http://foundation-browser-validator:3016
       PHP_VALIDATOR_URL: http://foundation-php-validator:8080
@@ -12,6 +13,8 @@ services:
       LINUX_VALIDATOR_URL: http://foundation-linux-validator:8090
     depends_on:
       foundation-html-validator:
+        condition: service_healthy
+      foundation-css-validator:
         condition: service_healthy
       foundation-node-validator:
         condition: service_healthy
@@ -51,6 +54,25 @@ services:
       retries: 24
       start_period: 10s
 
+  foundation-css-validator:
+    image: foundation-ms-ts-css-validator:3afd5cd9eb3b
+    build:
+      context: ${CSS_VALIDATOR_BUILD_CONTEXT:-.cache/foundation-sources/ms-ts-css-validator}
+      dockerfile: Dockerfile
+    environment:
+      PORT: 3000
+      NATS_URL: ${FOUNDATION_NATS_URL:-nats://ms-infra-nats:4222}
+    restart: unless-stopped
+    networks:
+      - default
+      - ms-net
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 10s
+
   foundation-node-validator:
     image: foundation-ms-node-validator:93d0eb75b41e
     build:
@@ -67,7 +89,7 @@ services:
       start_period: 10s
 
   foundation-browser-validator:
-    image: foundation-ms-ts-browser-runtime-validator:068601a3bf0c
+    image: foundation-ms-ts-browser-runtime-validator:510496919361
     build:
       context: ${BROWSER_VALIDATOR_BUILD_CONTEXT:-.cache/foundation-sources/ms-ts-browser-runtime-validator}
       dockerfile: Dockerfile
