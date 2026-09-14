@@ -4,10 +4,8 @@ This document records behavior visible in the current code. It is a constraint l
 
 ## Contract validation
 
-- V1 detection checks only positive `version`, non-empty `kind`, and at least one stage. Supported versions, kinds, profiles, modes, targets, rules, checks, and unknown fields are not strictly validated.
-- Stage ID/engine presence, duplicate stage IDs, missing dependencies, and cycles are checked only after request-mode filtering.
-- Link IDs and kinds are not prevalidated; duplicate or empty IDs are accepted until evaluation. Missing or empty substring values can produce misleading success.
-- `workspace.required_files` is not enforced by the orchestrator.
+- V1 core fields, modes, path values, identities, dependencies, link kinds, and link configs are validated before mode filtering. Engine-specific `rules` and `checks` remain opaque JSON objects and are validated only by their owning engines.
+- `workspace.required_files` is enforced when files are transported inline. For a root-backed sandbox workspace, existence remains the responsibility of the mounted engine because the orchestrator deliberately does not traverse sandbox filesystems.
 - A payload that does not meet the minimal V1 test is adapted to `legacy.generic`. That engine always fails with `LEGACY_CONTRACT_NOT_MIGRATED`; old execution is not implemented here.
 
 ## Modes, ordering, and time
@@ -22,15 +20,23 @@ This document records behavior visible in the current code. It is a constraint l
 
 - A normal validation failure from an optional stage does not fail the aggregate. An engine or transport execution error always sets the aggregate to failed, even when that stage is optional.
 - Stage errors are copied into the top-level error list; execution failures can therefore include a wrapper error and stage-level errors together.
+- `teacher-validation-explanation.v1` excludes every optional stage/link issue,
+  including optional execution errors, even though the existing aggregate edge
+  case can still set authoritative `passed=false`. Required execution errors
+  use a generic redacted message in both normalized errors and the projection.
 - Links whose stage dependencies were removed by mode filtering are silently omitted.
 - `workspace.file_contains` and `workspace.selector_exists` both use literal `strings.Contains`; selector checks do not parse HTML or CSS selectors.
 
 ## HTTP and adapters
 
-- Inbound JSON and outbound responses have no explicit body-size limits. Unknown inbound JSON fields are accepted.
-- The exported public client has no default timeout when constructed with a nil HTTP client.
+- `/api/v1/*` is protected by a constant-time `X-Internal-Token` comparison. This is service authentication, not per-student authorization.
+- Inbound JSON is capped at 2 MiB and rejects unknown transport fields and trailing values. Engine and public-client responses are capped at 4 MiB.
+- The exported public client uses a 30-second default timeout when constructed with a nil HTTP client; callers may provide a stricter client.
 - Common validator responses are considered passed when any of `ok`, `isValid`, or `valid` is true; inconsistent response fields are not rejected.
-- Engine IDs are stored in a map and a later duplicate registration silently replaces the earlier client.
-- `workspace.root_path` is passed through without path-containment validation.
+- The compatibility constructor deduplicates engine IDs in a map; application startup does not yet return an explicit duplicate-registration error.
+- `workspace.root_path` is namespace-contained syntactically, but actual filesystem, symlink, process, network, and resource isolation belongs to `ms-go-sandbox` and the container runtime.
+- The orchestrator does not persist validation results or know a server-owned
+  workspace revision/timestamp. Practice/Sandbox must persist and revision-bind
+  the safe projection before it is authoritative context for Teacher.
 
 Changes to any item above require focused tests and synchronized updates to the contract, result, engine, authoring, and capability documentation as applicable.

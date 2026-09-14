@@ -2,6 +2,12 @@
 
 `ValidationContractV1` is the canonical stage-based contract for the validation orchestrator.
 
+The orchestrator strictly rejects unknown V1 core fields, unsupported version
+or kind, unsafe workspace paths, duplicate IDs, unresolved or cyclic
+dependencies, unsupported modes/link kinds, malformed link configs, and
+trailing JSON values. Engine-specific `rules` and `checks` remain JSON objects
+whose detailed schema is owned by the selected engine.
+
 ## Root fields
 
 - `version`: contract version.
@@ -79,5 +85,7 @@ Canonical contract examples live in [examples](examples/README.md). They cover s
 - [Validation Result V1](validation-result.md)
 - [Engine Model](engine-model.md)
 - [Capability Matrix](capability-matrix.md)
+- [Capability Discovery](capability-discovery.md)
+- [Executable Verification](executable-verification.md)
 - [Admin Authoring Guide](authoring-guide.md)
 - [Legacy Migration Guide](migration-guide.md)

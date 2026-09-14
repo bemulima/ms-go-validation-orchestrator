@@ -2,9 +2,13 @@ package usecase
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"slices"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
@@ -42,12 +46,108 @@ func (useCase OrchestrateValidationUseCase) ConfiguredEngineIDs() []string {
 	return engineIDs
 }
 
+func (useCase OrchestrateValidationUseCase) ConfiguredEngineCapabilities() domain.EngineCapabilitiesV1 {
+	engineIDs := useCase.ConfiguredEngineIDs()
+	capabilities := make([]domain.EngineCapabilityV1, 0, len(engineIDs))
+	for _, engineID := range engineIDs {
+		modes := []string{domain.ValidationModeLive, domain.ValidationModeFinal}
+		execution := "static"
+		authoringSupported := engineID != "legacy.generic"
+		if strings.HasSuffix(engineID, ".runtime") {
+			modes = []string{domain.ValidationModeFinal}
+			execution = "runtime"
+		}
+		if engineID == "legacy.generic" {
+			execution = "legacy"
+		}
+		capabilities = append(capabilities, domain.EngineCapabilityV1{
+			ID:                 engineID,
+			ContractVersions:   []int{1},
+			Modes:              modes,
+			Execution:          execution,
+			WorkspaceInputs:    []string{"files", "sandbox_root"},
+			AuthoringSupported: authoringSupported,
+		})
+	}
+	encoded, _ := json.Marshal(capabilities)
+	digest := sha256.Sum256(encoded)
+	return domain.EngineCapabilitiesV1{
+		Schema:  domain.EngineCapabilitiesSchemaV1,
+		Digest:  "sha256:" + hex.EncodeToString(digest[:]),
+		Engines: capabilities,
+	}
+}
+
+// InspectContract validates and plans a V1 contract without invoking engines.
+// The result is safe for authoring-time capability resolution but is not an
+// executable verification receipt.
+func (useCase OrchestrateValidationUseCase) InspectContract(
+	request domain.ContractInspectionRequest,
+) (domain.ContractInspectionResultV1, error) {
+	if request.Mode != "" && request.Mode != domain.ValidationModeLive && request.Mode != domain.ValidationModeFinal {
+		return domain.ContractInspectionResultV1{}, fmt.Errorf("%w: inspection mode must be live or final", domain.ErrInvalidRequest)
+	}
+	contract, legacy, err := useCase.parser.Parse(domain.ValidationRequest{
+		Mode:          request.Mode,
+		CodeStructure: request.CodeStructure,
+	})
+	if err != nil {
+		return domain.ContractInspectionResultV1{}, err
+	}
+	if legacy {
+		return domain.ContractInspectionResultV1{}, fmt.Errorf("%w: legacy contracts cannot be inspected for new authoring", domain.ErrInvalidContract)
+	}
+
+	stages := filterStagesByMode(contract.Stages, request.Mode)
+	ordered, err := orderStages(stages)
+	if err != nil {
+		return domain.ContractInspectionResultV1{}, err
+	}
+	engineSet := make(map[string]struct{}, len(ordered))
+	executionOrder := make([]string, 0, len(ordered))
+	for _, stage := range ordered {
+		engineSet[stage.Engine] = struct{}{}
+		executionOrder = append(executionOrder, stage.ID)
+	}
+	requiredEngines := make([]string, 0, len(engineSet))
+	missingEngines := make([]string, 0)
+	for engineID := range engineSet {
+		requiredEngines = append(requiredEngines, engineID)
+		if _, ok := useCase.engines[engineID]; !ok || engineID == "legacy.generic" {
+			missingEngines = append(missingEngines, engineID)
+		}
+	}
+	sort.Strings(requiredEngines)
+	sort.Strings(missingEngines)
+	encoded, err := json.Marshal(contract)
+	if err != nil {
+		return domain.ContractInspectionResultV1{}, fmt.Errorf("marshal inspected contract: %w", err)
+	}
+	contractDigest := sha256.Sum256(encoded)
+	capabilities := useCase.ConfiguredEngineCapabilities()
+	return domain.ContractInspectionResultV1{
+		Schema:             domain.ContractInspectionSchemaV1,
+		ContractKind:       contract.Kind,
+		ContractVersion:    contract.Version,
+		ContractDigest:     "sha256:" + hex.EncodeToString(contractDigest[:]),
+		CapabilitiesDigest: capabilities.Digest,
+		RequestedMode:      request.Mode,
+		ExecutionOrder:     executionOrder,
+		RequiredEngines:    requiredEngines,
+		MissingEngines:     missingEngines,
+		Runnable:           len(ordered) > 0 && len(missingEngines) == 0,
+	}, nil
+}
+
 func (useCase OrchestrateValidationUseCase) Execute(
 	ctx context.Context,
 	request domain.ValidationRequest,
 ) (domain.ValidationResult, error) {
 	contract, legacy, err := useCase.parser.Parse(request)
 	if err != nil {
+		return domain.ValidationResult{}, err
+	}
+	if err := validateRequiredInlineWorkspaceFiles(contract, request.Workspace); err != nil {
 		return domain.ValidationResult{}, err
 	}
 
@@ -79,7 +179,7 @@ func (useCase OrchestrateValidationUseCase) Execute(
 			result.Passed = false
 			result.Errors = append(result.Errors, domain.ValidationIssue{
 				Code:     "STAGE_EXECUTION_ERROR",
-				Message:  execErr.Error(),
+				Message:  genericStageExecutionMessage,
 				Severity: "error",
 				StageID:  stage.ID,
 				Engine:   stage.Engine,
@@ -104,8 +204,29 @@ func (useCase OrchestrateValidationUseCase) Execute(
 		}
 		result.Errors = append(result.Errors, linkReport.Errors...)
 	}
+	explanation := BuildTeacherValidationExplanation(result)
+	result.TeacherExplanation = &explanation
 
 	return result, nil
+}
+
+func validateRequiredInlineWorkspaceFiles(
+	contract domain.ValidationContract,
+	workspace domain.ValidationWorkspace,
+) error {
+	if len(contract.Workspace.RequiredFiles) == 0 || workspace.RootPath != "" {
+		return nil
+	}
+	available := make(map[string]struct{}, len(workspace.Files))
+	for _, file := range workspace.Files {
+		available[file.Path] = struct{}{}
+	}
+	for _, requiredFile := range contract.Workspace.RequiredFiles {
+		if _, ok := available[requiredFile]; !ok {
+			return fmt.Errorf("%w: required workspace file %q is missing", domain.ErrInvalidRequest, requiredFile)
+		}
+	}
+	return nil
 }
 
 func filterStagesByMode(stages []domain.ValidationStage, mode string) []domain.ValidationStage {
@@ -127,12 +248,7 @@ func filterStagesByMode(stages []domain.ValidationStage, mode string) []domain.V
 }
 
 func isFinalOnlyEngine(engine string) bool {
-	switch engine {
-	case "ts.runtime", "java.runtime", "kotlin.runtime", "browser.runtime":
-		return true
-	default:
-		return false
-	}
+	return strings.HasSuffix(engine, ".runtime")
 }
 
 func filterLinksByStageIDs(links []domain.ValidationLink, stageIDs map[string]struct{}) []domain.ValidationLink {

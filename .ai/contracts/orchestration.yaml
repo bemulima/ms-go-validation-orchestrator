@@ -1,8 +1,10 @@
 schema_version: 1
 contract_detection:
-  v1_when: version > 0, kind is non-empty, and stages is non-empty
+  v1_when: any V1 envelope field is present
+  incomplete_v1_behavior: reject; never adapt as legacy
   otherwise: adapt as legacy.generic
-  strict_schema_validation: false
+  strict_core_schema_validation: true
+  engine_rules_and_checks: opaque JSON objects
 stage_execution:
   order: deterministic topological order by stage ID among ready stages
   concurrency: 1
@@ -15,12 +17,32 @@ aggregation:
   optional_validation_failure: does not fail result
   execution_error: fails result even when the stage is optional
   report_errors: also copied into the top-level errors array
+teacher_explanation:
+  schema: teacher-validation-explanation.v1
+  authoritative_passed: unchanged
+  order: stage execution order then issue order, followed by link order
+  deduplication: normalized safe issue equality
+  optional_stage_and_link_issues: excluded
+  warnings: excluded
+  execution_error: required-stage-only generic redacted issue
+  field_caps_runes: {code: 128, stage_id: 128, engine: 128, message: 1000, hint: 500, file: 512}
+  location_range: 1..1000000
+  maximum_issues: 5
+  maximum_serialized_bytes: 16384
+  forbidden: [raw_result, evidence, commands, absolute_paths, fixtures, hidden_rubric, selector, route, symbol, property]
 links:
   supported: [workspace.file_contains, workspace.selector_exists]
   matching: literal substring
   execution_order: authored order after stage filtering
   missing_filtered_dependency: link omitted without a report
-  required_files_enforced: false
+  required_files_enforced_for_inline_workspace: true
+  required_files_for_root_workspace: delegated to sandbox-mounted engines
+authoring:
+  capability_schema: validation-engine-capabilities.v1
+  inspection_schema: validation-contract-inspection.v1
+  verification_request_schema: validation-contract-verification-request.v1
+  verification_receipt_schema: validation-contract-verification-receipt.v1
+  verification_cases: exactly one starter, exactly one reference, at least one negative
 legacy:
   adaptation: supported
   execution: unsupported

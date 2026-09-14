@@ -14,6 +14,8 @@ type HTTPClient struct {
 	client *http.Client
 }
 
+const maxEngineResponseBytes int64 = 4 << 20
+
 func NewHTTPClient(timeout time.Duration) HTTPClient {
 	return HTTPClient{
 		client: &http.Client{Timeout: timeout},
@@ -43,9 +45,12 @@ func (client HTTPClient) PostJSON(
 	}
 	defer response.Body.Close()
 
-	responseBody, err := io.ReadAll(response.Body)
+	responseBody, err := io.ReadAll(io.LimitReader(response.Body, maxEngineResponseBytes+1))
 	if err != nil {
 		return nil, fmt.Errorf("read response: %w", err)
+	}
+	if int64(len(responseBody)) > maxEngineResponseBytes {
+		return nil, fmt.Errorf("read response: engine response is too large")
 	}
 
 	if response.StatusCode >= http.StatusBadRequest && response.StatusCode != http.StatusUnprocessableEntity {

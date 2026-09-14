@@ -4,12 +4,18 @@ import "net/http"
 
 func RegisterRoutes(mux *http.ServeMux, handler Handler) {
 	mux.HandleFunc("GET /engines", handler.ListEngines)
+	mux.HandleFunc("GET /capabilities", handler.ListCapabilities)
+	mux.HandleFunc("POST /contracts/inspect", handler.InspectContract)
+	mux.HandleFunc("POST /contracts/verify", handler.VerifyContract)
 	mux.HandleFunc("POST /validate", handler.Validate)
 }
 
 func NewRouter(handler Handler, internalRouter http.Handler) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/v1/engines", handler.ListEngines)
+	mux.HandleFunc("GET /api/v1/capabilities", handler.ListCapabilities)
+	mux.HandleFunc("POST /api/v1/contracts/inspect", handler.InspectContract)
+	mux.HandleFunc("POST /api/v1/contracts/verify", handler.VerifyContract)
 	mux.HandleFunc("POST /api/v1/validate", handler.Validate)
 	mux.Handle("/internal/", http.StripPrefix("/internal", internalRouter))
 	return mux

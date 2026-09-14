@@ -9,7 +9,8 @@ import (
 
 // Dependencies contains HTTP transport wiring.
 type Dependencies struct {
-	APIHandler apiv1.Handler
+	APIHandler    apiv1.Handler
+	InternalToken string
 }
 
 // NewRouter constructs the service HTTP router.
@@ -18,7 +19,7 @@ func NewRouter(deps Dependencies) http.Handler {
 
 	apiMux := http.NewServeMux()
 	apiv1.RegisterRoutes(apiMux, deps.APIHandler)
-	root.Handle("/api/v1/", http.StripPrefix("/api/v1", apiMux))
+	root.Handle("/api/v1/", requireInternalToken(deps.InternalToken, http.StripPrefix("/api/v1", apiMux)))
 
 	internalMux := http.NewServeMux()
 	internalMux.Handle("/", internalhttp.HealthHandler())

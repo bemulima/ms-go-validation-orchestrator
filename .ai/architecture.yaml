@@ -24,20 +24,20 @@ execution_flow:
   - execute stages sequentially
   - evaluate retained links
   - aggregate normalized result
+  - derive bounded teacher explanation from normalized result
 invariants:
   - domain and usecase packages do not depend on HTTP transport
   - engine-specific validation remains outside this service
   - stage IDs are unique and dependencies resolve within the retained stage set
   - dependency cycles reject the request
   - configured engine IDs are returned in sorted order
+  - teacher explanation is presentation-only, preserves passed, excludes optional/warnings/raw output, and is capped at five issues and 16 KiB
 known_limits:
-  - contract parsing is permissive and does not enforce the complete authored schema
+  - V1 core contract parsing is strict, but engine-specific rules and checks remain opaque JSON
   - only ts.runtime, java.runtime, kotlin.runtime, and browser.runtime are hard final-only
   - omitted request mode runs every authored stage, including final-only engines
   - stage timeout_seconds is forwarded but not enforced by a per-stage context
   - stages have no concurrency
   - links with dependencies removed by mode filtering are silently omitted
-  - duplicate or empty link IDs and empty link search values are not rejected
-  - workspace.required_files is not enforced
-  - HTTP request and response bodies are not size-bounded
-  - duplicate engine IDs overwrite earlier registrations
+  - root-backed workspace.required_files are delegated to sandbox-mounted engines; inline workspaces are enforced locally
+  - duplicate engine IDs are deduplicated by the compatibility constructor instead of rejecting application startup

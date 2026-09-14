@@ -8,25 +8,52 @@ owned_http:
     path: /api/v1/validate
     request: dto.ValidateRequest
     response: internal/domain.ValidationResult
+    additive_response: teacher_explanation teacher-validation-explanation.v1
     invalid_request_status: 400
+    source: transport/http/api/v1/handler.go
+  - method: GET
+    path: /api/v1/capabilities
+    response: domain.EngineCapabilitiesV1
+    source: transport/http/api/v1/handler.go
+  - method: POST
+    path: /api/v1/contracts/inspect
+    request: dto.InspectContractRequest
+    response: domain.ContractInspectionResultV1
+    source: transport/http/api/v1/handler.go
+  - method: POST
+    path: /api/v1/contracts/verify
+    request: dto.VerifyContractRequest
+    response: domain.ContractVerificationReceiptV1
     source: transport/http/api/v1/handler.go
   - method: GET
     path: /internal/health
     response: '{"status":"ok"}'
     source: transport/http/router.go
-authentication: none
+authentication:
+  header: X-Internal-Token
+  applies_to: /api/v1/*
+  fail_closed_when_server_token_empty: true
 limits:
   server_read_timeout: 30s
   server_write_timeout: 30s
   server_idle_timeout: 60s
-  inbound_body_limit: none
-  strict_unknown_field_rejection: false
+  inbound_body_limit: 2 MiB
+  strict_unknown_field_rejection: true
+teacher_explanation:
+  schema: teacher-validation-explanation.v1
+  source: normalized ValidationResult without TeacherExplanation or RawResult
+  fields: [schema, passed, blocking_issues, truncated, source_digest]
+  issue_fields: [code, message, hint, file, line, column, stage_id, engine, severity]
+  maximum_unique_blocking_issues: 5
+  maximum_serialized_bytes: 16384
+  optional_and_warning_issues: excluded
+  stage_execution_error: generic and required-stage-only
 public_client:
   path: public/client.go
-  default_timeout_when_client_is_nil: none
-  response_body_limit: none
+  default_timeout_when_client_is_nil: 30s
+  response_body_limit: 4 MiB
 consumed_http:
   transport: internal/adapters/engines/http_client.go
   timeout: 30s
   accepted_validation_statuses: [200, 422]
-  response_body_limit: none
+  response_body_limit: 4 MiB

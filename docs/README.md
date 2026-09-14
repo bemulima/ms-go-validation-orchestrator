@@ -13,6 +13,8 @@ This folder is the repository-owned documentation set for the validation orchest
 - [Validation Result V1](validation-result.md)
 - [Engine Model](engine-model.md)
 - [Capability Matrix](capability-matrix.md)
+- [Capability Discovery](capability-discovery.md)
+- [Executable Verification](executable-verification.md)
 - [E2E Compatibility Matrix](e2e-compatibility-matrix.md)
 - [Rollout Plan](rollout-plan.md)
 

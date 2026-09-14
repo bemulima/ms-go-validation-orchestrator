@@ -12,12 +12,17 @@ owned_capabilities:
   - engine registration and HTTP adapter dispatch
   - link evaluation
   - normalized validation-result aggregation
+  - bounded teacher-validation-explanation.v1 projection from normalized results
+  - versioned configured-engine capability discovery
+  - authoring-time contract inspection
+  - executable starter/reference/negative fixture verification receipts
 not_owned:
   - language and framework parsing
   - student-code execution
   - sandbox provisioning and workspace path discovery
   - task authoring and persistence
   - authentication and authorization
+  - validation-result persistence, Teacher delivery, or workspace-revision binding
 entrypoints:
   application: internal/app/app.go
   executable: cmd/ms-go-validation-orchestrator
@@ -32,10 +37,11 @@ dependencies:
   transport: HTTP
   engine_catalog_source: internal/app/app.go
 security:
-  authentication: not_implemented
-  authorization: not_implemented
-  request_body_limit: not_implemented
-  workspace_root_containment: not_implemented
+  authentication: X-Internal-Token on /api/v1
+  authorization: service-level internal caller boundary
+  request_body_limit: 2 MiB
+  response_body_limit: 4 MiB for engine and public-client responses
+  workspace_root_containment: exact /workspaces/<sandbox-id> portable namespace
 delivery:
   commands: .ai/commands.yaml
   workflows: .ai/workflows

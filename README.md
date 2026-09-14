@@ -6,6 +6,12 @@ Validation orchestrator for stage-based task validation.
 
 The service accepts a unified validation contract, plans validation stages, invokes engine adapters, evaluates simple cross-stage links, and returns a normalized validation report.
 
+Successful `POST /api/v1/validate` responses also contain the additive
+`teacher_explanation` contract with schema
+`teacher-validation-explanation.v1`: at most five unique, bounded, redacted
+blocking issues derived from the normalized report. It is presentation-only;
+Practice/Sandbox still own persistence and exact runtime revision binding.
+
 This initial platform pass is intentionally conservative:
 
 - new `ValidationContractV1` is supported;

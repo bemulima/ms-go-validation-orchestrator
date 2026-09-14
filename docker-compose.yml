@@ -8,6 +8,7 @@ services:
       HOST: ${HOST:-0.0.0.0}
       PORT: ${PORT:-8080}
       SERVICE_NAME: ${SERVICE_NAME:-ms-go-validation-orchestrator}
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-change-me}
       HTML_VALIDATOR_URL: ${HTML_VALIDATOR_URL:-}
       CSS_VALIDATOR_URL: ${CSS_VALIDATOR_URL:-}
       REACT_VALIDATOR_URL: ${REACT_VALIDATOR_URL:-}

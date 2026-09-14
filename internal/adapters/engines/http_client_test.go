@@ -42,3 +42,18 @@ func TestHTTPClientRejectsBadRequest(t *testing.T) {
 		t.Fatalf("expected HTTP 400 transport error, got %v", err)
 	}
 }
+
+func TestHTTPClientRejectsOversizedEngineResponse(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writer.WriteHeader(http.StatusOK)
+		_, _ = writer.Write([]byte(strings.Repeat("x", int(maxEngineResponseBytes+1))))
+	}))
+	defer server.Close()
+
+	_, err := NewHTTPClient(time.Second).PostJSON(context.Background(), server.URL, map[string]string{"code": "TODO"})
+	if err == nil || !strings.Contains(err.Error(), "too large") {
+		t.Fatalf("expected response size error, got %v", err)
+	}
+}

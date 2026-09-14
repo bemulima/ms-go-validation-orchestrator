@@ -1,13 +1,39 @@
 package domain
 
+const TeacherValidationExplanationSchemaV1 = "teacher-validation-explanation.v1"
+
 type ValidationResult struct {
-	ContractKind    string            `json:"contract_kind"`
-	ContractVersion int               `json:"contract_version"`
-	Legacy          bool              `json:"legacy"`
-	Passed          bool              `json:"passed"`
-	Stages          []StageReport     `json:"stages"`
-	Links           []LinkReport      `json:"links,omitempty"`
-	Errors          []ValidationIssue `json:"errors,omitempty"`
+	ContractKind       string                          `json:"contract_kind"`
+	ContractVersion    int                             `json:"contract_version"`
+	Legacy             bool                            `json:"legacy"`
+	Passed             bool                            `json:"passed"`
+	Stages             []StageReport                   `json:"stages"`
+	Links              []LinkReport                    `json:"links,omitempty"`
+	Errors             []ValidationIssue               `json:"errors,omitempty"`
+	TeacherExplanation *TeacherValidationExplanationV1 `json:"teacher_explanation,omitempty"`
+}
+
+// TeacherValidationExplanationV1 is a presentation-only projection of a
+// normalized owner result. It deliberately cannot represent raw engine output,
+// evidence, executable commands, fixtures, or private rubric selectors.
+type TeacherValidationExplanationV1 struct {
+	Schema         string                     `json:"schema"`
+	Passed         bool                       `json:"passed"`
+	BlockingIssues []TeacherValidationIssueV1 `json:"blocking_issues"`
+	Truncated      bool                       `json:"truncated"`
+	SourceDigest   string                     `json:"source_digest"`
+}
+
+type TeacherValidationIssueV1 struct {
+	Code     string `json:"code"`
+	Message  string `json:"message"`
+	Hint     string `json:"hint,omitempty"`
+	File     string `json:"file,omitempty"`
+	Line     int    `json:"line,omitempty"`
+	Column   int    `json:"column,omitempty"`
+	StageID  string `json:"stage_id,omitempty"`
+	Engine   string `json:"engine,omitempty"`
+	Severity string `json:"severity,omitempty"`
 }
 
 type StageReport struct {

@@ -32,7 +32,8 @@ func New(cfg config.Config) App {
 	logger := logging.NewStdLogger()
 	apiHandler := api.NewHandler(orchestrator, logger)
 	router := transporthttp.NewRouter(transporthttp.Dependencies{
-		APIHandler: apiHandler,
+		APIHandler:    apiHandler,
+		InternalToken: cfg.InternalAPIToken,
 	})
 
 	server := &http.Server{

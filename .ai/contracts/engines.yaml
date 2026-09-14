@@ -21,7 +21,7 @@ families:
   linux: [linux.fs, linux.cli, linux.runtime]
   cache_search: [cache.redis.config, cache.redis.runtime, search.elasticsearch.mapping, search.elasticsearch.runtime, search.manticore, search.sphinx]
 adapter_rules:
-  workspace_root_path: passed through without containment checks
+  workspace_root_path: accepted only as exact /workspaces/<sandbox-id>, then passed through
   common_response_passes_when: any of ok, isValid, or valid is true
   http_runtime_dispatch: generic client when checks.command exists; Node client otherwise when both are configured
   workspace_foundation_payload: forwards stage rules and checks
@@ -29,3 +29,4 @@ source_of_truth:
   registration: internal/app/app.go
   adapters: internal/adapters/engines
   detailed_capabilities: docs/capability-matrix.md
+  configured_capability_contract: internal/domain/capabilities.go

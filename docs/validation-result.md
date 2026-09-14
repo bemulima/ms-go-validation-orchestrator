@@ -11,6 +11,59 @@
 - `stages[]`: stage-level reports.
 - `links[]`: link-level reports.
 - `errors[]`: top-level non-stage issues such as orchestration or compatibility errors.
+- `teacher_explanation`: additive bounded `teacher-validation-explanation.v1`
+  projection built from this normalized result. Production `/api/v1/validate`
+  responses include it; older Go JSON clients may ignore the field.
+
+## Teacher validation explanation v1
+
+`teacher_explanation` is presentation-only and never changes authoritative
+`passed`. Its exact shape is:
+
+```json
+{
+  "schema": "teacher-validation-explanation.v1",
+  "passed": false,
+  "blocking_issues": [
+    {
+      "code": "DECLARATION_VALUE_MISMATCH",
+      "message": "Expected background-color was not found.",
+      "hint": "Add the required declaration.",
+      "file": "styles.css",
+      "line": 12,
+      "column": 3,
+      "stage_id": "css",
+      "engine": "css.ast",
+      "severity": "error"
+    }
+  ],
+  "truncated": false,
+  "source_digest": "sha256:..."
+}
+```
+
+The server selects at most five unique blocking issues in normalized stage
+execution order, then link order, preserving issue order. Normal failures from
+optional stages/links and all warnings are excluded. Infrastructure
+`STAGE_EXECUTION_ERROR` is included only for a required stage and always uses a
+generic message and hint; transport errors are never copied.
+
+Allowed issue fields are only `code`, `message`, `hint`, relative `file`,
+positive `line`/`column`, `stage_id`, `engine`, and blocking `severity`.
+Selector, route, symbol, property, evidence, raw engine output, commands,
+fixtures, and rubric data cannot be represented by the projection type.
+
+Limits are measured in Unicode code points: code/stage/engine 128, message
+1000, hint 500, and relative file 512. Locations are `1..1000000`. Controls and
+format characters are removed. Invalid/absolute/traversing file fields are
+omitted; obvious POSIX, Windows-drive, or UNC paths inside a message cause a
+generic message, and such hints are omitted. `truncated` reports sanitization,
+field/issue omission, the five-issue cap, or the final 16 KiB serialized cap.
+
+`source_digest` is deterministic SHA-256 over the normalized `ValidationResult`
+JSON without `teacher_explanation`. `RawResult` is excluded by the owner result
+contract; normalized evidence remains digest-bound but is never copied into the
+safe projection.
 
 ## Stage report
 
@@ -116,3 +169,7 @@ Admin UI and debugging tools should preserve:
 - raw stage order
 - optional vs blocking stages
 - top-level orchestration errors
+
+Teacher consumers use only `teacher_explanation`, after the owning runtime has
+persisted and bound the result to an exact task/workspace revision. They must
+not infer or modify official pass/fail state.
