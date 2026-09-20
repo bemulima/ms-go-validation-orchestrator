@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/example/ms-validation-orchestrator-service/config"
-	"github.com/example/ms-validation-orchestrator-service/internal/adapters/engines"
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
+	engines "github.com/example/ms-validation-orchestrator-service/internal/infrastructure/http"
 	"github.com/example/ms-validation-orchestrator-service/internal/infrastructure/logging"
+	transporthttp "github.com/example/ms-validation-orchestrator-service/internal/transport/http"
+	api "github.com/example/ms-validation-orchestrator-service/internal/transport/http/api/v1"
 	"github.com/example/ms-validation-orchestrator-service/internal/usecase"
-	transporthttp "github.com/example/ms-validation-orchestrator-service/transport/http"
-	api "github.com/example/ms-validation-orchestrator-service/transport/http/api/v1"
 )
 
 type App struct {

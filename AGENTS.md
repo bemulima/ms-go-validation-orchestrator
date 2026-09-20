@@ -6,7 +6,7 @@ Read `.ai/rules/common.md`, `.ai/service.yaml`, `docs/README.md`, and the affect
 
 ## Architecture invariants
 
-- Domain types and ports live in `internal/domain`; orchestration belongs in `internal/usecase`; engine integrations belong in `internal/adapters/engines`; HTTP transport and wiring stay at the edges.
+- Domain types and ports live in `internal/domain`; orchestration belongs in `internal/usecase`; outbound engine HTTP integrations belong in `internal/infrastructure/http`; inbound HTTP transport and wiring stay at the edges in `internal/transport/http` and `internal/app`.
 - This service coordinates validators. It must not absorb language-, framework-, browser-, database-, or infrastructure-specific validation logic.
 - `ValidationContractV1`, normalized results, stage ordering/mode filtering, engine IDs, link semantics, and outbound validator payloads are versioned contracts.
 - Stages execute sequentially in deterministic topological order. V1 core fields are parsed strictly, but engine-specific `rules` and `checks` remain opaque JSON owned by engines. Do not claim parallelism or per-stage timeout enforcement.

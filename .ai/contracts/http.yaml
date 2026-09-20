@@ -3,32 +3,32 @@ owned_http:
   - method: GET
     path: /api/v1/engines
     response: sorted configured engine IDs
-    source: transport/http/api/v1/router.go
+    source: internal/transport/http/api/v1/router.go
   - method: POST
     path: /api/v1/validate
     request: dto.ValidateRequest
     response: internal/domain.ValidationResult
     additive_response: teacher_explanation teacher-validation-explanation.v1
     invalid_request_status: 400
-    source: transport/http/api/v1/handler.go
+    source: internal/transport/http/api/v1/handler.go
   - method: GET
     path: /api/v1/capabilities
     response: domain.EngineCapabilitiesV1
-    source: transport/http/api/v1/handler.go
+    source: internal/transport/http/api/v1/handler.go
   - method: POST
     path: /api/v1/contracts/inspect
     request: dto.InspectContractRequest
     response: domain.ContractInspectionResultV1
-    source: transport/http/api/v1/handler.go
+    source: internal/transport/http/api/v1/handler.go
   - method: POST
     path: /api/v1/contracts/verify
     request: dto.VerifyContractRequest
     response: domain.ContractVerificationReceiptV1
-    source: transport/http/api/v1/handler.go
+    source: internal/transport/http/api/v1/handler.go
   - method: GET
     path: /internal/health
     response: '{"status":"ok"}'
-    source: transport/http/router.go
+    source: internal/transport/http/router.go
 authentication:
   header: X-Internal-Token
   applies_to: /api/v1/*
@@ -53,7 +53,7 @@ public_client:
   default_timeout_when_client_is_nil: 30s
   response_body_limit: 4 MiB
 consumed_http:
-  transport: internal/adapters/engines/http_client.go
+  transport: internal/infrastructure/http/http_client.go
   timeout: 30s
   accepted_validation_statuses: [200, 422]
   response_body_limit: 4 MiB

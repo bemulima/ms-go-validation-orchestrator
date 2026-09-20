@@ -7,11 +7,11 @@ layers:
   - name: usecase
     paths: [internal/usecase]
     owns: [parsing, legacy adaptation, filtering, dependency ordering, orchestration, links]
-  - name: adapters
-    paths: [internal/adapters/engines]
+  - name: infrastructure
+    paths: [internal/infrastructure/http, internal/infrastructure/logging]
     owns: [validator-specific request mapping and response normalization]
   - name: transport
-    paths: [transport/http, dto, mapper, public]
+    paths: [internal/transport/http, dto, mapper, public]
     owns: [HTTP API, DTO mapping, public client]
   - name: composition
     paths: [internal/app, config, cmd]

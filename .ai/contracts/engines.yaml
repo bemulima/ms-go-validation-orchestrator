@@ -27,6 +27,6 @@ adapter_rules:
   workspace_foundation_payload: forwards stage rules and checks
 source_of_truth:
   registration: internal/app/app.go
-  adapters: internal/adapters/engines
+  adapters: internal/infrastructure/http
   detailed_capabilities: docs/capability-matrix.md
   configured_capability_contract: internal/domain/capabilities.go

@@ -26,10 +26,10 @@ not_owned:
 entrypoints:
   application: internal/app/app.go
   executable: cmd/ms-go-validation-orchestrator
-  http_router: transport/http/router.go
+  http_router: internal/transport/http/router.go
 source_of_truth:
-  behavior: [internal, transport, dto, mapper, public]
-  tests: [internal, transport]
+  behavior: [internal, dto, mapper, public]
+  tests: [internal]
   documentation: docs/README.md
   contracts: [.ai/contracts/http.yaml, .ai/contracts/orchestration.yaml, .ai/contracts/engines.yaml]
 dependencies:

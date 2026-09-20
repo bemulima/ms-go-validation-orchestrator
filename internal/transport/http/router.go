@@ -3,8 +3,8 @@ package http
 import (
 	"net/http"
 
-	apiv1 "github.com/example/ms-validation-orchestrator-service/transport/http/api/v1"
-	internalhttp "github.com/example/ms-validation-orchestrator-service/transport/http/internal"
+	apiv1 "github.com/example/ms-validation-orchestrator-service/internal/transport/http/api/v1"
+	privatehttp "github.com/example/ms-validation-orchestrator-service/internal/transport/http/private"
 )
 
 // Dependencies contains HTTP transport wiring.
@@ -22,7 +22,7 @@ func NewRouter(deps Dependencies) http.Handler {
 	root.Handle("/api/v1/", requireInternalToken(deps.InternalToken, http.StripPrefix("/api/v1", apiMux)))
 
 	internalMux := http.NewServeMux()
-	internalMux.Handle("/", internalhttp.HealthHandler())
+	internalMux.Handle("/", privatehttp.HealthHandler())
 	root.Handle("/internal/", http.StripPrefix("/internal", internalMux))
 
 	return root

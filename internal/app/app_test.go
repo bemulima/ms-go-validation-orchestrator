@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/example/ms-validation-orchestrator-service/config"
-	"github.com/example/ms-validation-orchestrator-service/internal/adapters/engines"
+	engines "github.com/example/ms-validation-orchestrator-service/internal/infrastructure/http"
 )
 
 func TestBuildEngineClientsRegistersPHPFrameworkHooks(t *testing.T) {

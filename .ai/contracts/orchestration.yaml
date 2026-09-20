@@ -51,4 +51,4 @@ sources:
   - internal/usecase/contract_parser.go
   - internal/usecase/orchestrate_validation.go
   - internal/usecase/link_validator.go
-  - internal/adapters/engines/legacy_generic_engine.go
+  - internal/infrastructure/http/legacy_generic_engine.go

@@ -6,8 +6,8 @@
 
 - `internal/domain` defines contracts, requests, results, issues, and engine ports.
 - `internal/usecase` owns parsing, legacy adaptation, stage selection and ordering, execution, aggregation, and links.
-- `internal/adapters/engines` maps orchestration inputs to validator-specific HTTP payloads and normalizes responses.
-- `transport/http`, `dto`, `mapper`, and `public` implement the inbound API and reusable client.
+- `internal/infrastructure/http` maps orchestration inputs to validator-specific HTTP payloads and normalizes responses.
+- `internal/transport/http`, `dto`, `mapper`, and `public` implement the inbound API and reusable client.
 - `internal/app`, `config`, and `cmd` form the composition root and register engines from environment configuration.
 
 Engine services own HTML, CSS, language, framework, browser, Git, Docker, database, Linux, cache, and search validation. Adding such validation directly to this repository would violate the service boundary; add an adapter here and the implementation in the owning validator.
