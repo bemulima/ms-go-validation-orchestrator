@@ -1,0 +1,47 @@
+schema: architecture/v1
+kind: operation
+id: post-contracts-inspect
+manifest_revision: 1
+service_id: ms-go-validation-orchestrator
+type: http
+identity: {transport: http, http: {method: POST, path: /api/v1/contracts/inspect}}
+access:
+  audience: {value: internal contract authoring caller, confidence: 1, evidence: [{source_path: .ai/contracts/http.yaml, symbol: authentication}]}
+  authentication: {value: X-Internal-Token header required, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}
+  authorization: {value: service-level internal caller boundary, confidence: 1, evidence: [{source_path: .ai/service.yaml, symbol: security}]}
+  idempotency: {value: read-only inspection, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]}
+trigger: {description: {value: Authenticated POST carrying a contract shape for inspection, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}}
+input:
+  path_params: []
+  query: []
+  headers:
+    - {name: X-Internal-Token, required: true, description: {value: Internal caller authentication header, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}}
+  body: {name: inspect-contract-request, description: {value: code_structure and optional mode fields, confidence: 1, evidence: [{source_path: dto/validation.go, symbol: InspectContractRequest}]}}
+business_task: {value: Inspect authored contract structure and configured capabilities without executing validation, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]}
+business_process:
+  - {id: decode, description: {value: Enforce bounded strict JSON and map the inspection request, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: decodeStrictJSON}]}, interactions: []}
+  - {id: inspect, description: {value: Run contract inspection through the use case, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]}, interactions: []}
+business_rules:
+  - {value: Unknown fields and trailing JSON are rejected, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: decodeStrictJSON}]}
+  - {value: Request bodies are capped at 2 MiB, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: maxValidationRequestBytes}]}
+implementation:
+  router: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]
+  handler: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]
+  use_cases: [{source_path: internal/usecase/contract_inspector.go, symbol: InspectContract}]
+  domain_services: []
+  repositories: []
+data_access: []
+external_interactions: []
+side_effects: []
+output:
+  responses:
+    - {status_code: 200, description: {value: Contract inspection result JSON, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]}, body: {name: contract-inspection-result, description: {value: versioned inspection result, confidence: 1, evidence: [{source_path: .ai/contracts/http.yaml, symbol: owned_http}]}}}
+    - {status_code: 400, description: {value: 'Decode, mapping, or contract inspection failure', confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]}}
+    - {status_code: 401, description: {value: Missing or invalid internal caller header, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}}
+    - {status_code: 413, description: {value: Request exceeds 2 MiB body limit, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: writeRequestDecodeError}]}}
+  emitted_events: []
+errors:
+  - {code: invalid_request, status_code: 400, description: {value: Strict JSON decoding or DTO mapping failed, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: writeRequestDecodeError}]}}
+  - {code: invalid_contract, status_code: 400, description: {value: Contract inspection rejected the authored structure, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]}}
+evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]
+confidence: 1

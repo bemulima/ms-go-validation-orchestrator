@@ -1,0 +1,36 @@
+schema: architecture/v1
+kind: operation
+id: get-health
+manifest_revision: 1
+service_id: ms-go-validation-orchestrator
+type: http
+identity: {transport: http, http: {method: GET, path: /health}}
+access:
+  audience: {value: internal health caller, confidence: 1, evidence: [{source_path: internal/transport/http/private/health.go, symbol: HealthHandler}]}
+  authentication: {value: none, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
+  authorization: {value: none, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
+  idempotency: {value: read-only response, confidence: 1, evidence: [{source_path: internal/transport/http/private/health.go, symbol: HealthHandler}]}
+trigger: {description: {value: HTTP request to internal health, confidence: 1, evidence: [{source_path: internal/transport/http/private/router.go, symbol: NewRouter}]}}
+input: {path_params: [], query: [], headers: []}
+business_task: {value: Report process health, confidence: 1, evidence: [{source_path: internal/transport/http/private/health.go, symbol: HealthHandler}]}
+business_process:
+  - {id: respond, description: {value: Encode status ok as JSON, confidence: 1, evidence: [{source_path: internal/transport/http/private/health.go, symbol: HealthHandler}]}, interactions: []}
+business_rules:
+  - {value: Health does not perform storage or engine readiness checks, confidence: 1, evidence: [{source_path: internal/transport/http/private/health.go, symbol: HealthHandler}]}
+  - {value: The private router registers /health and the root router mounts it below /internal/, confidence: 1, evidence: [{source_path: internal/transport/http/private/router.go, symbol: NewRouter}, {source_path: internal/transport/http/router.go, symbol: NewRouter}]}
+implementation:
+  router: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]
+  handler: [{source_path: internal/transport/http/private/health.go, symbol: HealthHandler}]
+  use_cases: []
+  domain_services: []
+  repositories: []
+data_access: []
+external_interactions: []
+side_effects: []
+output:
+  responses:
+    - {status_code: 200, description: {value: JSON status ok response, confidence: 1, evidence: [{source_path: internal/transport/http/private/health.go, symbol: HealthHandler}]}, body: {name: health-response, description: {value: status string field, confidence: 1, evidence: [{source_path: internal/transport/http/private/health.go, symbol: HealthHandler}]}}}
+  emitted_events: []
+errors: []
+evidence: [{source_path: internal/transport/http/private/health.go, symbol: HealthHandler}]
+confidence: 1

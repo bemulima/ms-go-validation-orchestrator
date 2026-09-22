@@ -1,0 +1,32 @@
+%% GENERATED — READ-ONLY PRESENTATION
+%% Do not edit; source of truth is the architecture manifest.
+flowchart TD
+  operation["post-contracts-verify — http"]
+  identity["identity: http / POST / /api/v1/contracts/verify"]
+  operation --> identity
+  access["access: internal contract authoring caller / X-Internal-Token header required / service-level internal caller boundary / verification executes supplied cases and returns a receipt"]
+  operation --> access
+  trigger["trigger: Authenticated POST carrying a contract and starter/reference/negative cases"]
+  operation --> trigger
+  input["input: headers=X-Internal-Token / required=true / Internal caller authentication header; body=verify-contract-request / schema, blueprint digest, runtime profile digest, code structure, and cases"]
+  operation --> input
+  business_task["business task: Execute contract verification cases and return a versioned receipt"]
+  operation --> business_task
+  business_process["business process: decode / Enforce bounded strict JSON and map the verification request; verify / Execute verification through the use case and produce a receipt"]
+  operation --> business_process
+  business_rules["business rule: Verification requires exactly one starter, one reference, and at least one negative case according to the authoring contract; Request bodies are capped at 2 MiB and reject unknown fields or trailing values"]
+  operation --> business_rules
+  implementation["implementation: router=internal/transport/http/api/v1/router.go / RegisterRoutes; handler=internal/transport/http/api/v1/handler.go / VerifyContract; use_cases=internal/usecase/contract_verification.go / VerifyContract; domain_services=unknown; repositories=unknown"]
+  operation --> implementation
+  data_access["data access: unknown"]
+  operation --> data_access
+  external_interactions["external interactions: http / configured validator engines / outbound / Verification executes cases through configured engine adapters"]
+  operation --> external_interactions
+  side_effects["side effects: unknown"]
+  operation --> side_effects
+  output["output: response=status 200 / Contract verification receipt JSON; response=status 400 / Decode, mapping, or verification failure; response=status 401 / Missing or invalid internal caller header; response=status 413 / Request exceeds 2 MiB body limit"]
+  operation --> output
+  errors["errors: invalid_request / status 400 / Strict JSON decoding or DTO mapping failed; verification_failed / status 400 / Verification use case rejected the supplied contract or cases"]
+  operation --> errors
+  evidence["evidence: internal/transport/http/api/v1/handler.go / VerifyContract; confidence: 1"]
+  operation --> evidence

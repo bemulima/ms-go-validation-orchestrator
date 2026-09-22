@@ -1,0 +1,32 @@
+%% GENERATED — READ-ONLY PRESENTATION
+%% Do not edit; source of truth is the architecture manifest.
+flowchart TD
+  operation["get-health — http"]
+  identity["identity: http / GET / /health"]
+  operation --> identity
+  access["access: internal health caller / none / none / read-only response"]
+  operation --> access
+  trigger["trigger: HTTP request to internal health"]
+  operation --> trigger
+  input["input: unknown"]
+  operation --> input
+  business_task["business task: Report process health"]
+  operation --> business_task
+  business_process["business process: respond / Encode status ok as JSON"]
+  operation --> business_process
+  business_rules["business rule: Health does not perform storage or engine readiness checks; The private router registers /health and the root router mounts it below /internal/"]
+  operation --> business_rules
+  implementation["implementation: router=internal/transport/http/router.go / NewRouter; handler=internal/transport/http/private/health.go / HealthHandler; use_cases=unknown; domain_services=unknown; repositories=unknown"]
+  operation --> implementation
+  data_access["data access: unknown"]
+  operation --> data_access
+  external_interactions["external interactions: unknown"]
+  operation --> external_interactions
+  side_effects["side effects: unknown"]
+  operation --> side_effects
+  output["output: response=status 200 / JSON status ok response"]
+  operation --> output
+  errors["errors: unknown"]
+  operation --> errors
+  evidence["evidence: internal/transport/http/private/health.go / HealthHandler; confidence: 1"]
+  operation --> evidence

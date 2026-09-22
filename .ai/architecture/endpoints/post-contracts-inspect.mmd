@@ -1,0 +1,32 @@
+%% GENERATED — READ-ONLY PRESENTATION
+%% Do not edit; source of truth is the architecture manifest.
+flowchart TD
+  operation["post-contracts-inspect — http"]
+  identity["identity: http / POST / /api/v1/contracts/inspect"]
+  operation --> identity
+  access["access: internal contract authoring caller / X-Internal-Token header required / service-level internal caller boundary / read-only inspection"]
+  operation --> access
+  trigger["trigger: Authenticated POST carrying a contract shape for inspection"]
+  operation --> trigger
+  input["input: headers=X-Internal-Token / required=true / Internal caller authentication header; body=inspect-contract-request / code_structure and optional mode fields"]
+  operation --> input
+  business_task["business task: Inspect authored contract structure and configured capabilities without executing validation"]
+  operation --> business_task
+  business_process["business process: decode / Enforce bounded strict JSON and map the inspection request; inspect / Run contract inspection through the use case"]
+  operation --> business_process
+  business_rules["business rule: Unknown fields and trailing JSON are rejected; Request bodies are capped at 2 MiB"]
+  operation --> business_rules
+  implementation["implementation: router=internal/transport/http/api/v1/router.go / RegisterRoutes; handler=internal/transport/http/api/v1/handler.go / InspectContract; use_cases=internal/usecase/contract_inspector.go / InspectContract; domain_services=unknown; repositories=unknown"]
+  operation --> implementation
+  data_access["data access: unknown"]
+  operation --> data_access
+  external_interactions["external interactions: unknown"]
+  operation --> external_interactions
+  side_effects["side effects: unknown"]
+  operation --> side_effects
+  output["output: response=status 200 / Contract inspection result JSON; response=status 400 / Decode, mapping, or contract inspection failure; response=status 401 / Missing or invalid internal caller header; response=status 413 / Request exceeds 2 MiB body limit"]
+  operation --> output
+  errors["errors: invalid_request / status 400 / Strict JSON decoding or DTO mapping failed; invalid_contract / status 400 / Contract inspection rejected the authored structure"]
+  operation --> errors
+  evidence["evidence: internal/transport/http/api/v1/handler.go / InspectContract; confidence: 1"]
+  operation --> evidence

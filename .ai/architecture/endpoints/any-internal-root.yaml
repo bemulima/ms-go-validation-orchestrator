@@ -1,0 +1,33 @@
+schema: architecture/v1
+kind: operation
+id: any-internal-root
+manifest_revision: 1
+service_id: ms-go-validation-orchestrator
+type: http
+identity: {transport: http, http: {method: ANY, path: /internal/}}
+access:
+  audience: {value: internal health caller, confidence: 1, evidence: [{source_path: .ai/service.yaml, symbol: security}]}
+  authentication: {value: none at the root mount, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
+  authorization: {value: service-level internal caller boundary, confidence: 1, evidence: [{source_path: .ai/service.yaml, symbol: security}]}
+  idempotency: {value: unknown; mount delegates to the private router, confidence: 0, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
+trigger: {description: {value: Root router mount for internal subroutes, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}}
+input: {path_params: [], query: [], headers: []}
+business_task: {value: Delegate internal requests to the private router, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
+business_process:
+  - {id: delegate, description: {value: Strip the internal prefix before delegation, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}, interactions: []}
+business_rules: []
+implementation:
+  router: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]
+  handler: []
+  use_cases: []
+  domain_services: []
+  repositories: []
+data_access: []
+external_interactions: []
+side_effects: []
+output:
+  responses: []
+  emitted_events: []
+errors: []
+evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]
+confidence: 1

@@ -1,0 +1,32 @@
+%% GENERATED — READ-ONLY PRESENTATION
+%% Do not edit; source of truth is the architecture manifest.
+flowchart TD
+  operation["get-engines-relative — http"]
+  identity["identity: http / GET / /engines"]
+  operation --> identity
+  access["access: internal authoring or orchestration caller / X-Internal-Token header required when mounted below /api/v1 / service-level internal caller boundary / read-only discovery"]
+  operation --> access
+  trigger["trigger: GET route registered in the API v1 subrouter"]
+  operation --> trigger
+  input["input: unknown"]
+  operation --> input
+  business_task["business task: Return configured engine IDs"]
+  operation --> business_task
+  business_process["business process: list / Read configured engine IDs and encode JSON"]
+  operation --> business_process
+  business_rules["business rule: unknown"]
+  operation --> business_rules
+  implementation["implementation: router=internal/transport/http/api/v1/router.go / RegisterRoutes; handler=internal/transport/http/api/v1/handler.go / ListEngines; use_cases=internal/usecase/orchestrate_validation.go / ConfiguredEngineIDs; domain_services=unknown; repositories=unknown"]
+  operation --> implementation
+  data_access["data access: unknown"]
+  operation --> data_access
+  external_interactions["external interactions: unknown"]
+  operation --> external_interactions
+  side_effects["side effects: unknown"]
+  operation --> side_effects
+  output["output: response=status 200 / JSON object with configured engine IDs"]
+  operation --> output
+  errors["errors: unknown"]
+  operation --> errors
+  evidence["evidence: internal/transport/http/api/v1/router.go / RegisterRoutes; confidence: 1"]
+  operation --> evidence

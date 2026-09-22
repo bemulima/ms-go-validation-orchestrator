@@ -1,0 +1,39 @@
+schema: architecture/v1
+kind: operation
+id: post-validate-relative
+manifest_revision: 1
+service_id: ms-go-validation-orchestrator
+type: http
+identity: {transport: http, http: {method: POST, path: /validate}}
+access:
+  audience: {value: internal validation caller, confidence: 1, evidence: [{source_path: .ai/contracts/http.yaml, symbol: authentication}]}
+  authentication: {value: X-Internal-Token header required when mounted below /api/v1, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}
+  authorization: {value: service-level internal caller boundary, confidence: 1, evidence: [{source_path: .ai/service.yaml, symbol: security}]}
+  idempotency: {value: unknown; no request idempotency policy is implemented, confidence: 0, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: Validate}]}
+trigger: {description: {value: POST route registered in the API v1 subrouter, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}}
+input:
+  path_params: []
+  query: []
+  headers: []
+  body: {name: validate-request, description: {value: Validation request DTO, confidence: 1, evidence: [{source_path: dto/validation.go, symbol: ValidateRequest}]}}
+business_task: {value: 'Parse, plan, execute, and aggregate configured validation stages and links', confidence: 1, evidence: [{source_path: internal/usecase/orchestrate_validation.go, symbol: Execute}]}
+business_process:
+  - {id: execute, description: {value: Execute retained stages sequentially through configured engine clients, confidence: 1, evidence: [{source_path: internal/usecase/orchestrate_validation.go, symbol: Execute}]}, interactions: [validator-engines]}
+business_rules: []
+implementation:
+  router: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]
+  handler: [{source_path: internal/transport/http/api/v1/handler.go, symbol: Validate}]
+  use_cases: [{source_path: internal/usecase/orchestrate_validation.go, symbol: Execute}]
+  domain_services: []
+  repositories: []
+data_access: []
+external_interactions:
+  - {id: validator-engines, transport: http, target: configured validator engines, direction: outbound, description: {value: Dispatch stage payloads to engine adapters and normalize bounded responses, confidence: 1, evidence: [{source_path: internal/infrastructure/http/http_client.go, symbol: Do}]}}
+side_effects: []
+output:
+  responses:
+    - {status_code: 200, description: {value: Normalized validation result JSON, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: Validate}]}}
+  emitted_events: []
+errors: []
+evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]
+confidence: 1

@@ -1,0 +1,32 @@
+%% GENERATED — READ-ONLY PRESENTATION
+%% Do not edit; source of truth is the architecture manifest.
+flowchart TD
+  operation["any-internal-root — http"]
+  identity["identity: http / ANY / /internal/"]
+  operation --> identity
+  access["access: internal health caller / none at the root mount / service-level internal caller boundary / unknown; mount delegates to the private router"]
+  operation --> access
+  trigger["trigger: Root router mount for internal subroutes"]
+  operation --> trigger
+  input["input: unknown"]
+  operation --> input
+  business_task["business task: Delegate internal requests to the private router"]
+  operation --> business_task
+  business_process["business process: delegate / Strip the internal prefix before delegation"]
+  operation --> business_process
+  business_rules["business rule: unknown"]
+  operation --> business_rules
+  implementation["implementation: router=internal/transport/http/router.go / NewRouter; handler=unknown; use_cases=unknown; domain_services=unknown; repositories=unknown"]
+  operation --> implementation
+  data_access["data access: unknown"]
+  operation --> data_access
+  external_interactions["external interactions: unknown"]
+  operation --> external_interactions
+  side_effects["side effects: unknown"]
+  operation --> side_effects
+  output["output: unknown"]
+  operation --> output
+  errors["errors: unknown"]
+  operation --> errors
+  evidence["evidence: internal/transport/http/router.go / NewRouter; confidence: 1"]
+  operation --> evidence

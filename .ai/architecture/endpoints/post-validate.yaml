@@ -1,0 +1,52 @@
+schema: architecture/v1
+kind: operation
+id: post-validate
+manifest_revision: 1
+service_id: ms-go-validation-orchestrator
+type: http
+identity: {transport: http, http: {method: POST, path: /api/v1/validate}}
+access:
+  audience: {value: internal validation caller, confidence: 1, evidence: [{source_path: .ai/contracts/http.yaml, symbol: authentication}]}
+  authentication: {value: X-Internal-Token header required, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}
+  authorization: {value: service-level internal caller boundary, confidence: 1, evidence: [{source_path: .ai/service.yaml, symbol: security}]}
+  idempotency: {value: unknown; no request idempotency policy is implemented, confidence: 0, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: Validate}]}
+trigger: {description: {value: 'Authenticated POST carrying a validation contract, workspace, and task metadata', confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}}
+input:
+  path_params: []
+  query: []
+  headers:
+    - {name: X-Internal-Token, required: true, description: {value: Internal caller authentication header, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}}
+  body: {name: validate-request, description: {value: 'task, code structure, mode, workspace, and task metadata fields', confidence: 1, evidence: [{source_path: dto/validation.go, symbol: ValidateRequest}]}}
+business_task: {value: 'Parse, plan, execute, and aggregate configured validation stages and links', confidence: 1, evidence: [{source_path: internal/usecase/orchestrate_validation.go, symbol: Execute}]}
+business_process:
+  - {id: decode, description: {value: Enforce 2 MiB strict JSON and map workspace paths and fields, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: decodeStrictJSON}]}, interactions: []}
+  - {id: parse, description: {value: Parse V1 or adapt a legacy payload, confidence: 1, evidence: [{source_path: internal/usecase/contract_parser.go, symbol: Parse}]}, interactions: []}
+  - {id: order, description: {value: Filter stages and topologically order retained stages deterministically, confidence: 1, evidence: [{source_path: .ai/architecture.yaml, symbol: execution_flow}]}, interactions: []}
+  - {id: execute, description: {value: Execute retained stages sequentially through configured engine clients, confidence: 1, evidence: [{source_path: internal/usecase/orchestrate_validation.go, symbol: Execute}]}, interactions: [validator-engines]}
+  - {id: aggregate, description: {value: 'Evaluate links, aggregate normalized reports, and derive bounded teacher explanation', confidence: 1, evidence: [{source_path: internal/usecase/orchestrate_validation.go, symbol: Execute}]}, interactions: []}
+business_rules:
+  - {value: V1 core fields are strict while engine rules and checks remain opaque JSON owned by engines, confidence: 1, evidence: [{source_path: .ai/contracts/orchestration.yaml, symbol: strict_core_schema_validation}]}
+  - {value: 'Stages execute sequentially; optional validation failure does not fail aggregate, but engine execution errors do', confidence: 1, evidence: [{source_path: .ai/contracts/orchestration.yaml, symbol: aggregation}]}
+  - {value: Root workspace paths must use exact portable /workspaces/<sandbox-id> namespace, confidence: 1, evidence: [{source_path: .ai/contracts/http.yaml, symbol: workspace_root_containment}]}
+implementation:
+  router: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]
+  handler: [{source_path: internal/transport/http/api/v1/handler.go, symbol: Validate}]
+  use_cases: [{source_path: internal/usecase/orchestrate_validation.go, symbol: Execute}]
+  domain_services: []
+  repositories: []
+data_access: []
+external_interactions:
+  - {id: validator-engines, transport: http, target: configured validator engines, direction: outbound, description: {value: Dispatch stage payloads to engine adapters and normalize bounded responses, confidence: 1, evidence: [{source_path: internal/infrastructure/http/http_client.go, symbol: Do}]}}
+side_effects: []
+output:
+  responses:
+    - {status_code: 200, description: {value: Normalized validation result with additive teacher explanation, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: Validate}]}, body: {name: validation-result, description: {value: normalized contract result and bounded safe explanation, confidence: 1, evidence: [{source_path: .ai/contracts/http.yaml, symbol: teacher_explanation}]}}}
+    - {status_code: 400, description: {value: Invalid request or validation execution failure, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: Validate}]}}
+    - {status_code: 401, description: {value: Missing or invalid internal caller header, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}}
+    - {status_code: 413, description: {value: Request exceeds 2 MiB body limit, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: writeRequestDecodeError}]}}
+  emitted_events: []
+errors:
+  - {code: invalid_request, status_code: 400, description: {value: Strict JSON decoding or DTO mapping failed, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: writeRequestDecodeError}]}}
+  - {code: validation_failed, status_code: 400, description: {value: Contract parsing or stage execution failed, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: Validate}]}}
+evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: Validate}]
+confidence: 1

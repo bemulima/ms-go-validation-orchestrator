@@ -1,0 +1,38 @@
+schema: architecture/v1
+kind: operation
+id: post-contracts-inspect-relative
+manifest_revision: 1
+service_id: ms-go-validation-orchestrator
+type: http
+identity: {transport: http, http: {method: POST, path: /contracts/inspect}}
+access:
+  audience: {value: internal contract authoring caller, confidence: 1, evidence: [{source_path: .ai/contracts/http.yaml, symbol: authentication}]}
+  authentication: {value: X-Internal-Token header required when mounted below /api/v1, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}
+  authorization: {value: service-level internal caller boundary, confidence: 1, evidence: [{source_path: .ai/service.yaml, symbol: security}]}
+  idempotency: {value: read-only inspection, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]}
+trigger: {description: {value: POST route registered in the API v1 subrouter, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}}
+input:
+  path_params: []
+  query: []
+  headers: []
+  body: {name: inspect-contract-request, description: {value: Contract inspection request DTO, confidence: 1, evidence: [{source_path: dto/validation.go, symbol: InspectContractRequest}]}}
+business_task: {value: Inspect authored contract structure and configured capabilities, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]}
+business_process:
+  - {id: inspect, description: {value: Run contract inspection through the use case, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]}, interactions: []}
+business_rules: []
+implementation:
+  router: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]
+  handler: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]
+  use_cases: [{source_path: internal/usecase/contract_inspector.go, symbol: InspectContract}]
+  domain_services: []
+  repositories: []
+data_access: []
+external_interactions: []
+side_effects: []
+output:
+  responses:
+    - {status_code: 200, description: {value: Contract inspection result JSON, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]}}
+  emitted_events: []
+errors: []
+evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]
+confidence: 1

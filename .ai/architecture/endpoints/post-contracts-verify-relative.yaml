@@ -1,0 +1,39 @@
+schema: architecture/v1
+kind: operation
+id: post-contracts-verify-relative
+manifest_revision: 1
+service_id: ms-go-validation-orchestrator
+type: http
+identity: {transport: http, http: {method: POST, path: /contracts/verify}}
+access:
+  audience: {value: internal contract authoring caller, confidence: 1, evidence: [{source_path: .ai/contracts/http.yaml, symbol: authentication}]}
+  authentication: {value: X-Internal-Token header required when mounted below /api/v1, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}
+  authorization: {value: service-level internal caller boundary, confidence: 1, evidence: [{source_path: .ai/service.yaml, symbol: security}]}
+  idempotency: {value: executes supplied verification cases and returns a receipt, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: VerifyContract}]}
+trigger: {description: {value: POST route registered in the API v1 subrouter, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}}
+input:
+  path_params: []
+  query: []
+  headers: []
+  body: {name: verify-contract-request, description: {value: Contract verification request DTO, confidence: 1, evidence: [{source_path: dto/validation.go, symbol: VerifyContractRequest}]}}
+business_task: {value: Execute contract verification cases and return a versioned receipt, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: VerifyContract}]}
+business_process:
+  - {id: verify, description: {value: Execute verification through the use case, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: VerifyContract}]}, interactions: [validator-engines]}
+business_rules: []
+implementation:
+  router: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]
+  handler: [{source_path: internal/transport/http/api/v1/handler.go, symbol: VerifyContract}]
+  use_cases: [{source_path: internal/usecase/contract_verification.go, symbol: VerifyContract}]
+  domain_services: []
+  repositories: []
+data_access: []
+external_interactions:
+  - {id: validator-engines, transport: http, target: configured validator engines, direction: outbound, description: {value: Verification executes cases through configured engine adapters, confidence: 1, evidence: [{source_path: internal/usecase/contract_verification.go, symbol: VerifyContract}]}}
+side_effects: []
+output:
+  responses:
+    - {status_code: 200, description: {value: Contract verification receipt JSON, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: VerifyContract}]}}
+  emitted_events: []
+errors: []
+evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]
+confidence: 1

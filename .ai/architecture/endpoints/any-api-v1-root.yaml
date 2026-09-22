@@ -1,0 +1,33 @@
+schema: architecture/v1
+kind: operation
+id: any-api-v1-root
+manifest_revision: 1
+service_id: ms-go-validation-orchestrator
+type: http
+identity: {transport: http, http: {method: ANY, path: /api/v1/}}
+access:
+  audience: {value: internal API caller, confidence: 1, evidence: [{source_path: .ai/service.yaml, symbol: security}]}
+  authentication: {value: X-Internal-Token is required by the mounted API middleware, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
+  authorization: {value: service-level internal caller boundary, confidence: 1, evidence: [{source_path: .ai/service.yaml, symbol: security}]}
+  idempotency: {value: unknown; mount delegates to method-specific API handlers, confidence: 0, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
+trigger: {description: {value: Root router mount for API v1 subroutes, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}}
+input: {path_params: [], query: [], headers: []}
+business_task: {value: Delegate API v1 requests to the registered API handlers, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
+business_process:
+  - {id: delegate, description: {value: Strip the API v1 prefix and apply internal-token middleware before delegation, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}, interactions: []}
+business_rules: []
+implementation:
+  router: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]
+  handler: []
+  use_cases: []
+  domain_services: []
+  repositories: []
+data_access: []
+external_interactions: []
+side_effects: []
+output:
+  responses: []
+  emitted_events: []
+errors: []
+evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]
+confidence: 1

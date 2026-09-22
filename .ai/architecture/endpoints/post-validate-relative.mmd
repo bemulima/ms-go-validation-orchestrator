@@ -1,0 +1,32 @@
+%% GENERATED — READ-ONLY PRESENTATION
+%% Do not edit; source of truth is the architecture manifest.
+flowchart TD
+  operation["post-validate-relative — http"]
+  identity["identity: http / POST / /validate"]
+  operation --> identity
+  access["access: internal validation caller / X-Internal-Token header required when mounted below /api/v1 / service-level internal caller boundary / unknown; no request idempotency policy is implemented"]
+  operation --> access
+  trigger["trigger: POST route registered in the API v1 subrouter"]
+  operation --> trigger
+  input["input: body=validate-request / Validation request DTO"]
+  operation --> input
+  business_task["business task: Parse, plan, execute, and aggregate configured validation stages and links"]
+  operation --> business_task
+  business_process["business process: execute / Execute retained stages sequentially through configured engine clients"]
+  operation --> business_process
+  business_rules["business rule: unknown"]
+  operation --> business_rules
+  implementation["implementation: router=internal/transport/http/api/v1/router.go / RegisterRoutes; handler=internal/transport/http/api/v1/handler.go / Validate; use_cases=internal/usecase/orchestrate_validation.go / Execute; domain_services=unknown; repositories=unknown"]
+  operation --> implementation
+  data_access["data access: unknown"]
+  operation --> data_access
+  external_interactions["external interactions: http / configured validator engines / outbound / Dispatch stage payloads to engine adapters and normalize bounded responses"]
+  operation --> external_interactions
+  side_effects["side effects: unknown"]
+  operation --> side_effects
+  output["output: response=status 200 / Normalized validation result JSON"]
+  operation --> output
+  errors["errors: unknown"]
+  operation --> errors
+  evidence["evidence: internal/transport/http/api/v1/router.go / RegisterRoutes; confidence: 1"]
+  operation --> evidence

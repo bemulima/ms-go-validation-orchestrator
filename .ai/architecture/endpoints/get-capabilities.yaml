@@ -1,0 +1,40 @@
+schema: architecture/v1
+kind: operation
+id: get-capabilities
+manifest_revision: 1
+service_id: ms-go-validation-orchestrator
+type: http
+identity: {transport: http, http: {method: GET, path: /api/v1/capabilities}}
+access:
+  audience: {value: internal authoring or orchestration caller, confidence: 1, evidence: [{source_path: .ai/contracts/http.yaml, symbol: authentication}]}
+  authentication: {value: X-Internal-Token header required, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}
+  authorization: {value: service-level internal caller boundary, confidence: 1, evidence: [{source_path: .ai/service.yaml, symbol: security}]}
+  idempotency: {value: read-only discovery, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: ListCapabilities}]}
+trigger: {description: {value: Authenticated GET for configured engine capability contract, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}}
+input:
+  path_params: []
+  query: []
+  headers:
+    - {name: X-Internal-Token, required: true, description: {value: Internal caller authentication header, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}}
+business_task: {value: Return versioned configured engine capabilities, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: ListCapabilities}]}
+business_process:
+  - {id: list, description: {value: Read capabilities from the validation executor and encode JSON, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: ListCapabilities}]}, interactions: []}
+business_rules:
+  - {value: Capability details are sourced from the configured engine capability contract, confidence: 1, evidence: [{source_path: .ai/contracts/engines.yaml, symbol: source_of_truth}]}
+implementation:
+  router: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]
+  handler: [{source_path: internal/transport/http/api/v1/handler.go, symbol: ListCapabilities}]
+  use_cases: [{source_path: internal/usecase/orchestrate_validation.go, symbol: ConfiguredEngineCapabilities}]
+  domain_services: []
+  repositories: []
+data_access: []
+external_interactions: []
+side_effects: []
+output:
+  responses:
+    - {status_code: 200, description: {value: Versioned engine capability JSON, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: ListCapabilities}]}, body: {name: engine-capabilities, description: {value: 'capability schema, digest, and engine entries', confidence: 1, evidence: [{source_path: .ai/contracts/engines.yaml, symbol: configured_capability_contract}]}}}
+    - {status_code: 401, description: {value: Missing or invalid internal caller header, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}}
+  emitted_events: []
+errors: []
+evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: ListCapabilities}]
+confidence: 1

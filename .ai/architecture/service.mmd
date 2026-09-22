@@ -1,0 +1,80 @@
+%% GENERATED — READ-ONLY PRESENTATION
+%% Do not edit; source of truth is the architecture manifest.
+flowchart LR
+  svc["ms-go-validation-orchestrator / ms-go-validation-orchestrator"]
+  svcInfo["purpose: Parse validation contracts, order and execute configured validator stages, evaluate links, and normalize results.<br/>confidence: 1"]
+  svc --> svcInfo
+  service_responsibilities["responsibilities: Own contract parsing, legacy adaptation, mode filtering, deterministic dependency ordering, and aggregation.; Register configured engine adapters and expose authoring and validation HTTP operations."]
+  svc --> service_responsibilities
+  service_capabilities["capabilities: List configured engine IDs and versioned capabilities.; Inspect and executable-verify authored contracts before validation.; Execute stages sequentially and return normalized validation results with a bounded teacher explanation."]
+  svc --> service_capabilities
+  inbound_0["inbound http: /api/v1 and /internal/health — Root router protects API v1 with an internal caller header and mounts public health"]
+  inbound_0 -->|inbound| svc
+  outbound_0["outbound http: configured validator engines — Engine-specific HTTP adapters are registered from environment-configured endpoints"]
+  svc -->|outbound| outbound_0
+  endpoint_group_0["endpoint group discovery: Engine discovery — List configured engine IDs and capabilities"]
+  svc --> endpoint_group_0
+  endpoint_group_0_op_0["operation: get-engines"]
+  endpoint_group_0 --> endpoint_group_0_op_0
+  endpoint_group_0_op_1["operation: get-capabilities"]
+  endpoint_group_0 --> endpoint_group_0_op_1
+  endpoint_group_0_op_2["operation: get-engines-relative"]
+  endpoint_group_0 --> endpoint_group_0_op_2
+  endpoint_group_0_op_3["operation: get-capabilities-relative"]
+  endpoint_group_0 --> endpoint_group_0_op_3
+  endpoint_group_1["endpoint group authoring: Contract authoring — Inspect and verify validation contracts"]
+  svc --> endpoint_group_1
+  endpoint_group_1_op_0["operation: post-contracts-inspect"]
+  endpoint_group_1 --> endpoint_group_1_op_0
+  endpoint_group_1_op_1["operation: post-contracts-verify"]
+  endpoint_group_1 --> endpoint_group_1_op_1
+  endpoint_group_1_op_2["operation: post-contracts-inspect-relative"]
+  endpoint_group_1 --> endpoint_group_1_op_2
+  endpoint_group_1_op_3["operation: post-contracts-verify-relative"]
+  endpoint_group_1 --> endpoint_group_1_op_3
+  endpoint_group_2["endpoint group validation: Validation execution — Execute and normalize validation requests"]
+  svc --> endpoint_group_2
+  endpoint_group_2_op_0["operation: post-validate"]
+  endpoint_group_2 --> endpoint_group_2_op_0
+  endpoint_group_2_op_1["operation: post-validate-relative"]
+  endpoint_group_2 --> endpoint_group_2_op_1
+  endpoint_group_3["endpoint group health: Health — Internal process health endpoint"]
+  svc --> endpoint_group_3
+  endpoint_group_3_op_0["operation: get-health"]
+  endpoint_group_3 --> endpoint_group_3_op_0
+  endpoint_group_4["endpoint group mounts: HTTP mount boundaries — Root router mount patterns that delegate to the API and internal subrouters"]
+  svc --> endpoint_group_4
+  endpoint_group_4_op_0["operation: any-api-v1-root"]
+  endpoint_group_4 --> endpoint_group_4_op_0
+  endpoint_group_4_op_1["operation: any-internal-root"]
+  endpoint_group_4 --> endpoint_group_4_op_1
+  contract_produced_0["produced contract: http / validation_orchestrator_http / produced / API v1 discovery, authoring, validation, and internal health operations"]
+  svc --> contract_produced_0
+  contract_consumed_0["consumed contract: http / validator_engine_http / consumed / Configured validator adapters consume engine-specific HTTP contracts and normalize their responses"]
+  contract_consumed_0 --> svc
+  operation_0["operation: any-api-v1-root (http)"]
+  svc --> operation_0
+  operation_1["operation: any-internal-root (http)"]
+  svc --> operation_1
+  operation_2["operation: get-capabilities-relative (http)"]
+  svc --> operation_2
+  operation_3["operation: get-capabilities (http)"]
+  svc --> operation_3
+  operation_4["operation: get-engines-relative (http)"]
+  svc --> operation_4
+  operation_5["operation: get-engines (http)"]
+  svc --> operation_5
+  operation_6["operation: get-health (http)"]
+  svc --> operation_6
+  operation_7["operation: post-contracts-inspect-relative (http)"]
+  svc --> operation_7
+  operation_8["operation: post-contracts-inspect (http)"]
+  svc --> operation_8
+  operation_9["operation: post-contracts-verify-relative (http)"]
+  svc --> operation_9
+  operation_10["operation: post-contracts-verify (http)"]
+  svc --> operation_10
+  operation_11["operation: post-validate-relative (http)"]
+  svc --> operation_11
+  operation_12["operation: post-validate (http)"]
+  svc --> operation_12

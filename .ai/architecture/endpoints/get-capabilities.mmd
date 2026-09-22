@@ -1,0 +1,32 @@
+%% GENERATED — READ-ONLY PRESENTATION
+%% Do not edit; source of truth is the architecture manifest.
+flowchart TD
+  operation["get-capabilities — http"]
+  identity["identity: http / GET / /api/v1/capabilities"]
+  operation --> identity
+  access["access: internal authoring or orchestration caller / X-Internal-Token header required / service-level internal caller boundary / read-only discovery"]
+  operation --> access
+  trigger["trigger: Authenticated GET for configured engine capability contract"]
+  operation --> trigger
+  input["input: headers=X-Internal-Token / required=true / Internal caller authentication header"]
+  operation --> input
+  business_task["business task: Return versioned configured engine capabilities"]
+  operation --> business_task
+  business_process["business process: list / Read capabilities from the validation executor and encode JSON"]
+  operation --> business_process
+  business_rules["business rule: Capability details are sourced from the configured engine capability contract"]
+  operation --> business_rules
+  implementation["implementation: router=internal/transport/http/api/v1/router.go / RegisterRoutes; handler=internal/transport/http/api/v1/handler.go / ListCapabilities; use_cases=internal/usecase/orchestrate_validation.go / ConfiguredEngineCapabilities; domain_services=unknown; repositories=unknown"]
+  operation --> implementation
+  data_access["data access: unknown"]
+  operation --> data_access
+  external_interactions["external interactions: unknown"]
+  operation --> external_interactions
+  side_effects["side effects: unknown"]
+  operation --> side_effects
+  output["output: response=status 200 / Versioned engine capability JSON; response=status 401 / Missing or invalid internal caller header"]
+  operation --> output
+  errors["errors: unknown"]
+  operation --> errors
+  evidence["evidence: internal/transport/http/api/v1/handler.go / ListCapabilities; confidence: 1"]
+  operation --> evidence

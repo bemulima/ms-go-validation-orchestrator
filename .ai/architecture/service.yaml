@@ -1,0 +1,106 @@
+schema: architecture/v1
+kind: service
+id: ms-go-validation-orchestrator
+manifest_revision: 1
+identity:
+  name: ms-go-validation-orchestrator
+  kind: go_backend_service
+purpose:
+  value: Parse validation contracts, order and execute configured validator stages, evaluate links, and normalize results.
+  confidence: 1
+  evidence:
+    - {source_path: .ai/service.yaml, symbol: purpose}
+responsibilities:
+  - value: Own contract parsing, legacy adaptation, mode filtering, deterministic dependency ordering, and aggregation.
+    confidence: 1
+    evidence:
+      - {source_path: .ai/architecture.yaml, symbol: execution_flow}
+  - value: Register configured engine adapters and expose authoring and validation HTTP operations.
+    confidence: 1
+    evidence:
+      - {source_path: internal/app/app.go, symbol: buildEngineClients}
+capabilities:
+  - value: List configured engine IDs and versioned capabilities.
+    confidence: 1
+    evidence:
+      - {source_path: internal/transport/http/api/v1/handler.go, symbol: ListEngines}
+  - value: Inspect and executable-verify authored contracts before validation.
+    confidence: 1
+    evidence:
+      - {source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}
+  - value: Execute stages sequentially and return normalized validation results with a bounded teacher explanation.
+    confidence: 1
+    evidence:
+      - {source_path: internal/usecase/orchestrate_validation.go, symbol: Execute}
+owned_resources: []
+inbound_interfaces:
+  - transport: http
+    name: /api/v1 and /internal/health
+    description: {value: Root router protects API v1 with an internal caller header and mounts public health, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
+outbound_dependencies:
+  - id: validator-engines
+    transport: http
+    target: configured validator engines
+    direction: outbound
+    description: {value: Engine-specific HTTP adapters are registered from environment-configured endpoints, confidence: 1, evidence: [{source_path: internal/app/app.go, symbol: buildEngineClients}]}
+endpoint_groups:
+  - id: discovery
+    name: Engine discovery
+    description: {value: List configured engine IDs and capabilities, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}
+    operations: [get-engines, get-capabilities, get-engines-relative, get-capabilities-relative]
+  - id: authoring
+    name: Contract authoring
+    description: {value: Inspect and verify validation contracts, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}
+    operations: [post-contracts-inspect, post-contracts-verify, post-contracts-inspect-relative, post-contracts-verify-relative]
+  - id: validation
+    name: Validation execution
+    description: {value: Execute and normalize validation requests, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}
+    operations: [post-validate, post-validate-relative]
+  - id: health
+    name: Health
+    description: {value: Internal process health endpoint, confidence: 1, evidence: [{source_path: internal/transport/http/private/health.go, symbol: HealthHandler}]}
+    operations: [get-health]
+  - id: mounts
+    name: HTTP mount boundaries
+    description: {value: Root router mount patterns that delegate to the API and internal subrouters, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
+    operations: [any-api-v1-root, any-internal-root]
+produced_contracts:
+  - transport: http
+    code: validation_orchestrator_http
+    direction: produced
+    description: {value: 'API v1 discovery, authoring, validation, and internal health operations', confidence: 1, evidence: [{source_path: .ai/contracts/http.yaml, symbol: owned_http}]}
+consumed_contracts:
+  - transport: http
+    code: validator_engine_http
+    direction: consumed
+    description: {value: Configured validator adapters consume engine-specific HTTP contracts and normalize their responses, confidence: 1, evidence: [{source_path: .ai/contracts/engines.yaml, symbol: source_of_truth}]}
+published_events: []
+subscribed_events: []
+business_rules:
+  - value: Every API v1 operation requires X-Internal-Token and fails closed when the configured server value is empty.
+    confidence: 1
+    evidence: [{source_path: .ai/contracts/http.yaml, symbol: authentication}]
+  - value: Stages execute sequentially in deterministic topological order; stage timeout_seconds is forwarded but not enforced by an orchestrator context.
+    confidence: 1
+    evidence: [{source_path: .ai/architecture.yaml, symbol: known_limits}]
+  - value: Legacy payloads are adapted to legacy.generic, which intentionally returns LEGACY_CONTRACT_NOT_MIGRATED.
+    confidence: 1
+    evidence: [{source_path: .ai/contracts/orchestration.yaml, symbol: legacy}]
+operation_manifests:
+  - endpoints/get-engines.yaml
+  - endpoints/get-capabilities.yaml
+  - endpoints/post-contracts-inspect.yaml
+  - endpoints/post-contracts-verify.yaml
+  - endpoints/post-validate.yaml
+  - endpoints/get-health.yaml
+  - endpoints/get-engines-relative.yaml
+  - endpoints/get-capabilities-relative.yaml
+  - endpoints/post-contracts-inspect-relative.yaml
+  - endpoints/post-contracts-verify-relative.yaml
+  - endpoints/post-validate-relative.yaml
+  - endpoints/any-api-v1-root.yaml
+  - endpoints/any-internal-root.yaml
+evidence:
+  - {source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}
+  - {source_path: internal/transport/http/router.go, symbol: NewRouter}
+confidence: 1
