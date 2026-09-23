@@ -38,6 +38,18 @@ inbound_interfaces:
     name: /api/v1 and /internal/health
     description: {value: Root router protects API v1 with an internal caller header and mounts public health, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
 outbound_dependencies:
+  - id: linux-validator-http
+    transport: http
+    target: ms-go-linux-validator
+    contract: linux.fs-cli-runtime
+    direction: outbound
+    description: {value: "Configured linux.fs, linux.cli, and linux.runtime adapters call the Linux validator endpoint.", confidence: 1, evidence: [{source_path: .env.example, start_line: 20, end_line: 22}, {source_path: internal/app/app.go, start_line: 211, end_line: 217}]}
+  - id: http-runtime-validator-http
+    transport: http
+    target: ms-go-http-runtime-validator
+    contract: http.runtime-framework
+    direction: outbound
+    description: {value: "Configured http.runtime and http.framework adapters call the HTTP runtime validator endpoint.", confidence: 1, evidence: [{source_path: .env.example, start_line: 20, end_line: 22}, {source_path: internal/app/app.go, start_line: 89, end_line: 116}]}
   - id: validator-engines
     transport: http
     target: configured validator engines

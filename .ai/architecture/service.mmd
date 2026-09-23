@@ -10,8 +10,12 @@ flowchart LR
   svc --> service_capabilities
   inbound_0["inbound http: /api/v1 and /internal/health — Root router protects API v1 with an internal caller header and mounts public health"]
   inbound_0 -->|inbound| svc
-  outbound_0["outbound http: configured validator engines — Engine-specific HTTP adapters are registered from environment-configured endpoints"]
+  outbound_0["outbound http: ms-go-linux-validator — Configured linux.fs, linux.cli, and linux.runtime adapters call the Linux validator endpoint."]
   svc -->|outbound| outbound_0
+  outbound_1["outbound http: ms-go-http-runtime-validator — Configured http.runtime and http.framework adapters call the HTTP runtime validator endpoint."]
+  svc -->|outbound| outbound_1
+  outbound_2["outbound http: configured validator engines — Engine-specific HTTP adapters are registered from environment-configured endpoints"]
+  svc -->|outbound| outbound_2
   endpoint_group_0["endpoint group discovery: Engine discovery — List configured engine IDs and capabilities"]
   svc --> endpoint_group_0
   endpoint_group_0_op_0["operation: get-engines"]
