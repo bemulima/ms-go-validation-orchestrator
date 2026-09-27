@@ -1,0 +1,432 @@
+schema_version: test-manifest.v1
+manifest_version: "1.0.0"
+policy_version: testing-policy.v1
+
+repository:
+  id: ms-go-validation-orchestrator
+  profile: GO_SERVICE
+  stack:
+    language: Go
+    runtime:
+      name: go
+      version: "1.25.0"
+
+suites:
+  unit.domain:
+    applicability: APPLICABLE
+    implementation: PARTIAL
+    commands: [test:unit]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_UNIT_DOMAIN
+  application.usecase:
+    applicability: APPLICABLE
+    implementation: PARTIAL
+    commands: [test:unit]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_APPLICATION_USECASE
+  persistence.repository:
+    applicability: APPLICABLE
+    implementation: MISSING
+    commands: [test:persistence]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_PERSISTENCE_REPOSITORY
+  transport.http:
+    applicability: APPLICABLE
+    implementation: PARTIAL
+    commands: [test:transport]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_TRANSPORT_HTTP
+  authorization:
+    applicability: APPLICABLE
+    implementation: PARTIAL
+    commands: [test:transport]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_AUTHORIZATION
+  integration.hermetic:
+    applicability: APPLICABLE
+    implementation: PARTIAL
+    commands: [test:integration]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_INTEGRATION_HERMETIC
+  integration.dependency:
+    applicability: APPLICABLE
+    implementation: MISSING
+    commands: [test:integration:deps]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_INTEGRATION_DEPENDENCY
+  migration.lifecycle:
+    applicability: APPLICABLE
+    implementation: MISSING
+    commands: [test:migration]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_MIGRATION_LIFECYCLE
+  event.producer:
+    applicability: APPLICABLE
+    implementation: MISSING
+    commands: [test:events]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_EVENT_PRODUCER
+  event.consumer:
+    applicability: APPLICABLE
+    implementation: MISSING
+    commands: [test:events]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_EVENT_CONSUMER
+  contract.provider:
+    applicability: APPLICABLE
+    implementation: PARTIAL
+    commands: [test:contract]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_CONTRACT_PROVIDER
+  contract.consumer:
+    applicability: APPLICABLE
+    implementation: PARTIAL
+    commands: [test:contract]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_CONTRACT_CONSUMER
+  architecture.local:
+    applicability: APPLICABLE
+    implementation: MISSING
+    commands: [test:architecture]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_ARCHITECTURE_LOCAL
+  quality.static:
+    applicability: APPLICABLE
+    implementation: PARTIAL
+    commands: [check:format, check:types, check:lint]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_QUALITY_STATIC
+  coverage:
+    applicability: APPLICABLE
+    implementation: MISSING
+    commands: [coverage]
+    exception_id: MS_GO_VALIDATION_ORCHESTRATOR_COVERAGE
+  mutation:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "Mutation testing is outside the frozen GO_SERVICE profile and is reserved for later capability work."
+  frontend.hook:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "A Go backend service does not own frontend hooks."
+  frontend.store:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "A Go backend service does not own frontend state stores."
+  frontend.api_client:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "Frontend API-client behavior belongs to the frontend profile."
+  frontend.component:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "A Go backend service does not own rendered frontend components."
+  frontend.component_integration:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "Frontend component composition belongs to the frontend profile."
+  frontend.accessibility:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "Frontend accessibility behavior belongs to the frontend profile."
+  frontend.browser_e2e:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "Browser UI acceptance belongs to the frontend profile."
+  platform.business_acceptance:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "Cross-service business acceptance is owned by the Verification Platform."
+  platform.api_e2e:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "Cross-service API end-to-end verification is owned by the Verification Platform."
+  platform.event_e2e:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "Cross-service event end-to-end verification is owned by the Verification Platform."
+  platform.browser_e2e:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "Cross-service browser acceptance is owned by the Verification Platform."
+  platform.contract_compatibility:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "Cross-repository provider-consumer compatibility orchestration is owned by the Verification Platform."
+  platform.architecture:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "Cross-repository topology enforcement is owned by the Architecture Orchestrator."
+  platform.reporting:
+    applicability: NOT_APPLICABLE
+    implementation: MISSING
+    commands: []
+    reason: "Cross-repository result normalization and aggregation are owned by the Verification Platform."
+
+commands:
+  "test:unit":
+    availability: AVAILABLE
+    invoke: ["go", "test", "./...", "-count=1"]
+    working_directory: .
+    timeout_seconds: 2400
+  "test:transport":
+    availability: AVAILABLE
+    invoke: ["go", "test", "./internal/transport/http/..."]
+    working_directory: .
+    timeout_seconds: 1800
+  "test:integration":
+    availability: AVAILABLE
+    invoke: ["go", "test", "./internal/infrastructure/http/...", "-count=1"]
+    working_directory: .
+    timeout_seconds: 1800
+  "test:contract":
+    availability: AVAILABLE
+    invoke: ["go", "test", "./...", "-count=1"]
+    working_directory: .
+    timeout_seconds: 2400
+  "check:types":
+    availability: AVAILABLE
+    invoke: ["go", "vet", "./..."]
+    working_directory: .
+    timeout_seconds: 1800
+  "test:persistence":
+    availability: UNAVAILABLE
+    reason: "No dedicated policy-runnable test:persistence command is registered at the audited committed HEAD."
+  "test:integration:deps":
+    availability: UNAVAILABLE
+    reason: "No dedicated policy-runnable test:integration:deps command is registered at the audited committed HEAD."
+  "test:migration":
+    availability: UNAVAILABLE
+    reason: "No dedicated policy-runnable test:migration command is registered at the audited committed HEAD."
+  "test:events":
+    availability: UNAVAILABLE
+    reason: "No dedicated policy-runnable test:events command is registered at the audited committed HEAD."
+  "test:architecture":
+    availability: UNAVAILABLE
+    reason: "No dedicated policy-runnable test:architecture command is registered at the audited committed HEAD."
+  "check:format":
+    availability: UNAVAILABLE
+    reason: "No dedicated policy-runnable check:format command is registered at the audited committed HEAD."
+  "check:lint":
+    availability: UNAVAILABLE
+    reason: "No dedicated policy-runnable check:lint command is registered at the audited committed HEAD."
+  "coverage":
+    availability: UNAVAILABLE
+    reason: "No dedicated policy-runnable coverage command is registered at the audited committed HEAD."
+
+references:
+  contracts: []
+  architecture: [".ai/service.yaml", "AGENTS.md"]
+  business_features: []
+
+exceptions:
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_UNIT_DOMAIN
+    repository: ms-go-validation-orchestrator
+    categories: [unit.domain]
+    scope:
+      description: "Only the unit.domain baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:unit."
+      commands: [test:unit]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "Direct tests cover selected contract and explanation types, but not all stage/result invariants."
+    evidence: ["internal/domain/teacher_validation_explanation_test.go", "mapper/validation_mapper_test.go"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_APPLICATION_USECASE
+    repository: ms-go-validation-orchestrator
+    categories: [application.usecase]
+    scope:
+      description: "Only the application.usecase baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:unit."
+      commands: [test:unit]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "Capability inspection and validation orchestration have focused tests; full engine filtering, failures, and optional-stage behavior remain partial."
+    evidence: ["internal/usecase/verification_test.go", "internal/usecase/capabilities_test.go"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_PERSISTENCE_REPOSITORY
+    repository: ms-go-validation-orchestrator
+    categories: [persistence.repository]
+    scope:
+      description: "Only the persistence.repository baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:persistence."
+      commands: [test:persistence]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "No owner-native category-specific verification is present at the audited HEAD; this bounded exception records the baseline gap without adding runtime or product behavior."
+    evidence: [".ai/commands.yaml", "Taskfile.yml"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_TRANSPORT_HTTP
+    repository: ms-go-validation-orchestrator
+    categories: [transport.http]
+    scope:
+      description: "Only the transport.http baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:transport."
+      commands: [test:transport]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "Handler and internal-token tests exist, but the full transport/error contract is not exhaustive."
+    evidence: ["internal/transport/http/api/v1/handler_test.go", "internal/transport/http/internal_token_test.go"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_AUTHORIZATION
+    repository: ms-go-validation-orchestrator
+    categories: [authorization]
+    scope:
+      description: "Only the authorization baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:transport."
+      commands: [test:transport]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "Internal-token tests cover a bounded route boundary but do not establish full authorization across every engine and request path."
+    evidence: ["internal/transport/http/internal_token_test.go"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_INTEGRATION_HERMETIC
+    repository: ms-go-validation-orchestrator
+    categories: [integration.hermetic]
+    scope:
+      description: "Only the integration.hermetic baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:integration."
+      commands: [test:integration]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "HTTP client tests cover selected local behavior; no complete multi-engine orchestration integration gate is available."
+    evidence: ["internal/infrastructure/http/css_client_test.go", "internal/infrastructure/http/workspace_foundation_client_test.go"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_INTEGRATION_DEPENDENCY
+    repository: ms-go-validation-orchestrator
+    categories: [integration.dependency]
+    scope:
+      description: "Only the integration.dependency baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:integration:deps."
+      commands: [test:integration:deps]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "No owner-native category-specific verification is present at the audited HEAD; this bounded exception records the baseline gap without adding runtime or product behavior."
+    evidence: [".ai/commands.yaml", "Taskfile.yml"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_MIGRATION_LIFECYCLE
+    repository: ms-go-validation-orchestrator
+    categories: [migration.lifecycle]
+    scope:
+      description: "Only the migration.lifecycle baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:migration."
+      commands: [test:migration]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "No owner-native category-specific verification is present at the audited HEAD; this bounded exception records the baseline gap without adding runtime or product behavior."
+    evidence: [".ai/commands.yaml", "Taskfile.yml"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_EVENT_PRODUCER
+    repository: ms-go-validation-orchestrator
+    categories: [event.producer]
+    scope:
+      description: "Only the event.producer baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:events."
+      commands: [test:events]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "No owner-native category-specific verification is present at the audited HEAD; this bounded exception records the baseline gap without adding runtime or product behavior."
+    evidence: [".ai/commands.yaml", "Taskfile.yml"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_EVENT_CONSUMER
+    repository: ms-go-validation-orchestrator
+    categories: [event.consumer]
+    scope:
+      description: "Only the event.consumer baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:events."
+      commands: [test:events]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "No owner-native category-specific verification is present at the audited HEAD; this bounded exception records the baseline gap without adding runtime or product behavior."
+    evidence: [".ai/commands.yaml", "Taskfile.yml"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_CONTRACT_PROVIDER
+    repository: ms-go-validation-orchestrator
+    categories: [contract.provider]
+    scope:
+      description: "Only the contract.provider baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:contract."
+      commands: [test:contract]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "Example contract and public client tests cover selected provider contract behavior, not full compatibility of every normalized result."
+    evidence: ["test/unit/example_contracts_test.go", "public/client_test.go"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_CONTRACT_CONSUMER
+    repository: ms-go-validation-orchestrator
+    categories: [contract.consumer]
+    scope:
+      description: "Only the contract.consumer baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:contract."
+      commands: [test:contract]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "Validator HTTP client tests cover selected consumers, but no end-to-end provider-consumer compatibility gate exists."
+    evidence: ["internal/infrastructure/http/react_client_test.go", "public/client_test.go"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_ARCHITECTURE_LOCAL
+    repository: ms-go-validation-orchestrator
+    categories: [architecture.local]
+    scope:
+      description: "Only the architecture.local baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) test:architecture."
+      commands: [test:architecture]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "No owner-native category-specific verification is present at the audited HEAD; this bounded exception records the baseline gap without adding runtime or product behavior."
+    evidence: [".ai/commands.yaml", "Taskfile.yml"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_QUALITY_STATIC
+    repository: ms-go-validation-orchestrator
+    categories: [quality.static]
+    scope:
+      description: "Only the quality.static baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) check:format, check:types, check:lint."
+      commands: [check:format, check:types, check:lint]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "Go vet is registered and run in CI; formatting uses shell substitution and no standalone lint or coverage command is declared."
+    evidence: [".ai/commands.yaml", ".github/workflows/ci.yml"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+  - id: MS_GO_VALIDATION_ORCHESTRATOR_COVERAGE
+    repository: ms-go-validation-orchestrator
+    categories: [coverage]
+    scope:
+      description: "Only the coverage baseline gap for ms-go-validation-orchestrator is in scope; it covers mapped command(s) coverage."
+      commands: [coverage]
+    owner: "ms-go-validation-orchestrator service owners"
+    reason: "No owner-native category-specific verification is present at the audited HEAD; this bounded exception records the baseline gap without adding runtime or product behavior."
+    evidence: [".ai/commands.yaml", "Taskfile.yml"]
+    created_at: 2026-09-27
+    expires_at: 2026-12-26
+    remediation_target: "Reassess this category with the service owner at the next testing baseline review; add focused verification only if the category remains owned."
+    tracking_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
+    approval_reference: task:T3.2-BASELINE-ADOPTION-2026-09-27
