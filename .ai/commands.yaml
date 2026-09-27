@@ -18,6 +18,9 @@ commands:
   - name: run
     run: go run ./cmd/ms-go-validation-orchestrator
     requires_approval: true
+  - name: native_run
+    run: ./scripts/run-native.sh
+    requires_approval: true
   - name: foundation_prepare
     run: task foundation:prepare
     requires_approval: true

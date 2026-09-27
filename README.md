@@ -61,11 +61,18 @@ Environment variables:
 | `CACHE_SEARCH_VALIDATOR_URL` | `""` | Base URL of `ms-go-cache-search-validator` |
 | `HTTP_RUNTIME_VALIDATOR_URL` | `""` | Base URL of `ms-go-http-runtime-validator` |
 
-## Run
+## Native local development
 
 ```bash
-go run ./cmd/ms-go-validation-orchestrator
+./scripts/run-native.sh
 ```
+
+Export a caller-supplied `INTERNAL_API_TOKEN` before running the wrapper. It
+rejects missing, whitespace-containing, and common placeholder values without
+printing the token, then binds only to `127.0.0.1:18102`. The wrapper starts
+only this Go process; it does not start Docker or validator services. Optional
+validator endpoint variables remain caller-controlled and are contacted only
+when a validation request invokes an engine.
 
 ## Persistent Foundation sandbox stack
 
