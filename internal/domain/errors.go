@@ -1,6 +1,9 @@
 package domain
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var (
 	ErrInvalidRequest         = errors.New("invalid validation request")
@@ -9,4 +12,13 @@ var (
 	ErrStageExecutionFailed   = errors.New("stage execution failed")
 	ErrDependencyCycle        = errors.New("validation stage dependency cycle")
 	ErrInlineRulesUnsupported = errors.New("inline rules are unsupported by engine")
+	ErrValidatorProtocol      = errors.New("validator protocol error")
 )
+
+type ValidatorHTTPStatusError struct {
+	StatusCode int
+}
+
+func (failure ValidatorHTTPStatusError) Error() string {
+	return fmt.Sprintf("unexpected status %d", failure.StatusCode)
+}

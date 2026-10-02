@@ -6,13 +6,28 @@ contract_detection:
   strict_core_schema_validation: true
   engine_rules_and_checks: opaque JSON objects
 stage_execution:
+  applies_to: /api/v1/validate
   order: deterministic topological order by stage ID among ready stages
   concurrency: 1
   dependency_failure: skip dependent stage
   final_only_engines: [ts.runtime, java.runtime, kotlin.runtime, browser.runtime]
   empty_request_mode: runs all authored stages without final-only filtering
   timeout_seconds: forwarded to downstream adapters; not enforced by orchestrator context
+practice_validation_v2:
+  schema: practice-validation-request.v2
+  outcome_schema: practice-validation-result.v2
+  digest_preimage: canonical JSON over schema, scope, optional milestone_id, and validation_specification
+  workspace_source: exact retained Sandbox snapshot only; no live-head fallback
+  snapshot_validation: verify all returned identities and SHA-256 of sorted path/content JSON
+  stage_order: deterministic topological order by stage ID among ready stages
+  stage_timeout_seconds: enforced with a per-stage context deadline
+  execution_error: ERROR including optional stage execution errors
+  required_semantic_failure: FAIL
+  optional_semantic_failure: non-blocking
+  zero_required_criteria: ERROR with AUTHORING_DEFECT
+  unsupported_engine: ERROR with UNSUPPORTED_CONFIGURATION
 aggregation:
+  applies_to: /api/v1/validate
   required_validation_failure: fails result
   optional_validation_failure: does not fail result
   execution_error: fails result even when the stage is optional

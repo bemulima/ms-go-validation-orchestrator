@@ -12,6 +12,11 @@ Successful `POST /api/v1/validate` responses also contain the additive
 blocking issues derived from the normalized report. It is presentation-only;
 Practice/Sandbox still own persistence and exact runtime revision binding.
 
+`POST /api/v2/practice-validations` is the typed Practice Runtime V2 path. It
+recomputes the immutable contract digest, reads only the exact pinned Sandbox
+snapshot, and returns correlated `PASS`, `FAIL`, or `ERROR` results. See
+[Practice Validation V2](docs/practice-validation-v2.md).
+
 This initial platform pass is intentionally conservative:
 
 - new `ValidationContractV1` is supported;
@@ -43,6 +48,8 @@ Environment variables:
 | `HOST` | `0.0.0.0` | HTTP listen host |
 | `PORT` | `8080` | HTTP listen port |
 | `SERVICE_NAME` | `ms-go-validation-orchestrator` | Service name for logs and ops |
+| `SANDBOX_SERVICE_BASE_URL` | `""` | Sandbox base URL used to read an exact pinned Practice snapshot |
+| `SANDBOX_SERVICE_INTERNAL_TOKEN` | `""` | Internal token for exact Sandbox snapshot reads |
 | `HTML_VALIDATOR_URL` | `""` | Base URL of `ms-ts-html-validator` |
 | `CSS_VALIDATOR_URL` | `""` | Base URL of `ms-ts-css-validator` |
 | `REACT_VALIDATOR_URL` | `""` | Base URL of `ms-ts-react-validator` |

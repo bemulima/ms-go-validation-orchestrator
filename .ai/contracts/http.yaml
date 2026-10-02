@@ -11,6 +11,14 @@ owned_http:
     additive_response: teacher_explanation teacher-validation-explanation.v1
     invalid_request_status: 400
     source: internal/transport/http/api/v1/handler.go
+  - method: POST
+    path: /api/v2/practice-validations
+    request: practice-validation-request.v2
+    response: practice-validation-result.v2
+    authentication: X-Internal-Token
+    invalid_request_status: [400, 413]
+    completed_evaluation_status: 200
+    source: internal/transport/http/api/v2/handler.go
   - method: GET
     path: /api/v1/capabilities
     response: domain.EngineCapabilitiesV1
@@ -31,7 +39,7 @@ owned_http:
     source: internal/transport/http/router.go
 authentication:
   header: X-Internal-Token
-  applies_to: /api/v1/*
+  applies_to: [/api/v1/*, /api/v2/*]
   fail_closed_when_server_token_empty: true
 limits:
   server_read_timeout: 30s
@@ -57,3 +65,9 @@ consumed_http:
   timeout: 30s
   accepted_validation_statuses: [200, 422]
   response_body_limit: 4 MiB
+practice_validation_v2:
+  snapshot_source: GET /internal/v2/sandboxes/{sandboxID}/snapshots/{snapshotID}
+  snapshot_identity_query: [generation_id, workspace_digest]
+  snapshot_response_body_limit: 4 MiB
+  stage_timeout: enforced from validation_contract.stage.timeout_seconds
+  evaluation_error_http_status: 200

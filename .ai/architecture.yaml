@@ -25,6 +25,12 @@ execution_flow:
   - evaluate retained links
   - aggregate normalized result
   - derive bounded teacher explanation from normalized result
+practice_validation_v2_flow:
+  - strictly decode correlated Practice Runtime command
+  - recompute the scoped immutable validation-contract digest
+  - fetch and verify the exact retained Sandbox snapshot
+  - execute frozen V1 stage contracts in deterministic order with per-stage deadlines
+  - return typed PASS, FAIL, or ERROR with sanitized stage summaries
 invariants:
   - domain and usecase packages do not depend on HTTP transport
   - engine-specific validation remains outside this service
@@ -36,7 +42,8 @@ known_limits:
   - V1 core contract parsing is strict, but engine-specific rules and checks remain opaque JSON
   - only ts.runtime, java.runtime, kotlin.runtime, and browser.runtime are hard final-only
   - omitted request mode runs every authored stage, including final-only engines
-  - stage timeout_seconds is forwarded but not enforced by a per-stage context
+  - V1 stage timeout_seconds is forwarded but not enforced by a per-stage context
+  - Practice V2 verifies pinned generation identity and workspace digest before execution
   - stages have no concurrency
   - links with dependencies removed by mode filtering are silently omitted
   - root-backed workspace.required_files are delegated to sandbox-mounted engines; inline workspaces are enforced locally

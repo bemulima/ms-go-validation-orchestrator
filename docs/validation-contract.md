@@ -82,6 +82,7 @@ Canonical contract examples live in [examples](examples/README.md). They cover s
 
 ## Related docs
 
+- [Practice Validation V2](practice-validation-v2.md)
 - [Validation Result V1](validation-result.md)
 - [Engine Model](engine-model.md)
 - [Capability Matrix](capability-matrix.md)

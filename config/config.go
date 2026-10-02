@@ -33,10 +33,12 @@ type EngineEndpoints struct {
 }
 
 type Config struct {
-	ServiceName      string
-	InternalAPIToken string
-	HTTP             HTTPConfig
-	Engines          EngineEndpoints
+	ServiceName                 string
+	InternalAPIToken            string
+	SandboxServiceBaseURL       string
+	SandboxServiceInternalToken string
+	HTTP                        HTTPConfig
+	Engines                     EngineEndpoints
 }
 
 func Load() (Config, error) {
@@ -52,8 +54,10 @@ func Load() (Config, error) {
 	}
 
 	cfg := Config{
-		ServiceName:      stringFromEnv("SERVICE_NAME", "ms-go-validation-orchestrator"),
-		InternalAPIToken: stringFromEnv("INTERNAL_API_TOKEN", "change-me"),
+		ServiceName:                 stringFromEnv("SERVICE_NAME", "ms-go-validation-orchestrator"),
+		InternalAPIToken:            stringFromEnv("INTERNAL_API_TOKEN", "change-me"),
+		SandboxServiceBaseURL:       trimURL(os.Getenv("SANDBOX_SERVICE_BASE_URL")),
+		SandboxServiceInternalToken: stringFromEnv("SANDBOX_SERVICE_INTERNAL_TOKEN", ""),
 		HTTP: HTTPConfig{
 			Host: stringFromEnv("HOST", "0.0.0.0"),
 			Port: port,

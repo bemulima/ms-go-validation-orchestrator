@@ -117,6 +117,15 @@ func parseNodeValidationResponse(
 	body []byte,
 	stage domain.ValidationStage,
 ) (domain.StageExecutionResult, error) {
+	if err := validateValidatorRequiredBooleanFields(body, "ok"); err != nil {
+		return domain.StageExecutionResult{}, err
+	}
+	if err := validateOptionalValidatorObject(body, "summary"); err != nil {
+		return domain.StageExecutionResult{}, err
+	}
+	if err := validateOptionalNestedBooleanFields(body, "summary", "staticOk", "structureOk", "runtimeOk"); err != nil {
+		return domain.StageExecutionResult{}, err
+	}
 	type validationError struct {
 		Code     string `json:"code"`
 		Level    string `json:"level"`
@@ -143,7 +152,7 @@ func parseNodeValidationResponse(
 
 	var payload response
 	if err := json.Unmarshal(body, &payload); err != nil {
-		return domain.StageExecutionResult{}, err
+		return domain.StageExecutionResult{}, wrapValidatorProtocolError(err)
 	}
 
 	passed := payload.OK

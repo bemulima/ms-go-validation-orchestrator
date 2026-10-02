@@ -24,9 +24,19 @@ Engine services own HTML, CSS, language, framework, browser, Git, Docker, databa
    normalized result. This presentation projection cannot read `RawResult`,
    cannot change `passed`, and contains only bounded blocking issues.
 
+`POST /api/v2/practice-validations` is a separate versioned entry point. It
+strictly decodes the frozen Practice command, recomputes the scoped
+`practice-validation-contract-digest.v1`, fetches only the exact retained
+Sandbox snapshot reference, verifies its identity and workspace digest, then
+executes each frozen V1 validation contract in deterministic order. Stage
+deadlines are enforced in this flow. Required semantic failure maps to `FAIL`,
+optional semantic failure remains non-blocking, and any timeout, transport,
+protocol, unsupported-configuration, snapshot, or stage-execution failure maps
+to a correlated `ERROR` result.
+
 ## Trust boundaries
 
-Every `/api/v1/*` endpoint requires `X-Internal-Token`. Inbound bodies are limited to 2 MiB; downstream engine and exported public-client responses are limited to 4 MiB. The exported client supplies a 30-second default timeout when its caller passes a nil HTTP client.
+Every `/api/v1/*` and `/api/v2/*` endpoint requires `X-Internal-Token`. Inbound bodies are limited to 2 MiB; downstream engine, pinned Sandbox, and exported public-client responses are limited to 4 MiB. The exported client supplies a 30-second default timeout when its caller passes a nil HTTP client.
 
 `workspace.root_path` is accepted only in the canonical portable form `/workspaces/<sandbox-id>` and is then forwarded to validators. This prevents callers from selecting arbitrary host paths, but it does not replace sandbox/container isolation, symlink controls, resource limits, or network policy.
 
@@ -37,5 +47,10 @@ own result persistence or workspace revisions. Practice must persist final
 results before exposing them to Teacher. A live Sandbox consumer must bind the
 same safe projection to a persisted exact workspace revision and timestamp;
 browser/WS state alone is not authoritative.
+
+Practice V2 reads use `SANDBOX_SERVICE_BASE_URL` and the dedicated
+`SANDBOX_SERVICE_INTERNAL_TOKEN`. If either is absent or Sandbox cannot return
+the exact retained pin, the V2 result is `ERROR`; the validator never falls
+back to a live workspace head.
 
 See [Implementation limits](implementation-limits.md) before changing contract authoring or promising validation guarantees.

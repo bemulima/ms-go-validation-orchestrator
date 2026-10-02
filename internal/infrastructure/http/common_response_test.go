@@ -1,6 +1,7 @@
 package engines
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
@@ -93,5 +94,28 @@ func TestParseCommonValidationResponseSupportsWarningsAndEvidence(t *testing.T) 
 
 	if result.Evidence[0].File != "src/main.ts" {
 		t.Fatalf("expected evidence file to be propagated, got %q", result.Evidence[0].File)
+	}
+}
+
+func TestParseCommonValidationResponseRejectsMalformedProtocol(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		body string
+	}{
+		{name: "empty object", body: `{}`},
+		{name: "no outcome", body: `{"warnings":[]}`},
+		{name: "non-boolean outcome", body: `{"ok":"yes"}`},
+		{name: "malformed errors", body: `{"ok":false,"errors":{}}`},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			_, err := parseCommonValidationResponse([]byte(test.body), domain.ValidationStage{ID: "test", Engine: "php.core"})
+			if !errors.Is(err, domain.ErrValidatorProtocol) {
+				t.Fatalf("expected validator protocol error, got %v", err)
+			}
+		})
 	}
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/example/ms-validation-orchestrator-service/internal/infrastructure/logging"
 	transporthttp "github.com/example/ms-validation-orchestrator-service/internal/transport/http"
 	api "github.com/example/ms-validation-orchestrator-service/internal/transport/http/api/v1"
+	apiV2 "github.com/example/ms-validation-orchestrator-service/internal/transport/http/api/v2"
 	"github.com/example/ms-validation-orchestrator-service/internal/usecase"
 )
 
@@ -23,17 +24,26 @@ func New(cfg config.Config) App {
 
 	legacyAdapter := usecase.NewDefaultLegacyContractAdapter()
 	parser := usecase.NewContractParser(legacyAdapter)
+	engineClients := buildEngineClients(cfg, httpClient)
 
 	orchestrator := usecase.NewOrchestrateValidationUseCase(
 		parser,
-		buildEngineClients(cfg, httpClient),
+		engineClients,
 	)
+	practiceSnapshotReader := engines.NewPinnedSnapshotReader(
+		cfg.SandboxServiceBaseURL,
+		cfg.SandboxServiceInternalToken,
+		&http.Client{Timeout: 30 * time.Second},
+	)
+	practiceValidation := usecase.NewPracticeValidationUseCase(parser, engineClients, practiceSnapshotReader)
 
 	logger := logging.NewStdLogger()
 	apiHandler := api.NewHandler(orchestrator, logger)
+	practiceValidationHandler := apiV2.NewHandler(practiceValidation)
 	router := transporthttp.NewRouter(transporthttp.Dependencies{
-		APIHandler:    apiHandler,
-		InternalToken: cfg.InternalAPIToken,
+		APIHandler:                apiHandler,
+		PracticeValidationHandler: practiceValidationHandler,
+		InternalToken:             cfg.InternalAPIToken,
 	})
 
 	server := &http.Server{

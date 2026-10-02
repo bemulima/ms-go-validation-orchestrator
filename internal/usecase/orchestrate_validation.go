@@ -143,18 +143,34 @@ func (useCase OrchestrateValidationUseCase) Execute(
 	ctx context.Context,
 	request domain.ValidationRequest,
 ) (domain.ValidationResult, error) {
+	result, _, err := useCase.execute(ctx, request, false)
+	return result, err
+}
+
+func (useCase OrchestrateValidationUseCase) executePracticeContract(
+	ctx context.Context,
+	request domain.ValidationRequest,
+) (domain.ValidationResult, []error, error) {
+	return useCase.execute(ctx, request, true)
+}
+
+func (useCase OrchestrateValidationUseCase) execute(
+	ctx context.Context,
+	request domain.ValidationRequest,
+	enforceStageTimeout bool,
+) (domain.ValidationResult, []error, error) {
 	contract, legacy, err := useCase.parser.Parse(request)
 	if err != nil {
-		return domain.ValidationResult{}, err
+		return domain.ValidationResult{}, nil, err
 	}
 	if err := validateRequiredInlineWorkspaceFiles(contract, request.Workspace); err != nil {
-		return domain.ValidationResult{}, err
+		return domain.ValidationResult{}, nil, err
 	}
 
 	filteredStages := filterStagesByMode(contract.Stages, request.Mode)
 	orderedStages, err := orderStages(filteredStages)
 	if err != nil {
-		return domain.ValidationResult{}, err
+		return domain.ValidationResult{}, nil, err
 	}
 	filteredLinks := filterLinksByStageIDs(contract.Links, collectStageIDs(orderedStages))
 
@@ -169,13 +185,15 @@ func (useCase OrchestrateValidationUseCase) Execute(
 	}
 
 	stageIndex := make(map[string]domain.StageReport, len(orderedStages))
+	executionErrors := make([]error, 0)
 
 	for _, stage := range orderedStages {
-		report, execErr := useCase.executeStage(ctx, request, stage, stageIndex)
+		report, execErr := useCase.executeStage(ctx, request, stage, stageIndex, enforceStageTimeout)
 		result.Stages = append(result.Stages, report)
 		stageIndex[stage.ID] = report
 
 		if execErr != nil {
+			executionErrors = append(executionErrors, execErr)
 			result.Passed = false
 			result.Errors = append(result.Errors, domain.ValidationIssue{
 				Code:     "STAGE_EXECUTION_ERROR",
@@ -207,7 +225,7 @@ func (useCase OrchestrateValidationUseCase) Execute(
 	explanation := BuildTeacherValidationExplanation(result)
 	result.TeacherExplanation = &explanation
 
-	return result, nil
+	return result, executionErrors, nil
 }
 
 func validateRequiredInlineWorkspaceFiles(
@@ -297,6 +315,7 @@ func (useCase OrchestrateValidationUseCase) executeStage(
 	request domain.ValidationRequest,
 	stage domain.ValidationStage,
 	stageIndex map[string]domain.StageReport,
+	enforceStageTimeout bool,
 ) (domain.StageReport, error) {
 	if dependencyFailed(stage.DependsOn, stageIndex) {
 		return domain.StageReport{
@@ -338,7 +357,13 @@ func (useCase OrchestrateValidationUseCase) executeStage(
 	}
 
 	startedAt := time.Now()
-	executionResult, err := engine.Validate(ctx, domain.EngineValidationInput{
+	stageContext := ctx
+	cancel := func() {}
+	if enforceStageTimeout && stage.TimeoutSeconds > 0 {
+		stageContext, cancel = context.WithTimeout(ctx, time.Duration(stage.TimeoutSeconds)*time.Second)
+	}
+	defer cancel()
+	executionResult, err := engine.Validate(stageContext, domain.EngineValidationInput{
 		TaskID:       request.TaskID,
 		Stage:        stage,
 		Workspace:    request.Workspace,
@@ -346,6 +371,9 @@ func (useCase OrchestrateValidationUseCase) executeStage(
 		Locale:       request.Locale,
 		Mode:         request.Mode,
 	})
+	if err == nil && stageContext.Err() != nil {
+		err = stageContext.Err()
+	}
 
 	report := domain.StageReport{
 		StageID:   stage.ID,
@@ -363,7 +391,7 @@ func (useCase OrchestrateValidationUseCase) executeStage(
 	if err != nil {
 		report.Status = "failed"
 		report.Passed = false
-		return report, fmt.Errorf("%w: %s: %v", domain.ErrStageExecutionFailed, stage.ID, err)
+		return report, fmt.Errorf("%w: %s: %w", domain.ErrStageExecutionFailed, stage.ID, err)
 	}
 
 	if !executionResult.Passed {

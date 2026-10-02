@@ -11,6 +11,7 @@ This folder is the repository-owned documentation set for the validation orchest
 
 - [Validation Contract V1](validation-contract.md)
 - [Validation Result V1](validation-result.md)
+- [Practice Validation V2](practice-validation-v2.md)
 - [Engine Model](engine-model.md)
 - [Capability Matrix](capability-matrix.md)
 - [Capability Discovery](capability-discovery.md)

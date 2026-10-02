@@ -3,6 +3,7 @@ package engines
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
 )
@@ -82,6 +83,12 @@ func parseCommonValidationResponse(
 	body []byte,
 	stage domain.ValidationStage,
 ) (domain.StageExecutionResult, error) {
+	if err := validateValidatorResponseEnvelope(body, "ok", "isValid", "valid", "warnings", "evidence", "errors"); err != nil {
+		return domain.StageExecutionResult{}, err
+	}
+	if err := validateValidatorBooleanFields(body, "ok", "isValid", "valid"); err != nil {
+		return domain.StageExecutionResult{}, err
+	}
 	type validationError struct {
 		Code     string `json:"code"`
 		Message  string `json:"message"`
@@ -113,7 +120,17 @@ func parseCommonValidationResponse(
 
 	var payload response
 	if err := json.Unmarshal(body, &payload); err != nil {
-		return domain.StageExecutionResult{}, err
+		return domain.StageExecutionResult{}, wrapValidatorProtocolError(err)
+	}
+	var envelope map[string]json.RawMessage
+	if err := json.Unmarshal(body, &envelope); err != nil {
+		return domain.StageExecutionResult{}, wrapValidatorProtocolError(err)
+	}
+	_, hasOK := envelope["ok"]
+	_, hasIsValid := envelope["isValid"]
+	_, hasValid := envelope["valid"]
+	if !hasOK && !hasIsValid && !hasValid && len(payload.Errors) == 0 {
+		return domain.StageExecutionResult{}, fmt.Errorf("%w: response does not include an outcome", domain.ErrValidatorProtocol)
 	}
 
 	passed := payload.OK || payload.IsValid || payload.Valid

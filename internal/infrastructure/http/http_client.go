@@ -8,6 +8,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/example/ms-validation-orchestrator-service/internal/domain"
 )
 
 type HTTPClient struct {
@@ -54,7 +56,7 @@ func (client HTTPClient) PostJSON(
 	}
 
 	if response.StatusCode >= http.StatusBadRequest && response.StatusCode != http.StatusUnprocessableEntity {
-		return responseBody, fmt.Errorf("unexpected status %d", response.StatusCode)
+		return responseBody, domain.ValidatorHTTPStatusError{StatusCode: response.StatusCode}
 	}
 
 	return responseBody, nil

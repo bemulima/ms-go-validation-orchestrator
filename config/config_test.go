@@ -33,3 +33,15 @@ func TestLoadPrefersGenericCodeValidatorURL(t *testing.T) {
 		t.Fatalf("unexpected legacy Go validator URL %q", cfg.Engines.Go)
 	}
 }
+
+func TestLoadPracticeSnapshotReaderConfiguration(t *testing.T) {
+	t.Setenv("SANDBOX_SERVICE_BASE_URL", " http://sandbox:8080/ ")
+	t.Setenv("SANDBOX_SERVICE_INTERNAL_TOKEN", "sandbox-service-token")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("load config: %v", err)
+	}
+	if cfg.SandboxServiceBaseURL != "http://sandbox:8080" || cfg.SandboxServiceInternalToken != "sandbox-service-token" {
+		t.Fatalf("unexpected Sandbox configuration: %+v", cfg)
+	}
+}

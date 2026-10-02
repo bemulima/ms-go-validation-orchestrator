@@ -10,15 +10,15 @@ This document records behavior visible in the current code. It is a constraint l
 
 ## Modes, ordering, and time
 
-- Stages run sequentially in deterministic topological order; there is no parallel execution.
+- V1 and Practice V2 stages run sequentially in deterministic topological order; there is no parallel execution.
 - Only `ts.runtime`, `java.runtime`, `kotlin.runtime`, and `browser.runtime` are hard final-only. Other runtime naming is an authoring convention unless the downstream engine enforces it.
 - An empty request mode runs all stages, including final-only stages. An unsupported non-empty request mode can leave only stages authored with empty mode or `both`.
 - Dependencies are validated after filtering. A retained stage that depends on a filtered stage makes the request invalid.
-- `timeout_seconds` is included in downstream payloads where supported but does not create a per-stage context deadline. The server and outbound HTTP client each use 30-second timeouts, which are not an overall orchestration budget.
+- V1 `timeout_seconds` is included in downstream payloads where supported but does not create a per-stage context deadline. Practice V2 enforces a per-stage context deadline. The server and outbound HTTP client each use 30-second timeouts, which are not an overall orchestration budget.
 
 ## Aggregation and links
 
-- A normal validation failure from an optional stage does not fail the aggregate. An engine or transport execution error always sets the aggregate to failed, even when that stage is optional.
+- In V1, a normal validation failure from an optional stage does not fail the aggregate. An engine or transport execution error always sets the aggregate to failed, even when that stage is optional. Practice V2 returns `ERROR` for every execution error, including optional stages, while optional semantic failure remains non-blocking.
 - Stage errors are copied into the top-level error list; execution failures can therefore include a wrapper error and stage-level errors together.
 - `teacher-validation-explanation.v1` excludes every optional stage/link issue,
   including optional execution errors, even though the existing aggregate edge
@@ -29,8 +29,8 @@ This document records behavior visible in the current code. It is a constraint l
 
 ## HTTP and adapters
 
-- `/api/v1/*` is protected by a constant-time `X-Internal-Token` comparison. This is service authentication, not per-student authorization.
-- Inbound JSON is capped at 2 MiB and rejects unknown transport fields and trailing values. Engine and public-client responses are capped at 4 MiB.
+- `/api/v1/*` and `/api/v2/*` are protected by a constant-time `X-Internal-Token` comparison. This is service authentication, not per-student authorization.
+- Inbound JSON is capped at 2 MiB and rejects unknown transport fields and trailing values. Engine, Sandbox snapshot, and public-client responses are capped at 4 MiB.
 - The exported public client uses a 30-second default timeout when constructed with a nil HTTP client; callers may provide a stricter client.
 - Common validator responses are considered passed when any of `ok`, `isValid`, or `valid` is true; inconsistent response fields are not rejected.
 - The compatibility constructor deduplicates engine IDs in a map; application startup does not yet return an explicit duplicate-registration error.
@@ -38,5 +38,12 @@ This document records behavior visible in the current code. It is a constraint l
 - The orchestrator does not persist validation results or know a server-owned
   workspace revision/timestamp. Practice/Sandbox must persist and revision-bind
   the safe projection before it is authoritative context for Teacher.
+
+## Practice validation V2
+
+- Practice V2 reads workspace bytes only from the exact pinned Sandbox snapshot endpoint. Sandbox URL, token, identity, response shape, file paths, and `workspace_digest` are checked before any engine call; no current-head fallback exists.
+- `practice-validation-contract-digest.v1` is recomputed locally over canonical JSON. A mismatch, malformed immutable contract, or zero required executable criteria returns `ERROR` with `AUTHORING_DEFECT`.
+- The response echoes TaskInstance, Submission, ValidationRun, revision digest, validation-contract digest, and the full snapshot reference. Stage issue summaries contain only bounded code/message pairs; raw validator output, evidence, selectors, routes, symbols, properties, rubric data, and assets are excluded.
+- Required semantic criterion failure returns `FAIL`. Optional semantic failure does not block. Snapshot, timeout, transport, protocol, unsupported-engine, and every `STAGE_EXECUTION_ERROR` failure return `ERROR` with a stable classification.
 
 Changes to any item above require focused tests and synchronized updates to the contract, result, engine, authoring, and capability documentation as applicable.

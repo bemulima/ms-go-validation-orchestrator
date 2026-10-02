@@ -2,6 +2,10 @@
 
 `ValidationResultV1` is the canonical normalized output returned by `ms-go-validation-orchestrator`.
 
+`POST /api/v2/practice-validations` uses a separate correlated typed result
+contract. See [Practice Validation V2](practice-validation-v2.md); V1 result
+semantics below remain unchanged.
+
 ## Root fields
 
 - `contract_kind`: source contract kind such as `workspace_contract` or `legacy_contract`.
