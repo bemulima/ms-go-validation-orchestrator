@@ -3,90 +3,90 @@
   "consumer": {
     "repository": "bemulima/ms-go-validation-orchestrator",
     "service": "ms-go-validation-orchestrator",
-    "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82"
+    "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8"
   },
   "classification": "CONSUMER_APPLICABLE",
   "source_pins": [
     {
       "repository": "bemulima/ms-go-validation-orchestrator",
-      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8",
       "path": "config/config.go",
       "blob_sha": "158e7eada3708b841bc33c0fb25f3a114d7de8e9",
       "content_sha256": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
     },
     {
       "repository": "bemulima/ms-go-validation-orchestrator",
-      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8",
       "path": "docker-compose.foundation.yml",
       "blob_sha": "0af13632c7edf02978753a9ee941605290395fd9",
       "content_sha256": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
     },
     {
       "repository": "bemulima/ms-go-validation-orchestrator",
-      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8",
       "path": "docker-compose.yml",
       "blob_sha": "e0ac6825f0c2296b2e809ee669b7a85b80ef75c1",
       "content_sha256": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
     },
     {
       "repository": "bemulima/ms-go-validation-orchestrator",
-      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8",
       "path": "internal/app/app.go",
       "blob_sha": "f334755ca1871b5076c6c71348790f3c57cc80a6",
       "content_sha256": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
     },
     {
       "repository": "bemulima/ms-go-validation-orchestrator",
-      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8",
       "path": "internal/infrastructure/http/css_client.go",
       "blob_sha": "d77a61c0899644e1233c26e957f6fe06d9eb56c2",
       "content_sha256": "c939eb7b4f9f8d587a11a6ab7173ea9171942a642516d0452be22295a933067a"
     },
     {
       "repository": "bemulima/ms-go-validation-orchestrator",
-      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8",
       "path": "internal/infrastructure/http/html_client.go",
       "blob_sha": "1654fc5d5d94268d8687a025b9d0c85db1f309d6",
       "content_sha256": "ac28ee0fc0e2d1cb9daf1040647f14a07789bb996bb5203771432e2d2bb798d4"
     },
     {
       "repository": "bemulima/ms-go-validation-orchestrator",
-      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8",
       "path": "internal/infrastructure/http/http_client.go",
       "blob_sha": "2bb9e37e2483046c6da2e02219e771c00b4a100f",
       "content_sha256": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
     },
     {
       "repository": "bemulima/ms-go-validation-orchestrator",
-      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8",
       "path": "internal/infrastructure/http/node_client.go",
       "blob_sha": "21e8c24e9929025ca9356e67710f39a4a57cc803",
       "content_sha256": "0fc9aede360310ec2311d9bd43ee1813c4bc972378c39fcae3bc2339f708f8f1"
     },
     {
       "repository": "bemulima/ms-go-validation-orchestrator",
-      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8",
       "path": "internal/infrastructure/http/php_client.go",
       "blob_sha": "dda245a062427ae45683d72e5c39ef56c6bacd44",
       "content_sha256": "cf5d4200ae8f0c75302273b5a385a36afc63572a0a88a44deddd9b7b85e79431"
     },
     {
       "repository": "bemulima/ms-go-validation-orchestrator",
-      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8",
       "path": "internal/infrastructure/http/pinned_snapshot_reader.go",
       "blob_sha": "0ca709b54a42a8c4edcbdf3cd4f87afb4b9c3591",
       "content_sha256": "eda0a997bb2d5fcb50536850d0160b4abb6197f302c5158a8b6607db29344d81"
     },
     {
       "repository": "bemulima/ms-go-validation-orchestrator",
-      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8",
       "path": "internal/infrastructure/http/react_client.go",
-      "blob_sha": "375a57c3b9b387ce3192a7ccad8e7f02752aa3a8",
-      "content_sha256": "38cbd8f8fbb8d8ac7d9bc11d92a5710100ffc697baf7cec30b0bdcbfcbacfb84"
+      "blob_sha": "56bd66d2d1e23acbccc51ce4783526216db97888",
+      "content_sha256": "2f4da4846b501a9236011d5e87ecd095568b50637a8eb2732af057ddf2dd827e"
     },
     {
       "repository": "bemulima/ms-go-validation-orchestrator",
-      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "commit_sha": "ec3f3d66ce5a442704be165897176becae6d48c8",
       "path": "internal/infrastructure/http/workspace_foundation_client.go",
       "blob_sha": "b67beb0926bb94e46fed4505de48cc66fa4bc90a",
       "content_sha256": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
