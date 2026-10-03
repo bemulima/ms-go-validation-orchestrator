@@ -42,7 +42,7 @@ func (client ReactClient) Validate(
 		}, nil
 	}
 
-	responseBody, err := client.http.PostJSON(ctx, client.baseURL+"/api/v1/validate", map[string]any{
+	responseBody, err := client.http.PostJSON(ctx, client.baseURL+"/validate", map[string]any{
 		"taskId":    input.TaskID,
 		"code":      body,
 		"language":  defaultString(input.Stage.Language, "tsx"),
