@@ -1,118 +1,836 @@
-schema: architecture/v1
-kind: service
-id: ms-go-validation-orchestrator
-manifest_revision: 1
-identity:
-  name: ms-go-validation-orchestrator
-  kind: go_backend_service
-purpose:
-  value: Parse validation contracts, order and execute configured validator stages, evaluate links, and normalize results.
-  confidence: 1
-  evidence:
-    - {source_path: .ai/service.yaml, symbol: purpose}
-responsibilities:
-  - value: Own contract parsing, legacy adaptation, mode filtering, deterministic dependency ordering, and aggregation.
-    confidence: 1
-    evidence:
-      - {source_path: .ai/architecture.yaml, symbol: execution_flow}
-  - value: Register configured engine adapters and expose authoring and validation HTTP operations.
-    confidence: 1
-    evidence:
-      - {source_path: internal/app/app.go, symbol: buildEngineClients}
-capabilities:
-  - value: List configured engine IDs and versioned capabilities.
-    confidence: 1
-    evidence:
-      - {source_path: internal/transport/http/api/v1/handler.go, symbol: ListEngines}
-  - value: Inspect and executable-verify authored contracts before validation.
-    confidence: 1
-    evidence:
-      - {source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}
-  - value: Execute stages sequentially and return normalized validation results with a bounded teacher explanation.
-    confidence: 1
-    evidence:
-      - {source_path: internal/usecase/orchestrate_validation.go, symbol: Execute}
-owned_resources: []
-inbound_interfaces:
-  - transport: http
-    name: /api/v1 and /internal/health
-    description: {value: Root router protects API v1 with an internal caller header and mounts public health, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
-outbound_dependencies:
-  - id: linux-validator-http
-    transport: http
-    target: ms-go-linux-validator
-    contract: linux.fs-cli-runtime
-    direction: outbound
-    description: {value: "Configured linux.fs, linux.cli, and linux.runtime adapters call the Linux validator endpoint.", confidence: 1, evidence: [{source_path: .env.example, start_line: 20, end_line: 22}, {source_path: internal/app/app.go, start_line: 211, end_line: 217}]}
-  - id: http-runtime-validator-http
-    transport: http
-    target: ms-go-http-runtime-validator
-    contract: http.runtime-framework
-    direction: outbound
-    description: {value: "Configured http.runtime and http.framework adapters call the HTTP runtime validator endpoint.", confidence: 1, evidence: [{source_path: .env.example, start_line: 20, end_line: 22}, {source_path: internal/app/app.go, start_line: 89, end_line: 116}]}
-  - id: validator-engines
-    transport: http
-    target: configured validator engines
-    direction: outbound
-    description: {value: Engine-specific HTTP adapters are registered from environment-configured endpoints, confidence: 1, evidence: [{source_path: internal/app/app.go, symbol: buildEngineClients}]}
-endpoint_groups:
-  - id: discovery
-    name: Engine discovery
-    description: {value: List configured engine IDs and capabilities, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}
-    operations: [get-engines, get-capabilities, get-engines-relative, get-capabilities-relative]
-  - id: authoring
-    name: Contract authoring
-    description: {value: Inspect and verify validation contracts, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}
-    operations: [post-contracts-inspect, post-contracts-verify, post-contracts-inspect-relative, post-contracts-verify-relative]
-  - id: validation
-    name: Validation execution
-    description: {value: Execute and normalize validation requests, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}
-    operations: [post-validate, post-validate-relative]
-  - id: health
-    name: Health
-    description: {value: Internal process health endpoint, confidence: 1, evidence: [{source_path: internal/transport/http/private/health.go, symbol: HealthHandler}]}
-    operations: [get-health]
-  - id: mounts
-    name: HTTP mount boundaries
-    description: {value: Root router mount patterns that delegate to the API and internal subrouters, confidence: 1, evidence: [{source_path: internal/transport/http/router.go, symbol: NewRouter}]}
-    operations: [any-api-v1-root, any-internal-root]
-produced_contracts:
-  - transport: http
-    code: validation_orchestrator_http
-    direction: produced
-    description: {value: 'API v1 discovery, authoring, validation, and internal health operations', confidence: 1, evidence: [{source_path: .ai/contracts/http.yaml, symbol: owned_http}]}
-consumed_contracts:
-  - transport: http
-    code: validator_engine_http
-    direction: consumed
-    description: {value: Configured validator adapters consume engine-specific HTTP contracts and normalize their responses, confidence: 1, evidence: [{source_path: .ai/contracts/engines.yaml, symbol: source_of_truth}]}
-published_events: []
-subscribed_events: []
-business_rules:
-  - value: Every API v1 operation requires X-Internal-Token and fails closed when the configured server value is empty.
-    confidence: 1
-    evidence: [{source_path: .ai/contracts/http.yaml, symbol: authentication}]
-  - value: Stages execute sequentially in deterministic topological order; stage timeout_seconds is forwarded but not enforced by an orchestrator context.
-    confidence: 1
-    evidence: [{source_path: .ai/architecture.yaml, symbol: known_limits}]
-  - value: Legacy payloads are adapted to legacy.generic, which intentionally returns LEGACY_CONTRACT_NOT_MIGRATED.
-    confidence: 1
-    evidence: [{source_path: .ai/contracts/orchestration.yaml, symbol: legacy}]
-operation_manifests:
-  - endpoints/get-engines.yaml
-  - endpoints/get-capabilities.yaml
-  - endpoints/post-contracts-inspect.yaml
-  - endpoints/post-contracts-verify.yaml
-  - endpoints/post-validate.yaml
-  - endpoints/get-health.yaml
-  - endpoints/get-engines-relative.yaml
-  - endpoints/get-capabilities-relative.yaml
-  - endpoints/post-contracts-inspect-relative.yaml
-  - endpoints/post-contracts-verify-relative.yaml
-  - endpoints/post-validate-relative.yaml
-  - endpoints/any-api-v1-root.yaml
-  - endpoints/any-internal-root.yaml
-evidence:
-  - {source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}
-  - {source_path: internal/transport/http/router.go, symbol: NewRouter}
-confidence: 1
+{
+  "schema": "architecture/v1",
+  "kind": "service",
+  "id": "ms-go-validation-orchestrator",
+  "manifest_revision": 2,
+  "identity": {
+    "name": "ms-go-validation-orchestrator",
+    "kind": "go_backend_service"
+  },
+  "purpose": {
+    "value": "Parse validation contracts, order and execute configured validator stages, evaluate links, and normalize results.",
+    "confidence": 1,
+    "evidence": [
+      {
+        "source_path": ".ai/service.yaml",
+        "symbol": "purpose"
+      }
+    ]
+  },
+  "responsibilities": [
+    {
+      "value": "Own contract parsing, legacy adaptation, mode filtering, deterministic dependency ordering, and aggregation.",
+      "confidence": 1,
+      "evidence": [
+        {
+          "source_path": ".ai/architecture.yaml",
+          "symbol": "execution_flow"
+        }
+      ]
+    },
+    {
+      "value": "Register configured engine adapters and expose authoring and validation HTTP operations.",
+      "confidence": 1,
+      "evidence": [
+        {
+          "source_path": "internal/app/app.go",
+          "symbol": "buildEngineClients"
+        }
+      ]
+    }
+  ],
+  "capabilities": [
+    {
+      "value": "List configured engine IDs and versioned capabilities.",
+      "confidence": 1,
+      "evidence": [
+        {
+          "source_path": "internal/transport/http/api/v1/handler.go",
+          "symbol": "ListEngines"
+        }
+      ]
+    },
+    {
+      "value": "Inspect and executable-verify authored contracts before validation.",
+      "confidence": 1,
+      "evidence": [
+        {
+          "source_path": "internal/transport/http/api/v1/handler.go",
+          "symbol": "InspectContract"
+        }
+      ]
+    },
+    {
+      "value": "Execute stages sequentially and return normalized validation results with a bounded teacher explanation.",
+      "confidence": 1,
+      "evidence": [
+        {
+          "source_path": "internal/usecase/orchestrate_validation.go",
+          "symbol": "Execute"
+        }
+      ]
+    }
+  ],
+  "owned_resources": [],
+  "inbound_interfaces": [
+    {
+      "transport": "http",
+      "name": "/api/v1 and /internal/health",
+      "description": {
+        "value": "Root router protects API v1 with an internal caller header and mounts public health",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/transport/http/router.go",
+            "symbol": "NewRouter"
+          }
+        ]
+      }
+    }
+  ],
+  "outbound_dependencies": [
+    {
+      "id": "linux-validator-http",
+      "transport": "http",
+      "target": "ms-go-linux-validator",
+      "contract": "linux.fs-cli-runtime",
+      "direction": "outbound",
+      "description": {
+        "value": "Configured linux.fs, linux.cli, and linux.runtime adapters call the Linux validator endpoint.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": ".env.example",
+            "start_line": 20,
+            "end_line": 22
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "start_line": 211,
+            "end_line": 217
+          }
+        ]
+      }
+    },
+    {
+      "id": "http-runtime-validator-http",
+      "transport": "http",
+      "target": "ms-go-http-runtime-validator",
+      "contract": "http.runtime-framework",
+      "direction": "outbound",
+      "description": {
+        "value": "Configured http.runtime and http.framework adapters call the HTTP runtime validator endpoint.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": ".env.example",
+            "start_line": 20,
+            "end_line": 22
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "start_line": 89,
+            "end_line": 116
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-go-cache-search-validator-http",
+      "transport": "http",
+      "target": "ms-go-cache-search-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /api/v1/validate.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-go-code-validator-http",
+      "transport": "http",
+      "target": "ms-go-code-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /api/v1/validate.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-go-db-validator-http",
+      "transport": "http",
+      "target": "ms-go-db-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /api/v1/validate.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-go-docker-validator-http",
+      "transport": "http",
+      "target": "ms-go-docker-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /api/v1/validate.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-go-git-validator-http",
+      "transport": "http",
+      "target": "ms-go-git-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /api/v1/validate.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-go-php-framework-validator-http",
+      "transport": "http",
+      "target": "ms-go-php-framework-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /api/v1/validate.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-go-php-validator-http",
+      "transport": "http",
+      "target": "ms-go-php-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /api/v1/validate/rules.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/php_client.go",
+            "checksum": "cf5d4200ae8f0c75302273b5a385a36afc63572a0a88a44deddd9b7b85e79431"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-node-validator-http",
+      "transport": "http",
+      "target": "ms-node-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /api/v1/validate-node.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/node_client.go",
+            "checksum": "0fc9aede360310ec2311d9bd43ee1813c4bc972378c39fcae3bc2339f708f8f1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-py-validator-http",
+      "transport": "http",
+      "target": "ms-py-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /api/v1/validate.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-ts-browser-runtime-validator-http",
+      "transport": "http",
+      "target": "ms-ts-browser-runtime-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /api/v1/validate.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-ts-css-validator-http",
+      "transport": "http",
+      "target": "ms-ts-css-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /validate.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/css_client.go",
+            "checksum": "c939eb7b4f9f8d587a11a6ab7173ea9171942a642516d0452be22295a933067a"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-ts-html-validator-http",
+      "transport": "http",
+      "target": "ms-ts-html-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /validate.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/html_client.go",
+            "checksum": "ac28ee0fc0e2d1cb9daf1040647f14a07789bb996bb5203771432e2d2bb798d4"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-ts-nextjs-validator-http",
+      "transport": "http",
+      "target": "ms-ts-nextjs-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /api/v1/validate.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-ts-react-validator-http",
+      "transport": "http",
+      "target": "ms-ts-react-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes POST /api/v1/validate.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/react_client.go",
+            "checksum": "38cbd8f8fbb8d8ac7d9bc11d92a5710100ffc697baf7cec30b0bdcbfcbacfb84"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owner-client-ms-go-sandbox-http",
+      "transport": "http",
+      "target": "ms-go-sandbox",
+      "direction": "outbound",
+      "description": {
+        "value": "Owner transport client invokes GET /internal/v2/sandboxes/:id/snapshots/:snapshotID.",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "internal/infrastructure/http/pinned_snapshot_reader.go",
+            "checksum": "eda0a997bb2d5fcb50536850d0160b4abb6197f302c5158a8b6607db29344d81"
+          }
+        ]
+      }
+    }
+  ],
+  "endpoint_groups": [
+    {
+      "id": "discovery",
+      "name": "Engine discovery",
+      "description": {
+        "value": "List configured engine IDs and capabilities",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/transport/http/api/v1/router.go",
+            "symbol": "RegisterRoutes"
+          }
+        ]
+      },
+      "operations": [
+        "get-engines",
+        "get-capabilities",
+        "get-engines-relative",
+        "get-capabilities-relative"
+      ]
+    },
+    {
+      "id": "authoring",
+      "name": "Contract authoring",
+      "description": {
+        "value": "Inspect and verify validation contracts",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/transport/http/api/v1/router.go",
+            "symbol": "RegisterRoutes"
+          }
+        ]
+      },
+      "operations": [
+        "post-contracts-inspect",
+        "post-contracts-verify",
+        "post-contracts-inspect-relative",
+        "post-contracts-verify-relative"
+      ]
+    },
+    {
+      "id": "validation",
+      "name": "Validation execution",
+      "description": {
+        "value": "Execute and normalize validation requests",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/transport/http/api/v1/router.go",
+            "symbol": "RegisterRoutes"
+          }
+        ]
+      },
+      "operations": [
+        "post-validate",
+        "post-validate-relative"
+      ]
+    },
+    {
+      "id": "health",
+      "name": "Health",
+      "description": {
+        "value": "Internal process health endpoint",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/transport/http/private/health.go",
+            "symbol": "HealthHandler"
+          }
+        ]
+      },
+      "operations": [
+        "get-health"
+      ]
+    },
+    {
+      "id": "mounts",
+      "name": "HTTP mount boundaries",
+      "description": {
+        "value": "Root router mount patterns that delegate to the API and internal subrouters",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/transport/http/router.go",
+            "symbol": "NewRouter"
+          }
+        ]
+      },
+      "operations": [
+        "any-api-v1-root",
+        "any-internal-root"
+      ]
+    }
+  ],
+  "produced_contracts": [
+    {
+      "transport": "http",
+      "code": "validation_orchestrator_http",
+      "direction": "produced",
+      "description": {
+        "value": "API v1 discovery, authoring, validation, and internal health operations",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": ".ai/contracts/http.yaml",
+            "symbol": "owned_http"
+          }
+        ]
+      }
+    }
+  ],
+  "consumed_contracts": [
+    {
+      "transport": "http",
+      "code": "validator_engine_http",
+      "direction": "consumed",
+      "description": {
+        "value": "Configured validator adapters consume engine-specific HTTP contracts and normalize their responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": ".ai/contracts/engines.yaml",
+            "symbol": "source_of_truth"
+          }
+        ]
+      }
+    }
+  ],
+  "published_events": [],
+  "subscribed_events": [],
+  "business_rules": [
+    {
+      "value": "Every API v1 operation requires X-Internal-Token and fails closed when the configured server value is empty.",
+      "confidence": 1,
+      "evidence": [
+        {
+          "source_path": ".ai/contracts/http.yaml",
+          "symbol": "authentication"
+        }
+      ]
+    },
+    {
+      "value": "Stages execute sequentially in deterministic topological order; stage timeout_seconds is forwarded but not enforced by an orchestrator context.",
+      "confidence": 1,
+      "evidence": [
+        {
+          "source_path": ".ai/architecture.yaml",
+          "symbol": "known_limits"
+        }
+      ]
+    },
+    {
+      "value": "Legacy payloads are adapted to legacy.generic, which intentionally returns LEGACY_CONTRACT_NOT_MIGRATED.",
+      "confidence": 1,
+      "evidence": [
+        {
+          "source_path": ".ai/contracts/orchestration.yaml",
+          "symbol": "legacy"
+        }
+      ]
+    }
+  ],
+  "operation_manifests": [
+    "endpoints/get-engines.yaml",
+    "endpoints/get-capabilities.yaml",
+    "endpoints/post-contracts-inspect.yaml",
+    "endpoints/post-contracts-verify.yaml",
+    "endpoints/post-validate.yaml",
+    "endpoints/get-health.yaml",
+    "endpoints/get-engines-relative.yaml",
+    "endpoints/get-capabilities-relative.yaml",
+    "endpoints/post-contracts-inspect-relative.yaml",
+    "endpoints/post-contracts-verify-relative.yaml",
+    "endpoints/post-validate-relative.yaml",
+    "endpoints/any-api-v1-root.yaml",
+    "endpoints/any-internal-root.yaml"
+  ],
+  "evidence": [
+    {
+      "source_path": "internal/transport/http/api/v1/router.go",
+      "symbol": "RegisterRoutes"
+    },
+    {
+      "source_path": "internal/transport/http/router.go",
+      "symbol": "NewRouter"
+    }
+  ],
+  "confidence": 1
+}

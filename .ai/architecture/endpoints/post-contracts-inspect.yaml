@@ -27,7 +27,7 @@ business_rules:
 implementation:
   router: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]
   handler: [{source_path: internal/transport/http/api/v1/handler.go, symbol: InspectContract}]
-  use_cases: [{source_path: internal/usecase/contract_inspector.go, symbol: InspectContract}]
+  use_cases: [{source_path: internal/usecase/contract_parser.go, symbol: InspectContract}]
   domain_services: []
   repositories: []
 data_access: []

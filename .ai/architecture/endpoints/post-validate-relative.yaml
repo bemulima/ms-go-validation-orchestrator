@@ -1,39 +1,712 @@
-schema: architecture/v1
-kind: operation
-id: post-validate-relative
-manifest_revision: 1
-service_id: ms-go-validation-orchestrator
-type: http
-identity: {transport: http, http: {method: POST, path: /validate}}
-access:
-  audience: {value: internal validation caller, confidence: 1, evidence: [{source_path: .ai/contracts/http.yaml, symbol: authentication}]}
-  authentication: {value: X-Internal-Token header required when mounted below /api/v1, confidence: 1, evidence: [{source_path: internal/transport/http/internal_token.go, symbol: requireInternalToken}]}
-  authorization: {value: service-level internal caller boundary, confidence: 1, evidence: [{source_path: .ai/service.yaml, symbol: security}]}
-  idempotency: {value: unknown; no request idempotency policy is implemented, confidence: 0, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: Validate}]}
-trigger: {description: {value: POST route registered in the API v1 subrouter, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]}}
-input:
-  path_params: []
-  query: []
-  headers: []
-  body: {name: validate-request, description: {value: Validation request DTO, confidence: 1, evidence: [{source_path: dto/validation.go, symbol: ValidateRequest}]}}
-business_task: {value: 'Parse, plan, execute, and aggregate configured validation stages and links', confidence: 1, evidence: [{source_path: internal/usecase/orchestrate_validation.go, symbol: Execute}]}
-business_process:
-  - {id: execute, description: {value: Execute retained stages sequentially through configured engine clients, confidence: 1, evidence: [{source_path: internal/usecase/orchestrate_validation.go, symbol: Execute}]}, interactions: [validator-engines]}
-business_rules: []
-implementation:
-  router: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]
-  handler: [{source_path: internal/transport/http/api/v1/handler.go, symbol: Validate}]
-  use_cases: [{source_path: internal/usecase/orchestrate_validation.go, symbol: Execute}]
-  domain_services: []
-  repositories: []
-data_access: []
-external_interactions:
-  - {id: validator-engines, transport: http, target: configured validator engines, direction: outbound, description: {value: Dispatch stage payloads to engine adapters and normalize bounded responses, confidence: 1, evidence: [{source_path: internal/infrastructure/http/http_client.go, symbol: Do}]}}
-side_effects: []
-output:
-  responses:
-    - {status_code: 200, description: {value: Normalized validation result JSON, confidence: 1, evidence: [{source_path: internal/transport/http/api/v1/handler.go, symbol: Validate}]}}
-  emitted_events: []
-errors: []
-evidence: [{source_path: internal/transport/http/api/v1/router.go, symbol: RegisterRoutes}]
-confidence: 1
+{
+  "schema": "architecture/v1",
+  "kind": "operation",
+  "id": "post-validate-relative",
+  "manifest_revision": 2,
+  "service_id": "ms-go-validation-orchestrator",
+  "type": "http",
+  "identity": {
+    "transport": "http",
+    "http": {
+      "method": "POST",
+      "path": "/validate"
+    }
+  },
+  "access": {
+    "audience": {
+      "value": "internal validation caller",
+      "confidence": 1,
+      "evidence": [
+        {
+          "source_path": ".ai/contracts/http.yaml",
+          "symbol": "authentication"
+        }
+      ]
+    },
+    "authentication": {
+      "value": "X-Internal-Token header required when mounted below /api/v1",
+      "confidence": 1,
+      "evidence": [
+        {
+          "source_path": "internal/transport/http/internal_token.go",
+          "symbol": "requireInternalToken"
+        }
+      ]
+    },
+    "authorization": {
+      "value": "service-level internal caller boundary",
+      "confidence": 1,
+      "evidence": [
+        {
+          "source_path": ".ai/service.yaml",
+          "symbol": "security"
+        }
+      ]
+    },
+    "idempotency": {
+      "value": "unknown; no request idempotency policy is implemented",
+      "confidence": 0,
+      "evidence": [
+        {
+          "source_path": "internal/transport/http/api/v1/handler.go",
+          "symbol": "Validate"
+        }
+      ]
+    }
+  },
+  "trigger": {
+    "description": {
+      "value": "POST route registered in the API v1 subrouter",
+      "confidence": 1,
+      "evidence": [
+        {
+          "source_path": "internal/transport/http/api/v1/router.go",
+          "symbol": "RegisterRoutes"
+        }
+      ]
+    }
+  },
+  "input": {
+    "path_params": [],
+    "query": [],
+    "headers": [],
+    "body": {
+      "name": "validate-request",
+      "description": {
+        "value": "Validation request DTO",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "dto/validation.go",
+            "symbol": "ValidateRequest"
+          }
+        ]
+      }
+    }
+  },
+  "business_task": {
+    "value": "Parse, plan, execute, and aggregate configured validation stages and links",
+    "confidence": 1,
+    "evidence": [
+      {
+        "source_path": "internal/usecase/orchestrate_validation.go",
+        "symbol": "Execute"
+      }
+    ]
+  },
+  "business_process": [
+    {
+      "id": "execute",
+      "description": {
+        "value": "Execute retained stages sequentially through configured engine clients",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/usecase/orchestrate_validation.go",
+            "symbol": "Execute"
+          }
+        ]
+      },
+      "interactions": [
+        "validator-engines"
+      ]
+    }
+  ],
+  "business_rules": [],
+  "implementation": {
+    "router": [
+      {
+        "source_path": "internal/transport/http/api/v1/router.go",
+        "symbol": "RegisterRoutes"
+      }
+    ],
+    "handler": [
+      {
+        "source_path": "internal/transport/http/api/v1/handler.go",
+        "symbol": "Validate"
+      }
+    ],
+    "use_cases": [
+      {
+        "source_path": "internal/usecase/orchestrate_validation.go",
+        "symbol": "Execute"
+      }
+    ],
+    "domain_services": [],
+    "repositories": []
+  },
+  "data_access": [],
+  "external_interactions": [
+    {
+      "id": "validator-engines-ms-go-cache-search-validator-http",
+      "transport": "http",
+      "target": "ms-go-cache-search-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-go-code-validator-http",
+      "transport": "http",
+      "target": "ms-go-code-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-go-db-validator-http",
+      "transport": "http",
+      "target": "ms-go-db-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-go-docker-validator-http",
+      "transport": "http",
+      "target": "ms-go-docker-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-go-git-validator-http",
+      "transport": "http",
+      "target": "ms-go-git-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-go-http-runtime-validator-http",
+      "transport": "http",
+      "target": "ms-go-http-runtime-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-go-linux-validator-http",
+      "transport": "http",
+      "target": "ms-go-linux-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-go-php-framework-validator-http",
+      "transport": "http",
+      "target": "ms-go-php-framework-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-go-php-validator-http",
+      "transport": "http",
+      "target": "ms-go-php-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/php_client.go",
+            "checksum": "cf5d4200ae8f0c75302273b5a385a36afc63572a0a88a44deddd9b7b85e79431"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-node-validator-http",
+      "transport": "http",
+      "target": "ms-node-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/node_client.go",
+            "checksum": "0fc9aede360310ec2311d9bd43ee1813c4bc972378c39fcae3bc2339f708f8f1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-py-validator-http",
+      "transport": "http",
+      "target": "ms-py-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-ts-browser-runtime-validator-http",
+      "transport": "http",
+      "target": "ms-ts-browser-runtime-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-ts-css-validator-http",
+      "transport": "http",
+      "target": "ms-ts-css-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/css_client.go",
+            "checksum": "c939eb7b4f9f8d587a11a6ab7173ea9171942a642516d0452be22295a933067a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-ts-html-validator-http",
+      "transport": "http",
+      "target": "ms-ts-html-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.foundation.yml",
+            "checksum": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/html_client.go",
+            "checksum": "ac28ee0fc0e2d1cb9daf1040647f14a07789bb996bb5203771432e2d2bb798d4"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-ts-nextjs-validator-http",
+      "transport": "http",
+      "target": "ms-ts-nextjs-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/workspace_foundation_client.go",
+            "checksum": "8ab4cffa9c1b7ffb6b15f0d54c3d185f6ca6dfeb9958c193186b0173896a17fa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "validator-engines-ms-ts-react-validator-http",
+      "transport": "http",
+      "target": "ms-ts-react-validator",
+      "direction": "outbound",
+      "description": {
+        "value": "Dispatch stage payloads to engine adapters and normalize bounded responses",
+        "confidence": 1,
+        "evidence": [
+          {
+            "source_path": "internal/infrastructure/http/http_client.go",
+            "checksum": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+          },
+          {
+            "source_path": "config/config.go",
+            "checksum": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+          },
+          {
+            "source_path": "docker-compose.yml",
+            "checksum": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+          },
+          {
+            "source_path": "internal/app/app.go",
+            "checksum": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+          },
+          {
+            "source_path": "internal/infrastructure/http/react_client.go",
+            "checksum": "38cbd8f8fbb8d8ac7d9bc11d92a5710100ffc697baf7cec30b0bdcbfcbacfb84"
+          }
+        ]
+      }
+    }
+  ],
+  "side_effects": [],
+  "output": {
+    "responses": [
+      {
+        "status_code": 200,
+        "description": {
+          "value": "Normalized validation result JSON",
+          "confidence": 1,
+          "evidence": [
+            {
+              "source_path": "internal/transport/http/api/v1/handler.go",
+              "symbol": "Validate"
+            }
+          ]
+        }
+      }
+    ],
+    "emitted_events": []
+  },
+  "errors": [],
+  "evidence": [
+    {
+      "source_path": "internal/transport/http/api/v1/router.go",
+      "symbol": "RegisterRoutes"
+    }
+  ],
+  "confidence": 1
+}

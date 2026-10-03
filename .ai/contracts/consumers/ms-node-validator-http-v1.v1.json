@@ -1,0 +1,62 @@
+{
+  "schema_version": "consumer-contract-expectation.v1",
+  "consumer": {
+    "repository": "bemulima/ms-go-validation-orchestrator",
+    "service": "ms-go-validation-orchestrator",
+    "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82"
+  },
+  "provider_repository": "bemulima/ms-node-validator",
+  "provider_service": "ms-node-validator",
+  "contract_id": "ms-node-validator.http.v1",
+  "contract_path": ".ai/contracts/http.yaml",
+  "expected_version": "v1",
+  "version_semantics": "exact",
+  "kind": "HTTP",
+  "required_operations": [
+    "POST /api/v1/validate-node"
+  ],
+  "source_pins": [
+    {
+      "repository": "bemulima/ms-go-validation-orchestrator",
+      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "path": "config/config.go",
+      "blob_sha": "158e7eada3708b841bc33c0fb25f3a114d7de8e9",
+      "content_sha256": "6ca0b2d1ec09c50df3195de5e258f36f8a2f150f5525ad0c7da999e29b20bc3c"
+    },
+    {
+      "repository": "bemulima/ms-go-validation-orchestrator",
+      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "path": "docker-compose.foundation.yml",
+      "blob_sha": "0af13632c7edf02978753a9ee941605290395fd9",
+      "content_sha256": "1a020cd0eda547a23a136a530be5acba7f653067025f7d69809e2c04e489a650"
+    },
+    {
+      "repository": "bemulima/ms-go-validation-orchestrator",
+      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "path": "docker-compose.yml",
+      "blob_sha": "e0ac6825f0c2296b2e809ee669b7a85b80ef75c1",
+      "content_sha256": "59ceae7cd18507f831b197a5344d49011395d43e2697a4aefdcfb7c91a94a61c"
+    },
+    {
+      "repository": "bemulima/ms-go-validation-orchestrator",
+      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "path": "internal/app/app.go",
+      "blob_sha": "f334755ca1871b5076c6c71348790f3c57cc80a6",
+      "content_sha256": "54a62a1b70271c812e76ac80942d26147f3781aca89bb3961864ea93387b60cb"
+    },
+    {
+      "repository": "bemulima/ms-go-validation-orchestrator",
+      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "path": "internal/infrastructure/http/http_client.go",
+      "blob_sha": "2bb9e37e2483046c6da2e02219e771c00b4a100f",
+      "content_sha256": "6196a81f3aec7fd49b3fd7896d7f855180390ff3194b4f037eac9dae417bb94e"
+    },
+    {
+      "repository": "bemulima/ms-go-validation-orchestrator",
+      "commit_sha": "7667e819b6120f9682950dc748ac88184ca47e82",
+      "path": "internal/infrastructure/http/node_client.go",
+      "blob_sha": "21e8c24e9929025ca9356e67710f39a4a57cc803",
+      "content_sha256": "0fc9aede360310ec2311d9bd43ee1813c4bc972378c39fcae3bc2339f708f8f1"
+    }
+  ]
+}
