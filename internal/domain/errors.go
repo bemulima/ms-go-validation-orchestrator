@@ -13,6 +13,7 @@ var (
 	ErrDependencyCycle        = errors.New("validation stage dependency cycle")
 	ErrInlineRulesUnsupported = errors.New("inline rules are unsupported by engine")
 	ErrValidatorProtocol      = errors.New("validator protocol error")
+	ErrVerificationWorkspace  = errors.New("verification workspace unavailable or unsupported")
 )
 
 type ValidatorHTTPStatusError struct {

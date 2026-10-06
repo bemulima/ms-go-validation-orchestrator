@@ -16,6 +16,7 @@ owned_capabilities:
   - versioned configured-engine capability discovery
   - authoring-time contract inspection
   - executable starter/reference/negative fixture verification receipts
+  - bounded readonly local file projection for authoring verification only
   - Practice Runtime V2 correlation and typed PASS/FAIL/ERROR validation
   - exact pinned Sandbox snapshot reads and workspace-digest verification
 not_owned:
@@ -41,6 +42,12 @@ dependencies:
   exact_snapshot_reader:
     base_url_env: SANDBOX_SERVICE_BASE_URL
     token_env: SANDBOX_SERVICE_INTERNAL_TOKEN
+  verification_workspace_reader:
+    adapter: internal/infrastructure/workspace
+    transport: readonly local filesystem
+    mount_env: VERIFICATION_WORKSPACES_DIR
+    default_mount: /workspaces
+    prerequisite: matching Sandbox-created workspace mount; production Compose does not provide it
 security:
   authentication: X-Internal-Token on /api/v1 and /api/v2
   authorization: service-level internal caller boundary

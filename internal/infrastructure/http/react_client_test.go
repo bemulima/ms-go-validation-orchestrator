@@ -2,6 +2,8 @@ package engines
 
 import (
 	"context"
+	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
@@ -9,13 +11,21 @@ import (
 
 type fakeReactHTTPClient struct {
 	responseBody []byte
+	lastURL      string
+	requestBody  []byte
 }
 
 func (client *fakeReactHTTPClient) PostJSON(
 	_ context.Context,
-	_ string,
-	_ any,
+	url string,
+	payload any,
 ) ([]byte, error) {
+	client.lastURL = url
+	var err error
+	client.requestBody, err = json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
 	return client.responseBody, nil
 }
 
@@ -71,5 +81,43 @@ func TestReactClientValidateMapsHTTPContract(t *testing.T) {
 	}
 	if result.Errors[0].Selector != "button" {
 		t.Fatalf("expected selector to be forwarded")
+	}
+}
+
+func TestReactClientPreservesAuthoredRulesArrayInOutboundJSON(t *testing.T) {
+	rules := json.RawMessage(`[
+		{"kind":"component_exists","name":"App","export":"default","componentKind":"function"},
+		{"kind":"jsx_tree","component":"App","selector":"button","required":true,"textIncludes":"Save","attributesIncludes":{"id":"save-button"},"children":[{"selector":"span","textIncludes":"Saved"}]}
+	]`)
+	code := `export default function App(){ return <button id="save-button">Save<span>Saved</span></button>; }`
+	poster := &fakeReactHTTPClient{responseBody: []byte(`{"success":true,"isValid":true,"errors":[]}`)}
+	_, err := NewReactClient("http://react.test", poster).Validate(context.Background(), domain.EngineValidationInput{
+		TaskID:    "synthetic-task",
+		Stage:     domain.ValidationStage{ID: "react", Engine: "react.ast", Language: "tsx", Framework: "react", Targets: domain.StageTargets{Files: []string{"src/App.tsx"}}, Rules: rules},
+		Workspace: domain.ValidationWorkspace{Files: []domain.WorkspaceFile{{Path: "src/App.tsx", Content: code}}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var body struct {
+		TaskID, Code, Language, Framework string
+		Rules                             json.RawMessage
+		Meta                              struct{ Path string }
+	}
+	if err := json.Unmarshal(poster.requestBody, &body); err != nil {
+		t.Fatal(err)
+	}
+	if poster.lastURL != "http://react.test/validate" || body.TaskID != "synthetic-task" || body.Code != code || body.Language != "tsx" || body.Framework != "react" || body.Meta.Path != "src/App.tsx" {
+		t.Fatal("React HTTP routing or exact target payload changed")
+	}
+	var expected, actual []any
+	if err := json.Unmarshal(rules, &expected); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(body.Rules, &actual); err != nil {
+		t.Fatal(err)
+	}
+	if len(actual) != 2 || !reflect.DeepEqual(actual, expected) {
+		t.Fatal("authored Rules array order, fields or nested values changed")
 	}
 }

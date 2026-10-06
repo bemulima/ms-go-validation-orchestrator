@@ -23,6 +23,7 @@ func NewHTMLClient(baseURL string, httpClient HTTPClient) HTMLClient {
 func (client HTMLClient) EngineID() string {
 	return "html.dom"
 }
+func (HTMLClient) NeedsWorkspaceFiles(domain.ValidationStage) bool { return true }
 
 func (client HTMLClient) Validate(
 	ctx context.Context,
@@ -133,12 +134,14 @@ func parseCommonValidationResponse(
 		return domain.StageExecutionResult{}, fmt.Errorf("%w: response does not include an outcome", domain.ErrValidatorProtocol)
 	}
 
-	passed := payload.OK || payload.IsValid || payload.Valid
-	if !payload.OK && !payload.IsValid && !payload.Valid && len(payload.Errors) == 0 {
-		passed = false
+	if (hasOK && hasIsValid && payload.OK != payload.IsValid) ||
+		(hasOK && hasValid && payload.OK != payload.Valid) ||
+		(hasIsValid && hasValid && payload.IsValid != payload.Valid) {
+		return domain.StageExecutionResult{}, fmt.Errorf("%w: response outcome flags disagree", domain.ErrValidatorProtocol)
 	}
-	if payload.OK || (payload.IsValid && payload.Valid) {
-		passed = true
+	passed := payload.OK || payload.IsValid || payload.Valid
+	if passed && len(payload.Errors) > 0 {
+		return domain.StageExecutionResult{}, fmt.Errorf("%w: successful response includes error issues", domain.ErrValidatorProtocol)
 	}
 
 	errors := make([]domain.ValidationIssue, 0, len(payload.Errors))

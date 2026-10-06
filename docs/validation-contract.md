@@ -5,8 +5,11 @@
 The orchestrator strictly rejects unknown V1 core fields, unsupported version
 or kind, unsafe workspace paths, duplicate IDs, unresolved or cyclic
 dependencies, unsupported modes/link kinds, malformed link configs, and
-trailing JSON values. Engine-specific `rules` and `checks` remain JSON objects
-whose detailed schema is owned by the selected engine.
+trailing JSON values. Engine-specific `rules` may be opaque JSON objects or
+arrays; `checks` remain opaque JSON objects. Both retain omission and null
+compatibility and reject top-level scalars. The selected engine owns their
+detailed schema, including array-member fields and semantics. Container
+admission does not imply that a provider accepts the authored criteria.
 
 ## Root fields
 
@@ -31,6 +34,14 @@ whose detailed schema is owned by the selected engine.
 - `targets.entrypoint`: workspace entrypoint where relevant.
 - `rules`: engine-specific static/structural rules.
 - `checks`: engine-specific runtime checks.
+
+For `react.ast`, `rules` is an ordered array of rule objects, as in
+[the React component example](examples/react-component.json). The parser
+retains its raw JSON without interpreting React rule kinds. The React adapter
+forwards the array's order, objects and supported nested values to the owning
+provider; HTTP serialization may change JSON whitespace and object-key order.
+Other engines' existing object Rules remain valid. Checks arrays are not
+introduced by this Rules compatibility change.
 
 For `ts.runtime`, `checks` uses the node validator's constrained CLI payload: `kind: "cli"`, optional `args` and `timeoutMs`, and `expect` with `exitCode` plus at least one stdout or stderr assertion. The engine is final-only at orchestration time. Pair it with a `ts.ast` stage in `both` mode when live static feedback is required.
 

@@ -1,7 +1,10 @@
 package engines
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
@@ -107,6 +110,12 @@ func TestParseCommonValidationResponseRejectsMalformedProtocol(t *testing.T) {
 		{name: "empty object", body: `{}`},
 		{name: "no outcome", body: `{"warnings":[]}`},
 		{name: "non-boolean outcome", body: `{"ok":"yes"}`},
+		{name: "null ok", body: `{"ok":null}`},
+		{name: "null isValid", body: `{"isValid":null}`},
+		{name: "null valid", body: `{"valid":null}`},
+		{name: "numeric ok", body: `{"ok":1}`},
+		{name: "array isValid", body: `{"isValid":[]}`},
+		{name: "object valid", body: `{"valid":{}}`},
 		{name: "malformed errors", body: `{"ok":false,"errors":{}}`},
 	}
 	for _, test := range tests {
@@ -115,6 +124,104 @@ func TestParseCommonValidationResponseRejectsMalformedProtocol(t *testing.T) {
 			_, err := parseCommonValidationResponse([]byte(test.body), domain.ValidationStage{ID: "test", Engine: "php.core"})
 			if !errors.Is(err, domain.ErrValidatorProtocol) {
 				t.Fatalf("expected validator protocol error, got %v", err)
+			}
+		})
+	}
+}
+
+// These are synthetic protocol fault envelopes, not observed live engine verdicts.
+func TestParseCommonValidationResponseRejectsContradictorySyntheticOutcomes(t *testing.T) {
+	t.Parallel()
+	fields := []string{"ok", "isValid", "valid"}
+	for present := 1; present < 8; present++ {
+		for truth := 0; truth < 8; truth++ {
+			if truth&^present != 0 || truth == 0 || truth == present {
+				continue
+			}
+			t.Run(fmt.Sprintf("present=%03b/true=%03b", present, truth), func(t *testing.T) {
+				t.Parallel()
+				envelope := map[string]any{"errors": []any{}}
+				for index, field := range fields {
+					if present&(1<<index) != 0 {
+						envelope[field] = truth&(1<<index) != 0
+					}
+				}
+				body, err := json.Marshal(envelope)
+				if err != nil {
+					t.Fatal(err)
+				}
+				result, err := parseCommonValidationResponse(body, domain.ValidationStage{ID: "synthetic", Engine: "synthetic.common"})
+				if !errors.Is(err, domain.ErrValidatorProtocol) || result.Passed || len(result.RawResult) != 0 {
+					t.Fatalf("conflicting flags were normalized as a verdict: error=%v passed=%t", err, result.Passed)
+				}
+			})
+		}
+	}
+}
+
+func TestParseCommonValidationResponseRejectsSyntheticTrueWithErrors(t *testing.T) {
+	t.Parallel()
+	for _, body := range []string{
+		`{"ok":true,"errors":[{"code":"SYNTHETIC_FAILURE","message":"Synthetic issue"}]}`,
+		`{"isValid":true,"errors":[{"code":"SYNTHETIC_FAILURE","message":"Synthetic issue"}]}`,
+		`{"valid":true,"errors":[{"code":"SYNTHETIC_FAILURE","message":"Synthetic issue"}]}`,
+		`{"ok":true,"isValid":true,"valid":true,"errors":[{"severity":"warning","message":"Still in the errors bucket"}]}`,
+	} {
+		t.Run(body, func(t *testing.T) {
+			t.Parallel()
+			result, err := parseCommonValidationResponse([]byte(body), domain.ValidationStage{ID: "synthetic", Engine: "synthetic.common"})
+			if !errors.Is(err, domain.ErrValidatorProtocol) || result.Passed || len(result.RawResult) != 0 {
+				t.Fatalf("true with error issues was normalized as a verdict: error=%v passed=%t", err, result.Passed)
+			}
+		})
+	}
+}
+
+func TestParseCommonValidationResponsePreservesConsistentOutcomesAndProjection(t *testing.T) {
+	t.Parallel()
+	fields := []string{"ok", "isValid", "valid"}
+	for present := 1; present < 8; present++ {
+		for _, passed := range []bool{false, true} {
+			t.Run(fmt.Sprintf("present=%03b/passed=%t", present, passed), func(t *testing.T) {
+				t.Parallel()
+				envelope := map[string]any{
+					"errors":   []any{},
+					"warnings": []map[string]string{{"code": "OPTIONAL_WARNING", "message": "Optional hint", "file": "index.html"}},
+					"evidence": []map[string]string{{"message": "Checked target", "file": "index.html"}},
+				}
+				for index, field := range fields {
+					if present&(1<<index) != 0 {
+						envelope[field] = passed
+					}
+				}
+				body, err := json.Marshal(envelope)
+				if err != nil {
+					t.Fatal(err)
+				}
+				stage := domain.ValidationStage{ID: "synthetic", Engine: "synthetic.common"}
+				result, err := parseCommonValidationResponse(body, stage)
+				if err != nil || result.Passed != passed || len(result.Errors) != 0 || !bytes.Equal(result.RawResult, body) {
+					t.Fatalf("consistent outcome changed: %v", err)
+				}
+				if len(result.Warnings) != 1 || result.Warnings[0].Code != "OPTIONAL_WARNING" || result.Warnings[0].StageID != stage.ID || result.Warnings[0].Engine != stage.Engine || result.Warnings[0].Severity != "warning" || len(result.Evidence) != 1 || result.Evidence[0].File != "index.html" {
+					t.Fatal("existing warning/evidence projection changed")
+				}
+			})
+		}
+	}
+}
+
+func TestParseCommonValidationResponsePreservesFalseAndErrorsOnlyCompatibility(t *testing.T) {
+	t.Parallel()
+	for _, body := range []string{
+		`{"ok":false,"isValid":false,"valid":false,"errors":[{"code":"CHECK_FAILED","message":"Expected value missing","path":"index.html","detail":"App"}]}`,
+		`{"errors":[{"code":"CHECK_FAILED","message":"Expected value missing","path":"index.html","detail":"App"}]}`,
+	} {
+		t.Run(body, func(t *testing.T) {
+			t.Parallel()
+			result, err := parseCommonValidationResponse([]byte(body), domain.ValidationStage{ID: "check", Engine: "synthetic.common"})
+			if err != nil || result.Passed || len(result.Errors) != 1 || result.Errors[0].Code != "CHECK_FAILED" || result.Errors[0].File != "index.html" || result.Errors[0].Symbol != "App" || result.Errors[0].Severity != "error" {
+				t.Fatalf("existing semantic failure compatibility changed: %v", err)
 			}
 		})
 	}

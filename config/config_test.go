@@ -2,6 +2,19 @@ package config
 
 import "testing"
 
+func TestLoadVerificationWorkspaceMountConfiguration(t *testing.T) {
+	t.Setenv("VERIFICATION_WORKSPACES_DIR", "")
+	cfg, err := Load()
+	if err != nil || cfg.VerificationWorkspacesDir != "/workspaces" {
+		t.Fatalf("default verification mount: %q err=%v", cfg.VerificationWorkspacesDir, err)
+	}
+	t.Setenv("VERIFICATION_WORKSPACES_DIR", "/private/owned/verification")
+	cfg, err = Load()
+	if err != nil || cfg.VerificationWorkspacesDir != "/private/owned/verification" {
+		t.Fatalf("configured verification mount: %q err=%v", cfg.VerificationWorkspacesDir, err)
+	}
+}
+
 func TestLoadCodeValidatorURLFallsBackToLegacyGoVariable(t *testing.T) {
 	t.Setenv("CODE_VALIDATOR_URL", "")
 	t.Setenv("GO_CODE_VALIDATOR_URL", "http://legacy-code-validator:8080/")

@@ -21,6 +21,7 @@ func NewCSSClient(baseURL string, httpClient jsonPoster) CSSClient {
 func (client CSSClient) EngineID() string {
 	return "css.ast"
 }
+func (CSSClient) NeedsWorkspaceFiles(domain.ValidationStage) bool { return true }
 
 func (client CSSClient) Validate(
 	ctx context.Context,

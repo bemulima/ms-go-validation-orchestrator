@@ -29,6 +29,7 @@ func NewNodeClient(baseURL string, httpClient jsonPoster, engine string) NodeCli
 func (client NodeClient) EngineID() string {
 	return client.engine
 }
+func (NodeClient) NeedsWorkspaceFiles(domain.ValidationStage) bool { return true }
 
 func (client NodeClient) Validate(
 	ctx context.Context,

@@ -2,6 +2,9 @@ package engines
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
 )
@@ -10,6 +13,33 @@ type WorkspaceFoundationClient struct {
 	baseURL string
 	http    jsonPoster
 	engine  string
+}
+
+func (client WorkspaceFoundationClient) NeedsWorkspaceFiles(stage domain.ValidationStage) bool {
+	// Provider-owned inputs, not the heuristic public capability projection.
+	switch client.engine {
+	// Code, PHP framework and Python DTOs consume only inline files. NextJS
+	// and Browser materialize Files; Docker selects its target from Files.
+	case "golang", "go.core", "go.gin", "go.echo", "java.compile", "java.runtime", "kotlin.compile", "kotlin.runtime",
+		"php.laravel", "php.yii2", "php.yii3", "php.symfony", "python.core", "python.django", "nextjs.app", "browser.runtime", "docker.dockerfile", "docker.compose",
+		"db.postgres.schema", "db.mysql.schema", "db.tarantool.schema":
+		return true
+	case "db.postgres.runtime", "db.mysql.runtime":
+		// collectSetupStatements consumes Files only for authored setupFiles.
+		var checks struct {
+			SetupFiles []string `json:"setupFiles"`
+		}
+		return json.Unmarshal(stage.Checks, &checks) == nil && len(checks.SetupFiles) > 0
+	case "cache.redis.config", "search.elasticsearch.mapping", "search.manticore", "search.sphinx":
+		// targetWorkspaceFiles reads explicit targets from RootPath as fallback;
+		// without targets it can enumerate only the inline Files projection.
+		return len(stage.Targets.Files) == 0
+	default:
+		// Git, Linux, dedicated HTTP/framework runtime and runtime cache/search
+		// retain their existing root/connection prerequisites. Unclassified
+		// foundation variants are not claimed as repaired Files consumers.
+		return false
+	}
 }
 
 func NewWorkspaceFoundationClient(
@@ -32,6 +62,16 @@ func (client WorkspaceFoundationClient) Validate(
 	ctx context.Context,
 	input domain.EngineValidationInput,
 ) (domain.StageExecutionResult, error) {
+	if strings.TrimSpace(input.Workspace.RootPath) == "" {
+		// These providers require repository or process state that inline
+		// path/content files cannot supply. Keep Node HTTP and Linux Files
+		// inputs on their existing provider paths.
+		switch client.engine {
+		case "git.core", "http.runtime", "python.django.runtime", "go.gin.runtime", "go.echo.runtime",
+			"php.laravel.runtime", "php.symfony.runtime", "php.yii2.runtime", "php.yii3.runtime":
+			return domain.StageExecutionResult{}, fmt.Errorf("%w: workspace execution prerequisite unavailable", domain.ErrUnsupportedEngine)
+		}
+	}
 	responseBody, err := client.http.PostJSON(ctx, client.baseURL+"/api/v1/validate", map[string]any{
 		"taskId":       input.TaskID,
 		"locale":       input.Locale,

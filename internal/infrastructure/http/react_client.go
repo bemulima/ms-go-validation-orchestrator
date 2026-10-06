@@ -21,6 +21,7 @@ func NewReactClient(baseURL string, httpClient jsonPoster) ReactClient {
 func (client ReactClient) EngineID() string {
 	return "react.ast"
 }
+func (ReactClient) NeedsWorkspaceFiles(domain.ValidationStage) bool { return true }
 
 func (client ReactClient) Validate(
 	ctx context.Context,

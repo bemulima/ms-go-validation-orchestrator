@@ -9,6 +9,7 @@ import (
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
 	engines "github.com/example/ms-validation-orchestrator-service/internal/infrastructure/http"
 	"github.com/example/ms-validation-orchestrator-service/internal/infrastructure/logging"
+	"github.com/example/ms-validation-orchestrator-service/internal/infrastructure/workspace"
 	transporthttp "github.com/example/ms-validation-orchestrator-service/internal/transport/http"
 	api "github.com/example/ms-validation-orchestrator-service/internal/transport/http/api/v1"
 	apiV2 "github.com/example/ms-validation-orchestrator-service/internal/transport/http/api/v2"
@@ -29,7 +30,7 @@ func New(cfg config.Config) App {
 	orchestrator := usecase.NewOrchestrateValidationUseCase(
 		parser,
 		engineClients,
-	)
+	).WithWorkspaceFileReader(workspace.NewVerificationFileReader(cfg.VerificationWorkspacesDir))
 	practiceSnapshotReader := engines.NewPinnedSnapshotReader(
 		cfg.SandboxServiceBaseURL,
 		cfg.SandboxServiceInternalToken,

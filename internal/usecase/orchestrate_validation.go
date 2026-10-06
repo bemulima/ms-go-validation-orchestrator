@@ -15,8 +15,16 @@ import (
 )
 
 type OrchestrateValidationUseCase struct {
-	parser  ContractParser
-	engines map[string]domain.EngineClient
+	parser            ContractParser
+	engines           map[string]domain.EngineClient
+	verificationFiles domain.WorkspaceFileReader
+}
+
+// WithWorkspaceFileReader configures authoring verification only. Ordinary
+// Execute and the independent pinned Practice V2 flow never use this reader.
+func (useCase OrchestrateValidationUseCase) WithWorkspaceFileReader(reader domain.WorkspaceFileReader) OrchestrateValidationUseCase {
+	useCase.verificationFiles = reader
+	return useCase
 }
 
 func NewOrchestrateValidationUseCase(

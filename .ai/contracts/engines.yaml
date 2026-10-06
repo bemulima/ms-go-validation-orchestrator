@@ -22,9 +22,23 @@ families:
   cache_search: [cache.redis.config, cache.redis.runtime, search.elasticsearch.mapping, search.elasticsearch.runtime, search.manticore, search.sphinx]
 adapter_rules:
   workspace_root_path: accepted only as exact /workspaces/<sandbox-id>, then passed through
-  common_response_passes_when: any of ok, isValid, or valid is true
+  common_response_passes_when: a present ok, isValid or valid is true, all present outcome flags agree, and errors is empty
+  common_response_protocol: conflicting present outcome flags or true with error issues returns ErrValidatorProtocol; absent/null/type guards preserved
+  common_response_compatibility: consistent false and existing no-outcome-with-errors remain semantic failure; warnings and evidence mapping unchanged
   http_runtime_dispatch: generic client when checks.command exists; Node client otherwise when both are configured
   workspace_foundation_payload: forwards stage rules and checks
+  verification_input_declaration: optional adapter-owned NeedsWorkspaceFiles(stage); undeclared clients retain prior root dispatch without a repaired-files claim
+  file_only_adapters: [HTML, CSS, SCSS, React, PHP, Node]
+  foundation_file_inputs: [golang, go.core, go.gin, go.echo, java.compile, java.runtime, kotlin.compile, kotlin.runtime, php.laravel, php.yii2, php.yii3, php.symfony, python.core, python.django, nextjs.app, browser.runtime, docker.dockerfile, docker.compose, db.postgres.schema, db.mysql.schema, db.tarantool.schema]
+  foundation_sql_runtime_files: only when existing checks.setupFiles is nonempty
+  foundation_cache_search_config_files: inline files when no explicit targets; explicit targets can use provider RootPath fallback
+  foundation_root_dispatch: Git, Linux, dedicated HTTP/framework runtime and runtime cache/search retain their existing root or connection prerequisites
+  verification_http_runtime_dispatch: input declaration delegates to the exact same selected client as Validate
+  foundation_strict_root_engines: [git.core, http.runtime, python.django.runtime, go.gin.runtime, go.echo.runtime, php.laravel.runtime, php.symfony.runtime, php.yii2.runtime, php.yii3.runtime]
+  foundation_missing_strict_root: reject before HTTP with ErrUnsupportedEngine; Practice V2 reports ERROR with UNSUPPORTED_CONFIGURATION
+  strict_root_compatibility: existing supplied roots and opaque payloads preserved; HTTP Node branch remains Files-capable
+  linux_inline_scope: existing text files and inferred parents supported; no blanket root requirement
+  rich_artifact_contract: Git history, executable modes, independent empty directories and reproducible environment remain blocked; no mutable fallback or reconstruction protocol
 source_of_truth:
   registration: internal/app/app.go
   adapters: internal/infrastructure/http

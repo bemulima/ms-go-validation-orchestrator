@@ -21,6 +21,7 @@ func NewPHPClient(baseURL string, httpClient HTTPClient) PHPClient {
 func (client PHPClient) EngineID() string {
 	return "php.core"
 }
+func (PHPClient) NeedsWorkspaceFiles(domain.ValidationStage) bool { return true }
 
 func (client PHPClient) Validate(
 	ctx context.Context,

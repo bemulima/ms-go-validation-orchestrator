@@ -37,6 +37,7 @@ type Config struct {
 	InternalAPIToken            string
 	SandboxServiceBaseURL       string
 	SandboxServiceInternalToken string
+	VerificationWorkspacesDir   string
 	HTTP                        HTTPConfig
 	Engines                     EngineEndpoints
 }
@@ -58,6 +59,7 @@ func Load() (Config, error) {
 		InternalAPIToken:            stringFromEnv("INTERNAL_API_TOKEN", "change-me"),
 		SandboxServiceBaseURL:       trimURL(os.Getenv("SANDBOX_SERVICE_BASE_URL")),
 		SandboxServiceInternalToken: stringFromEnv("SANDBOX_SERVICE_INTERNAL_TOKEN", ""),
+		VerificationWorkspacesDir:   stringFromEnv("VERIFICATION_WORKSPACES_DIR", "/workspaces"),
 		HTTP: HTTPConfig{
 			Host: stringFromEnv("HOST", "0.0.0.0"),
 			Port: port,

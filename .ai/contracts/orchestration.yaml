@@ -4,7 +4,8 @@ contract_detection:
   incomplete_v1_behavior: reject; never adapt as legacy
   otherwise: adapt as legacy.generic
   strict_core_schema_validation: true
-  engine_rules_and_checks: opaque JSON objects
+  engine_rules: opaque JSON object or array; omission/null preserved; top-level scalars rejected; provider owns member schema
+  engine_checks: opaque JSON object; omission/null preserved; arrays and top-level scalars rejected
 stage_execution:
   applies_to: /api/v1/validate
   order: deterministic topological order by stage ID among ready stages
@@ -19,6 +20,7 @@ practice_validation_v2:
   digest_preimage: canonical JSON over schema, scope, optional milestone_id, and validation_specification
   workspace_source: exact retained Sandbox snapshot only; no live-head fallback
   snapshot_validation: verify all returned identities and SHA-256 of sorted path/content JSON
+  snapshot_revision: required non-negative integer; explicit genesis zero valid; missing, null, negative and malformed values corrupt
   stage_order: deterministic topological order by stage ID among ready stages
   stage_timeout_seconds: enforced with a per-stage context deadline
   execution_error: ERROR including optional stage execution errors
@@ -26,6 +28,7 @@ practice_validation_v2:
   optional_semantic_failure: non-blocking
   zero_required_criteria: ERROR with AUTHORING_DEFECT
   unsupported_engine: ERROR with UNSUPPORTED_CONFIGURATION
+  unsupported_provider_input: adapter-owned strict root prerequisite failure is ERROR with UNSUPPORTED_CONFIGURATION, including optional execution errors
 aggregation:
   applies_to: /api/v1/validate
   required_validation_failure: fails result
@@ -58,6 +61,13 @@ authoring:
   verification_request_schema: validation-contract-verification-request.v1
   verification_receipt_schema: validation-contract-verification-receipt.v1
   verification_cases: exactly one starter, exactly one reference, at least one negative
+  verification_workspace_source: existing portable case root projected once to bounded text files only for retained adapter-declared file consumers or supported text links
+  verification_physical_mount_env: VERIFICATION_WORKSPACES_DIR
+  verification_physical_mount_default: /workspaces
+  verification_workspace_limits: {files: 1000, per_file_bytes: 4194304, total_bytes: 16777216, walk_entries: 10000, directory_depth: 128}
+  verification_workspace_guards: [descriptor containment, canonical relative paths, no symlinks or special files, lossless UTF8 content including U+0000, sorted files, cancellation]
+  verification_execution_error: technical failure without a receipt; never an expected starter or negative outcome
+  verification_private_data: file bytes and physical paths never returned in receipts or errors
 legacy:
   adaptation: supported
   execution: unsupported

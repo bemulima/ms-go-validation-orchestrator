@@ -30,14 +30,8 @@ func (client HTTPRuntimeDispatchClient) Validate(
 	ctx context.Context,
 	input domain.EngineValidationInput,
 ) (domain.StageExecutionResult, error) {
-	if hasRuntimeCommand(input.Stage.Checks) && client.genericClient != nil {
-		return client.genericClient.Validate(ctx, input)
-	}
-	if client.nodeClient != nil {
-		return client.nodeClient.Validate(ctx, input)
-	}
-	if client.genericClient != nil {
-		return client.genericClient.Validate(ctx, input)
+	if selected := client.selectedClient(input.Stage); selected != nil {
+		return selected.Validate(ctx, input)
 	}
 
 	return domain.StageExecutionResult{
@@ -52,6 +46,23 @@ func (client HTTPRuntimeDispatchClient) Validate(
 			},
 		},
 	}, nil
+}
+
+func (client HTTPRuntimeDispatchClient) selectedClient(stage domain.ValidationStage) domain.EngineClient {
+	if hasRuntimeCommand(stage.Checks) && client.genericClient != nil {
+		return client.genericClient
+	}
+	if client.nodeClient != nil {
+		return client.nodeClient
+	}
+	return client.genericClient
+}
+
+func (client HTTPRuntimeDispatchClient) NeedsWorkspaceFiles(stage domain.ValidationStage) bool {
+	if input, ok := client.selectedClient(stage).(domain.VerificationFileInput); ok {
+		return input.NeedsWorkspaceFiles(stage)
+	}
+	return false
 }
 
 func hasRuntimeCommand(raw json.RawMessage) bool {

@@ -3,13 +3,13 @@ style: ports_and_adapters
 layers:
   - name: domain
     paths: [internal/domain]
-    owns: [validation contract, request, result, engine port, errors]
+    owns: [validation contract, request, result, engine port, verification workspace file port, errors]
   - name: usecase
     paths: [internal/usecase]
     owns: [parsing, legacy adaptation, filtering, dependency ordering, orchestration, links]
   - name: infrastructure
-    paths: [internal/infrastructure/http, internal/infrastructure/logging]
-    owns: [validator-specific request mapping and response normalization]
+    paths: [internal/infrastructure/http, internal/infrastructure/logging, internal/infrastructure/workspace]
+    owns: [validator-specific request mapping and response normalization, bounded readonly verification fixture file transport]
   - name: transport
     paths: [internal/transport/http, dto, mapper, public]
     owns: [HTTP API, DTO mapping, public client]
@@ -31,8 +31,17 @@ practice_validation_v2_flow:
   - fetch and verify the exact retained Sandbox snapshot
   - execute frozen V1 stage contracts in deterministic order with per-stage deadlines
   - return typed PASS, FAIL, or ERROR with sanitized stage summaries
+authoring_verification_flow:
+  - inspect the final contract and exact portable case roots
+  - use actual adapter input declarations and retained FINAL links to determine whether files are needed
+  - read each case once through the explicitly composed local workspace file port only when a retained consumer needs files
+  - execute with original portable root plus bounded text files
+  - reject reader or engine execution errors without exposing private contents or host paths
+  - return only outcome booleans and result digests
 invariants:
   - domain and usecase packages do not depend on HTTP transport
+  - authoring filesystem access lives only in infrastructure/workspace; ordinary Execute and official Practice V2 never hydrate local roots
+  - root-only authoring keeps original dispatch without a new Orchestrator mount prerequisite; unknown adapter inputs are not inferred from public capabilities
   - engine-specific validation remains outside this service
   - stage IDs are unique and dependencies resolve within the retained stage set
   - dependency cycles reject the request

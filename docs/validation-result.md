@@ -6,6 +6,23 @@
 contract. See [Practice Validation V2](practice-validation-v2.md); V1 result
 semantics below remain unchanged.
 
+## Common engine response normalization
+
+For adapters using the common response parser, every present `ok`, `isValid`
+or `valid` flag must be a non-null boolean, and all present flags must agree.
+A positive outcome with any issues in the `errors` array is a protocol error,
+including an issue labelled as a warning inside that errors array. Conflicting
+flags also return `ErrValidatorProtocol`; neither response becomes a learner
+verdict. Errors use fixed generic messages without echoing the provider body.
+
+Consistent single or multiple positive flags with no errors pass. Consistent
+negative flags remain semantic failure, as does the existing compatibility
+response containing errors without an outcome flag. A response with neither
+an outcome nor errors remains a protocol error. Existing warning, evidence
+and valid issue mapping are unchanged. These protocol failures follow the
+existing V1 execution-error behavior and Practice V2 `ERROR` classification;
+they do not alter aggregation or private feedback projection.
+
 ## Root fields
 
 - `contract_kind`: source contract kind such as `workspace_contract` or `legacy_contract`.

@@ -48,6 +48,36 @@ digest as SHA-256 over JSON-encoded `{path,content}` files sorted by path. A
 missing pin, corrupt response, identity mismatch, or digest mismatch becomes
 an `ERROR`; it never reads the current workspace head.
 
+The retained `revision` must be present and a non-negative integer. Explicit
+revision `0` is a valid bootstrap generation. Missing, null, negative or
+malformed revisions are corrupt responses; accepting genesis does not relax
+identity, pin metadata, file-count or digest checks.
+
+## Provider input prerequisites
+
+Official validation passes the verified snapshot's `{path,content}` files to
+engines without a local `root_path`. HTML consumes these files directly.
+The outbound Foundation adapter rejects missing root prerequisites for
+`git.core` and the dedicated HTTP runtime engines (`http.runtime`,
+`python.django.runtime`, `go.gin.runtime`, `go.echo.runtime`,
+`php.laravel.runtime`, `php.symfony.runtime`, `php.yii2.runtime`, and
+`php.yii3.runtime`) before contacting those providers. Such an execution
+failure becomes `ERROR` with `UNSUPPORTED_CONFIGURATION`, including when
+the affected stage is optional. It does not become a learner semantic failure.
+
+The HTTP dispatcher applies this prerequisite only when it selects the
+dedicated provider; its Node branch continues accepting inline files.
+V1 requests carrying their existing portable root continue forwarding that
+root and their opaque rules/checks. No host root or current workspace is
+substituted into official validation.
+
+Linux can materialize inline text files and inferred parent directories, so
+it is not rejected merely for lacking a root. This text snapshot does not
+represent executable modes, independently existing empty directories, Git
+history or a reproducible execution environment. Faithful validation of
+those richer artifact criteria remains blocked on a reviewed artifact and
+prerequisite contract; this scoped implementation does not certify them.
+
 ## Outcome rules
 
 - Required semantic criteria all pass: `PASS`.

@@ -4,7 +4,7 @@ This document records behavior visible in the current code. It is a constraint l
 
 ## Contract validation
 
-- V1 core fields, modes, path values, identities, dependencies, link kinds, and link configs are validated before mode filtering. Engine-specific `rules` and `checks` remain opaque JSON objects and are validated only by their owning engines.
+- V1 core fields, modes, path values, identities, dependencies, link kinds, and link configs are validated before mode filtering. Engine-specific `rules` accept opaque JSON objects or arrays; `checks` accept opaque JSON objects. Both preserve omission/null compatibility and reject top-level scalars. Detailed schemas and array members are validated only by owning engines; the Orchestrator does not interpret React rules or admit Checks arrays.
 - `workspace.required_files` is enforced when files are transported inline. For a root-backed sandbox workspace, existence remains the responsibility of the mounted engine because the orchestrator deliberately does not traverse sandbox filesystems.
 - A payload that does not meet the minimal V1 test is adapted to `legacy.generic`. That engine always fails with `LEGACY_CONTRACT_NOT_MIGRATED`; old execution is not implemented here.
 

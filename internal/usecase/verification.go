@@ -42,6 +42,13 @@ func (useCase OrchestrateValidationUseCase) VerifyContract(
 	if !inspection.Runnable {
 		return domain.ContractVerificationReceiptV1{}, verificationRequestErrorf("contract requires unavailable engines: %v", inspection.MissingEngines)
 	}
+	needsFiles, err := useCase.verificationNeedsFiles(request.CodeStructure)
+	if err != nil {
+		return domain.ContractVerificationReceiptV1{}, err
+	}
+	if needsFiles && useCase.verificationFiles == nil {
+		return domain.ContractVerificationReceiptV1{}, domain.ErrVerificationWorkspace
+	}
 
 	receipt := domain.ContractVerificationReceiptV1{
 		Schema:               domain.ContractVerificationReceiptSchemaV1,
@@ -54,16 +61,28 @@ func (useCase OrchestrateValidationUseCase) VerifyContract(
 		VerifiedAt:           time.Now().UTC(),
 	}
 	for _, verificationCase := range request.Cases {
-		result, err := useCase.Execute(ctx, domain.ValidationRequest{
+		var files []domain.WorkspaceFile
+		if needsFiles {
+			files, err = useCase.verificationFiles.ReadFiles(ctx, verificationCase.WorkspaceRoot)
+			if err != nil {
+				// Never expose filesystem errors, host paths or private fixture bytes.
+				return domain.ContractVerificationReceiptV1{}, domain.ErrVerificationWorkspace
+			}
+		}
+		result, executionErrors, err := useCase.execute(ctx, domain.ValidationRequest{
 			TaskID:        "contract-verification:" + verificationCase.ID,
 			Mode:          domain.ValidationModeFinal,
 			CodeStructure: request.CodeStructure,
 			Workspace: domain.ValidationWorkspace{
 				RootPath: verificationCase.WorkspaceRoot,
+				Files:    files,
 			},
-		})
+		}, false)
 		if err != nil {
 			return domain.ContractVerificationReceiptV1{}, fmt.Errorf("verify case %q: %w", verificationCase.ID, err)
+		}
+		if len(executionErrors) != 0 {
+			return domain.ContractVerificationReceiptV1{}, domain.ErrStageExecutionFailed
 		}
 		expectedPassed := verificationCase.Kind == domain.VerificationCaseReference
 		if result.Passed != expectedPassed {
@@ -89,6 +108,25 @@ func (useCase OrchestrateValidationUseCase) VerifyContract(
 	receiptDigest := sha256.Sum256(encodedReceipt)
 	receipt.ReceiptDigest = "sha256:" + hex.EncodeToString(receiptDigest[:])
 	return receipt, nil
+}
+
+func (useCase OrchestrateValidationUseCase) verificationNeedsFiles(raw json.RawMessage) (bool, error) {
+	contract, _, err := useCase.parser.Parse(domain.ValidationRequest{Mode: domain.ValidationModeFinal, CodeStructure: raw})
+	if err != nil {
+		return false, err
+	}
+	stages := filterStagesByMode(contract.Stages, domain.ValidationModeFinal)
+	for _, stage := range stages {
+		if input, ok := useCase.engines[stage.Engine].(domain.VerificationFileInput); ok && input.NeedsWorkspaceFiles(stage) {
+			return true, nil
+		}
+	}
+	for _, link := range filterLinksByStageIDs(contract.Links, collectStageIDs(stages)) {
+		if link.Kind == "workspace.file_contains" || link.Kind == "workspace.selector_exists" {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func validateVerificationCases(cases []domain.ContractVerificationCaseV1) error {

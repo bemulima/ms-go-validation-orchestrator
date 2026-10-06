@@ -115,6 +115,56 @@ func TestPinnedSnapshotReaderNormalizesUnavailableAndInvalidResponses(t *testing
 	}
 }
 
+func TestPinnedSnapshotReaderRequiresPresentNonNegativeRevision(t *testing.T) {
+	t.Parallel()
+	files := []domain.WorkspaceFile{{Path: "index.html", Content: "<h1>Frozen genesis</h1>"}}
+	ref := domain.PracticeSnapshotRefV2{SandboxID: "11111111-1111-4111-8111-111111111111", SnapshotID: "snapshot-genesis", GenerationID: "gen-genesis", WorkspaceDigest: digestFiles(t, files)}
+	for _, test := range []struct {
+		name     string
+		revision string
+		valid    bool
+		want     int64
+	}{
+		{name: "explicit genesis zero", revision: `0`, valid: true},
+		{name: "positive", revision: `9`, valid: true, want: 9},
+		{name: "missing"},
+		{name: "null", revision: `null`},
+		{name: "negative", revision: `-1`},
+		{name: "string", revision: `"0"`},
+		{name: "fraction", revision: `0.5`},
+		{name: "boolean", revision: `false`},
+		{name: "overflow", revision: `9223372036854775808`},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			client := &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
+				payload := map[string]any{"schema": "practice-pinned-snapshot-content.v2", "sandbox_id": ref.SandboxID, "snapshot_id": ref.SnapshotID, "generation_id": ref.GenerationID, "workspace_digest": ref.WorkspaceDigest, "file_count": len(files), "pinned_at": "2026-10-02T00:00:00Z", "files": files}
+				if test.revision != "" {
+					payload["revision"] = json.RawMessage(test.revision)
+				}
+				encoded, err := json.Marshal(payload)
+				if err != nil {
+					t.Fatal(err)
+				}
+				return &http.Response{StatusCode: http.StatusOK, Header: make(http.Header), Body: io.NopCloser(strings.NewReader(string(encoded)))}, nil
+			})}
+			got, err := NewPinnedSnapshotReader("http://sandbox.test", "token", client).ReadPinnedSnapshot(context.Background(), ref)
+			if !test.valid {
+				if !errors.Is(err, domain.ErrPinnedSnapshotCorrupt) {
+					t.Fatalf("error = %v, want corrupt revision", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("valid retained revision rejected: %v", err)
+			}
+			if got.Ref != ref || got.Revision != test.want || !reflect.DeepEqual(got.Files, files) {
+				t.Fatalf("retained snapshot identity, revision or content changed")
+			}
+		})
+	}
+}
+
 func digestFiles(t *testing.T, files []domain.WorkspaceFile) string {
 	t.Helper()
 	digest, err := domain.WorkspaceFilesDigestV2(files)

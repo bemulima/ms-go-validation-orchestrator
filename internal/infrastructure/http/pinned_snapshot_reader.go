@@ -36,7 +36,7 @@ type pinnedSnapshotContentV2 struct {
 	SnapshotID      string                 `json:"snapshot_id"`
 	GenerationID    string                 `json:"generation_id"`
 	WorkspaceDigest string                 `json:"workspace_digest"`
-	Revision        int64                  `json:"revision"`
+	Revision        *int64                 `json:"revision"`
 	FileCount       int                    `json:"file_count"`
 	PinnedAt        string                 `json:"pinned_at"`
 	Files           []domain.WorkspaceFile `json:"files"`
@@ -102,7 +102,7 @@ func (reader PinnedSnapshotHTTPReader) ReadPinnedSnapshot(
 	if content.WorkspaceDigest != ref.WorkspaceDigest {
 		return domain.PinnedSnapshotV2{}, domain.ErrPinnedSnapshotDigestMismatch
 	}
-	if content.Revision < 1 || content.FileCount < 0 || content.Files == nil || content.FileCount != len(content.Files) {
+	if content.Revision == nil || *content.Revision < 0 || content.FileCount < 0 || content.Files == nil || content.FileCount != len(content.Files) {
 		return domain.PinnedSnapshotV2{}, domain.ErrPinnedSnapshotCorrupt
 	}
 	if _, err := time.Parse(time.RFC3339Nano, content.PinnedAt); err != nil {
@@ -122,7 +122,7 @@ func (reader PinnedSnapshotHTTPReader) ReadPinnedSnapshot(
 	}
 	return domain.PinnedSnapshotV2{
 		Ref:      ref,
-		Revision: content.Revision,
+		Revision: *content.Revision,
 		Files:    files,
 	}, nil
 }

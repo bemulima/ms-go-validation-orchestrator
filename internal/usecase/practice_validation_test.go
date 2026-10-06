@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
 	"testing"
@@ -119,6 +120,39 @@ func TestPracticeValidationUnsupportedEngineIsError(t *testing.T) {
 	}
 	if result.Outcome != domain.PracticeValidationError || result.ErrorClassification != domain.PracticeValidationUnsupportedConfiguration {
 		t.Fatalf("outcome/classification = %s/%s", result.Outcome, result.ErrorClassification)
+	}
+}
+
+func TestPracticeValidationUnsupportedInputPrerequisiteIsErrorIncludingOptional(t *testing.T) {
+	t.Parallel()
+	for _, optional := range []bool{false, true} {
+		t.Run(fmt.Sprintf("optional=%t", optional), func(t *testing.T) {
+			t.Parallel()
+			request := practiceRequest(t, true, false)
+			contract := `{"version":1,"kind":"workspace_contract","stages":[{"id":"required-check","engine":"practice.test","optional":false,"rules":{}},{"id":"guarded","engine":"practice.guarded","optional":` + boolLiteral(optional) + `,"rules":{}}]}`
+			request.ValidationSpecification = json.RawMessage(`{"schema":"practice-validation-specification.v1","runtime_profile":{},"contracts":[{"milestone_id":"step-1","required":true,"validation_contract":` + contract + `,"evaluation_assets":{"negative_fixture_refs":[]}}]}`)
+			request.ValidationContractDigest, _ = ComputePracticeValidationContractDigest(request.Scope, request.MilestoneID, request.ValidationSpecification)
+			useCase := NewPracticeValidationUseCase(NewContractParser(NewDefaultLegacyContractAdapter()), []domain.EngineClient{
+				practiceEngineStub{result: domain.StageExecutionResult{Passed: true}},
+				practiceEngineStub{id: "practice.guarded", err: fmt.Errorf("%w: workspace execution prerequisite unavailable", domain.ErrUnsupportedEngine)},
+			}, practiceSnapshotReaderStub{snapshot: testPinnedSnapshot()})
+			result, err := useCase.ValidatePractice(context.Background(), request)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if result.Outcome != domain.PracticeValidationError || result.ErrorClassification != domain.PracticeValidationUnsupportedConfiguration {
+				t.Fatalf("unsupported input reported as %s/%s", result.Outcome, result.ErrorClassification)
+			}
+			for _, stage := range result.Stages {
+				if stage.StageID == "guarded" {
+					if stage.Outcome != domain.PracticeValidationError || stage.Required == optional {
+						t.Fatal("guarded stage lost its execution error or required/optional status")
+					}
+					return
+				}
+			}
+			t.Fatal("guarded stage missing from safe result")
+		})
 	}
 }
 

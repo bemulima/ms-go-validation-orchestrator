@@ -113,7 +113,7 @@ func validateV1Contract(contract domain.ValidationContract) error {
 				return invalidContractf("stage %q has invalid entrypoint", stage.ID)
 			}
 		}
-		if err := validateOptionalJSONObject(stage.Rules, "stage rules"); err != nil {
+		if err := validateOptionalJSONContainer(stage.Rules, "stage rules"); err != nil {
 			return err
 		}
 		if err := validateOptionalJSONObject(stage.Checks, "stage checks"); err != nil {
@@ -175,6 +175,17 @@ func validateUniqueIDs(values []string, fieldName string) error {
 			return invalidContractf("%s contains duplicate id %q", fieldName, value)
 		}
 		seen[value] = struct{}{}
+	}
+	return nil
+}
+
+func validateOptionalJSONContainer(raw json.RawMessage, fieldName string) error {
+	value := bytes.TrimSpace(raw)
+	if len(value) == 0 || bytes.Equal(value, []byte("null")) {
+		return nil
+	}
+	if !json.Valid(value) || (value[0] != '{' && value[0] != '[') {
+		return invalidContractf("%s must be a JSON object or array", fieldName)
 	}
 	return nil
 }
