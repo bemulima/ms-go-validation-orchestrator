@@ -41,3 +41,5 @@ This folder is the repository-owned documentation set for the validation orchest
 5. Read the authoring and migration guides if you work on admin authoring or seed migration.
 
 - [C2-A ordinary practice owner contract](c2-a-contract-review.md).
+
+- [C2-B bounded Go snapshot projection](c2-b-go-snapshot-projection-review.md).

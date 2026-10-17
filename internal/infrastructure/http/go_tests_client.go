@@ -79,11 +79,22 @@ func (c *GoTestsClient) Validate(ctx context.Context, input domain.EngineValidat
 	}
 	b := checks.Binding
 	b.Files = map[string]string{}
+	seen := map[string]bool{}
 	for _, f := range input.Workspace.Files {
-		if _, duplicate := b.Files[f.Path]; duplicate {
+		if seen[f.Path] {
 			return domain.StageExecutionResult{}, errors.New("duplicate Go input")
 		}
-		b.Files[f.Path] = f.Content
+		seen[f.Path] = true
+		switch f.Path {
+		case "docker-compose.yml": // Sandbox-managed operational file, outside executable source.
+		case "solution.go":
+			b.Files[f.Path] = f.Content
+		default:
+			return domain.StageExecutionResult{}, errors.New("unsupported Go input path")
+		}
+	}
+	if len(b.Files) != 1 {
+		return domain.StageExecutionResult{}, errors.New("one solution.go required")
 	}
 	out, err := c.Run(ctx, b, false)
 	if err != nil {
