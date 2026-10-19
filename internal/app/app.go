@@ -50,7 +50,7 @@ func New(cfg config.Config) App {
 		if base == "" || cfg.GoTestInternalToken == "" || cfg.PlannerVerificationToken == "" || cfg.CatalogVerificationToken == "" {
 			panic("incomplete executable verification configuration")
 		}
-		v, err := usecase.NewExecutableVerification(engines.NewGoTestsClient(base, cfg.GoTestInternalToken), cfg.VerificationSigningKey, cfg.VerificationKeyID)
+		v, err := usecase.NewExecutableVerification(configuredGoTestsClient(base, cfg), cfg.VerificationSigningKey, cfg.VerificationKeyID)
 		if err != nil {
 			panic(err)
 		}
@@ -206,7 +206,7 @@ func buildEngineClients(
 	}
 	if goCodeValidatorURL != "" {
 		if cfg.GoTestInternalToken != "" {
-			engineClients = append(engineClients, engines.NewGoTestsClient(goCodeValidatorURL, cfg.GoTestInternalToken))
+			engineClients = append(engineClients, configuredGoTestsClient(goCodeValidatorURL, cfg))
 		}
 		engineClients = append(
 			engineClients,
@@ -269,4 +269,12 @@ func buildEngineClients(
 
 func itoa(value int) string {
 	return fmt.Sprintf("%d", value)
+}
+
+func configuredGoTestsClient(base string, cfg config.Config) *engines.GoTestsClient {
+	client, err := engines.NewConfiguredGoTestsClient(base, cfg.GoTestInternalToken, cfg.GoTestRunnerRoutesJSON)
+	if err != nil {
+		panic("invalid immutable Go runner route configuration")
+	}
+	return client
 }

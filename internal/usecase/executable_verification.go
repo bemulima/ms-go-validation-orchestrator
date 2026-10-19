@@ -94,7 +94,7 @@ func (v *ExecutableVerification) Verify(ctx context.Context, req domain.Executab
 	if !validVerificationRequest(req) {
 		return domain.ExecutableVerificationReceipt{}, errors.New("invalid executable verification request")
 	}
-	m, err := goCapability(ctx, v.engine, req.Binding.ProfileID)
+	m, err := goBindingCapability(ctx, v.engine, req.Binding)
 	if err != nil || !matchingGoBinding(req.Binding, m) || domain.CanonicalDigestV2(req.CriterionTests) != domain.CanonicalDigestV2(m.CriterionTests) {
 		return domain.ExecutableVerificationReceipt{}, errors.New("capability binding mismatch")
 	}
@@ -144,4 +144,11 @@ func executableContractProfile(raw json.RawMessage) string {
 		return ""
 	}
 	return checks["profile_id"]
+}
+
+func goBindingCapability(ctx context.Context, engine domain.GoTestPort, b domain.GoTestBinding) (domain.GoTestManifest, error) {
+	if bound, ok := engine.(domain.BoundGoTestPort); ok {
+		return bound.CapabilityForBinding(ctx, b)
+	}
+	return goCapability(ctx, engine, b.ProfileID)
 }

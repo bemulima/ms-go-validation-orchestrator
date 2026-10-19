@@ -1,0 +1,35 @@
+[
+  {
+    "binding": {
+      "profile_id": "go-double-numbers.v1",
+      "runner_digest": "sha256:32824bf44685e4380110b5a667c6a228516b590d828db5c5bbd4b2f50e938814",
+      "bundle_digest": "sha256:44b708a8b619de349a934d1b69a2d41357113b8bb8acfc0009ddbcf80b165bba",
+      "execution_profile_digest": "sha256:9fa26c5afb58591ffc5091b74fd91084ca2e9c96493a10dc5775cbcc83509c78",
+      "starter_digest": "sha256:ada01e051e60da5b018c1a1151f8ed2f9f54d1b4cf7fced71f9b2a0a47e10f33"
+    },
+    "url": "http://code-validator-legacy:8080",
+    "token": "<legacy-dedicated-internal-token>"
+  },
+  {
+    "binding": {
+      "profile_id": "go-double-numbers.v1",
+      "runner_digest": "sha256:cb2fe3fdcdce3170402eb2cec20d4f6ce174634eca6c242c0edc5decaedad168",
+      "bundle_digest": "sha256:44b708a8b619de349a934d1b69a2d41357113b8bb8acfc0009ddbcf80b165bba",
+      "execution_profile_digest": "sha256:9fa26c5afb58591ffc5091b74fd91084ca2e9c96493a10dc5775cbcc83509c78",
+      "starter_digest": "sha256:ada01e051e60da5b018c1a1151f8ed2f9f54d1b4cf7fced71f9b2a0a47e10f33"
+    },
+    "url": "http://code-validator-current:8080",
+    "token": "<current-dedicated-internal-token>"
+  },
+  {
+    "binding": {
+      "profile_id": "go-http-handler.v1",
+      "runner_digest": "sha256:4d63fc1e26f88e76a77f64af8f8232fec789908b8195af60bc913c0e39b5602f",
+      "bundle_digest": "sha256:3ddc0a4be635ed997c852366bb1775508c50300e1045a095f56567633ea74bcb",
+      "execution_profile_digest": "sha256:55f64dbf672d9e81ebbf3e26028222f7a48f1a905714ebb7f351402d14f2c1b5",
+      "starter_digest": "sha256:793ee2887b92e3d1da9ac8fa19d021a5151131f3b5c3ede781cd7aee21d0ce70"
+    },
+    "url": "http://code-validator-current:8080",
+    "token": "<current-dedicated-internal-token>"
+  }
+]

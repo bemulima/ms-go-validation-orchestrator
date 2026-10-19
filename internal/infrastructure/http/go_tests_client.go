@@ -14,6 +14,7 @@ import (
 )
 
 type GoTestsClient struct {
+	routes         map[string]goRunnerTarget
 	BaseURL, Token string
 	HTTP           *http.Client
 }
@@ -58,6 +59,9 @@ func (c *GoTestsClient) Capability(ctx context.Context) (domain.GoTestManifest, 
 	return m, err
 }
 func (c *GoTestsClient) Run(ctx context.Context, b domain.GoTestBinding, verify bool) (domain.GoTestResult, error) {
+	if c.routes != nil {
+		return c.runBound(ctx, b, verify)
+	}
 	path := "/internal/go-tests/execute"
 	if verify {
 		path = "/internal/go-tests/verify"

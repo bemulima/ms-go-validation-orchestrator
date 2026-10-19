@@ -91,3 +91,42 @@ reject digest drift, and require `passed=true` before moving a revision to
 Verification selects the existing Code Validator capability by profile_id and binds that same profile to the exact contract, candidate and runner metadata. The bounded HTTP contract targets/requires go.mod, handler.go, main.go; all seven checks are required. Reference must PASS, starter/negative must semantic FAIL; ERROR cannot yield a receipt, and negative must fail method. Receipt sealing and reread do not execute code again. The Go execution adapter projects those exact files (excluding only Sandbox docker-compose.yml), rejects extras/duplicates, and validates returned source/runner/bundle/profile/starter bindings and complete semantic criteria. Legacy single-file behavior is preserved for its matching bindings.
 
 Profile source/security contract belongs to Code Validator; publication/manifest contract belongs to Catalog. Activation requires retained legacy Code Validator build and explicit binding-aware routing for historical runner digests (owner-approved blocker; never spoof digests). Fresh real-owner OCI/ZIP/Sandbox E2E and LC-05-compatible Planner/Course admission remain pending. Unit HTTP/store fixtures do not prove that E2E.
+
+
+## Exact Go runner compatibility dispatch
+
+The existing Go adapter accepts optional server-owned `GO_TEST_RUNNER_ROUTES_JSON`,
+a nonempty array (maximum 16 entries) of `{binding,url,token}`. See
+[exact historical/current example](../config/go-runner-routes.example.json).
+Each binding contains exactly profile_id, runner_digest, bundle_digest,
+execution_profile_digest and starter_digest (no schema or files). Unknown fields,
+duplicate runner digests, malformed tuples/URLs or missing tokens fail startup.
+Keep this JSON in secret configuration; example token placeholders are not usable.
+
+`GO_CODE_VALIDATOR_URL` / `CODE_VALIDATOR_URL` and `GO_TEST_INTERNAL_TOKEN` remain
+the default current-build discovery endpoint/credential. Discovery may use profile_id;
+official execution must select by the immutable binding. The adapter indexes by exact
+runner_digest and compares the complete tuple before making a call. It then checks
+the selected actual binary's capability, sends only its dedicated Bearer credential,
+and checks returned manifest/source/semantic coverage. Redirects are disabled for
+route targets. Unknown/mismatched/unavailable versions are errors without fallback.
+No client request field chooses a URL. With no routes configured the previous single
+endpoint mode remains; it cannot magically execute historical incompatible bindings.
+
+The authoritative binding comes from Catalog's immutable revision evaluation context
+(`verification_runner_ref` plus test/reference/negative refs), frozen by Runtime and
+passed in its authenticated, digest-checked Practice validation specification. It is
+never inferred from profile_id or supplied as an arbitrary public routing URL.
+Both student binding preparation and authoring verification use the additive internal
+BoundGoTestPort capability selection; existing public APIs/DTOs stay unchanged.
+Receipt Validate/sealing/digest logic stays unchanged and performs no network calls
+or execution. Retain original signing keys/key IDs to validate original stored receipts.
+
+Deployment must retain two pinned builds of the existing Code Validator owner:
+legacy source 46edd509cfe9478ee99558eeb4e33d78e8fd430c and current source
+fb17dbb045c015a0bb88caf4683aaf21788eb853, with original digest-pinned GO_TEST_IMAGE.
+Three allowlist entries are needed: legacy DoubleNumbers, current DoubleNumbers,
+current HTTP handler. These deployment changes are not applied by this source change.
+No runner, validator service, orchestration framework, public contract, DB schema,
+historical revision or receipt is created/replaced by dispatch. Missing route/capability
+is a technical ERROR in Practice validation; authoring gate rejects the request.

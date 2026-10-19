@@ -101,3 +101,8 @@ type VerificationReceiptValidation struct {
 type ProfiledGoTestPort interface {
 	CapabilityForProfile(context.Context, string) (GoTestManifest, error)
 }
+
+// BoundGoTestPort selects an actual provider using the trusted immutable tuple.
+type BoundGoTestPort interface {
+	CapabilityForBinding(context.Context, GoTestBinding) (GoTestManifest, error)
+}

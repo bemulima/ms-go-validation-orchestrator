@@ -1,0 +1,28 @@
+{
+  "schema": "go-test-capability.v1",
+  "profile_id": "go-double-numbers.v1",
+  "bundle_version": "double-numbers.v1",
+  "bundle_digest": "sha256:44b708a8b619de349a934d1b69a2d41357113b8bb8acfc0009ddbcf80b165bba",
+  "runner_digest": "sha256:32824bf44685e4380110b5a667c6a228516b590d828db5c5bbd4b2f50e938814",
+  "execution_profile_digest": "sha256:9fa26c5afb58591ffc5091b74fd91084ca2e9c96493a10dc5775cbcc83509c78",
+  "compiler_image": "golang@sha256:b6ed3fd0452c0e9bcdef5597f29cc1418f61672e9d3a2f55bf02e7222c014abd",
+  "test_file_digests": {
+    "exercise_test.go": "sha256:11a942314b5f545953cb6209690169c7b6e05d0737d94c62fef4840ac83af61a"
+  },
+  "criterion_tests": {
+    "detached_output": "TestDetachedOutput",
+    "empty": "TestEmpty",
+    "input_unchanged": "TestInputUnchanged",
+    "negative": "TestNegative",
+    "order_length": "TestOrderLength",
+    "positive": "TestPositive",
+    "zeros": "TestZeros"
+  },
+  "starter": "package exercise\nfunc DoubleNumbers(input []int) []int { return nil }\n",
+  "starter_digest": "sha256:ada01e051e60da5b018c1a1151f8ed2f9f54d1b4cf7fced71f9b2a0a47e10f33",
+  "fixture_digests": {
+    "negative": "sha256:daa197911fd145a163b51589a726fcf5c6cab36cfa3fe036bf3a27c0a1d9e0cb",
+    "reference": "sha256:628c1e2e002e51f7decac90f4f04c985d2130b8788e419f1af9f26a167265586",
+    "starter": "sha256:ada01e051e60da5b018c1a1151f8ed2f9f54d1b4cf7fced71f9b2a0a47e10f33"
+  }
+}

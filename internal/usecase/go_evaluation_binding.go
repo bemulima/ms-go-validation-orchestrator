@@ -20,13 +20,13 @@ func (u PracticeValidationUseCase) bindGoEvaluation(ctx context.Context, c *doma
 		if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || (checks["profile_id"] != "go-double-numbers.v1" && checks["profile_id"] != "go-http-handler.v1") {
 			return errors.New("invalid public Go profile")
 		}
-		m, e := goCapability(ctx, engine, checks["profile_id"])
+		var b domain.GoTestBinding
+		if json.Unmarshal([]byte(assets.VerificationRunnerRef), &b) != nil || b.ProfileID != checks["profile_id"] {
+			return errors.New("invalid frozen runner binding")
+		}
+		m, e := goBindingCapability(ctx, engine, b)
 		if e != nil {
 			return e
-		}
-		var b domain.GoTestBinding
-		if json.Unmarshal([]byte(assets.VerificationRunnerRef), &b) != nil {
-			return errors.New("invalid frozen runner binding")
 		}
 		b.Schema = "go-test-execution.v1"
 		if !matchingGoBinding(b, m) || len(b.Files) != 0 || assets.TestSuiteRef != "go-tests:"+m.BundleDigest || assets.ReferenceSolutionRef != "go-fixture:"+m.FixtureDigests["reference"] || len(assets.NegativeFixtureRefs) != 1 || assets.NegativeFixtureRefs[0] != "go-fixture:"+m.FixtureDigests["negative"] {

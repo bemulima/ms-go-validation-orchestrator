@@ -1,0 +1,43 @@
+{
+  "starter_files": {
+    "go.mod": "module practice.local/hello\n\ngo 1.24\n",
+    "handler.go": "package main\n\nimport \"net/http\"\n\nfunc Handler(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNotImplemented) }\n",
+    "main.go": "package main\n\nimport \"net/http\"\n\nfunc main() { _ = http.ListenAndServe(\":8080\", http.HandlerFunc(Handler)) }\n"
+  },
+  "readonly_files": [
+    "go.mod",
+    "main.go"
+  ],
+  "editable_files": [
+    "handler.go"
+  ],
+  "entrypoints": [
+    "main.go"
+  ],
+  "schema": "go-test-capability.v1",
+  "profile_id": "go-http-handler.v1",
+  "bundle_version": "http-handler.v1",
+  "bundle_digest": "sha256:3ddc0a4be635ed997c852366bb1775508c50300e1045a095f56567633ea74bcb",
+  "runner_digest": "sha256:4d63fc1e26f88e76a77f64af8f8232fec789908b8195af60bc913c0e39b5602f",
+  "execution_profile_digest": "sha256:55f64dbf672d9e81ebbf3e26028222f7a48f1a905714ebb7f351402d14f2c1b5",
+  "compiler_image": "golang@sha256:b6ed3fd0452c0e9bcdef5597f29cc1418f61672e9d3a2f55bf02e7222c014abd",
+  "test_file_digests": {
+    "exercise_test.go": "sha256:ed6a4c52d4cd549b052338a9e6b803a014f8d5093181a41f384edacd44cf79e6"
+  },
+  "criterion_tests": {
+    "body": "TestBody",
+    "content_type": "TestContentType",
+    "method": "TestMethod",
+    "path": "TestPath",
+    "query": "TestQuery",
+    "repeat": "TestRepeat",
+    "status": "TestStatus"
+  },
+  "starter": "package main\n\nimport \"net/http\"\n\nfunc Handler(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNotImplemented) }\n",
+  "starter_digest": "sha256:793ee2887b92e3d1da9ac8fa19d021a5151131f3b5c3ede781cd7aee21d0ce70",
+  "fixture_digests": {
+    "negative": "sha256:75d09bab71b0c0324ef2eb3255de8f708341330224e0bbae60fb48a693d153cd",
+    "reference": "sha256:ee14c36440f746ba7509e14780333ac3f93b821707b0c8286299cd1f8870adfd",
+    "starter": "sha256:793ee2887b92e3d1da9ac8fa19d021a5151131f3b5c3ede781cd7aee21d0ce70"
+  }
+}

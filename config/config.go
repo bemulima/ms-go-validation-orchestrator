@@ -39,6 +39,7 @@ type Config struct {
 	SandboxServiceInternalToken string
 	VerificationWorkspacesDir   string
 	GoTestInternalToken         string
+	GoTestRunnerRoutesJSON      string
 	PlannerVerificationToken    string
 	CatalogVerificationToken    string
 	VerificationSigningKey      string
@@ -66,6 +67,7 @@ func Load() (Config, error) {
 		SandboxServiceInternalToken: stringFromEnv("SANDBOX_SERVICE_INTERNAL_TOKEN", ""),
 		VerificationWorkspacesDir:   stringFromEnv("VERIFICATION_WORKSPACES_DIR", "/workspaces"),
 		GoTestInternalToken:         stringFromEnv("GO_TEST_INTERNAL_TOKEN", ""),
+		GoTestRunnerRoutesJSON:      os.Getenv("GO_TEST_RUNNER_ROUTES_JSON"),
 		PlannerVerificationToken:    stringFromEnv("PLANNER_VERIFICATION_INTERNAL_TOKEN", ""),
 		CatalogVerificationToken:    stringFromEnv("CATALOG_VERIFICATION_INTERNAL_TOKEN", ""),
 		VerificationSigningKey:      stringFromEnv("VERIFICATION_RECEIPT_SIGNING_KEY", ""),

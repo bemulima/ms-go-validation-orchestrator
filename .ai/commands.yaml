@@ -36,3 +36,13 @@ commands:
   - name: foundation_down
     run: task foundation:down
     requires_approval: true
+  - name: go_runner_isolated_live_proof
+    run: go test ./internal/infrastructure/http -run TestGoRunnerLivePinnedBindings -v -count=1
+    requires_approval: true
+    risk: isolated_OCI_and_real_owner_HTTP
+    note: Requires separately approved disposable runtime and private LC06_RUNNER_LIVE_CONFIG; never shared Docker.
+  - name: go_runner_isolated_unavailable_proof
+    run: go test ./internal/infrastructure/http -run TestGoRunnerLiveUnavailablePinnedTarget -v -count=1
+    requires_approval: true
+    risk: isolated_real_owner_HTTP
+    note: Requires private live config and LC06_RUNNER_EXPECT_UNAVAILABLE=1 after stopping only the task legacy process.
