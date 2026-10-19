@@ -40,17 +40,32 @@ func (c *GoTestsClient) call(ctx context.Context, path string, input, output any
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
-		return errors.New("go executable provider unavailable")
+		return domain.GoTestProviderError{Cause: err}
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return errors.New("go executable provider rejected request")
+		// Invalid authored definitions remain an authoring failure. Service,
+		// auth and protocol failures preserve their existing typed classification.
+		if input != nil && (resp.StatusCode == 400 || resp.StatusCode == 422) {
+			return domain.ErrInvalidContract
+		}
+		return domain.GoTestProviderError{Cause: domain.ValidatorHTTPStatusError{StatusCode: resp.StatusCode}}
 	}
 	b, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20+1))
-	if err != nil || len(b) > 1<<20 {
-		return errors.New("invalid go executable response")
+	if err != nil {
+		var timeout interface{ Timeout() bool }
+		if errors.Is(err, context.DeadlineExceeded) || (errors.As(err, &timeout) && timeout.Timeout()) {
+			return domain.GoTestProviderError{Cause: err}
+		}
+		return domain.GoTestProviderError{Cause: domain.ErrValidatorProtocol}
 	}
-	return json.Unmarshal(b, output)
+	if len(b) > 1<<20 {
+		return domain.GoTestProviderError{Cause: domain.ErrValidatorProtocol}
+	}
+	if err := json.Unmarshal(b, output); err != nil {
+		return domain.GoTestProviderError{Cause: domain.ErrValidatorProtocol}
+	}
+	return nil
 }
 func (c *GoTestsClient) Capability(ctx context.Context) (domain.GoTestManifest, error) {
 	var m domain.GoTestManifest
