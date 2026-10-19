@@ -44,3 +44,14 @@ source_of_truth:
   adapters: internal/infrastructure/http
   detailed_capabilities: docs/capability-matrix.md
   configured_capability_contract: internal/domain/capabilities.go
+
+multifile_go_practice:
+  profile: go-http-handler.v1
+  engine: go.tests.v1
+  starter_files: [go.mod, handler.go, main.go]
+  readonly_files: [go.mod, main.go]
+  editable_files: [handler.go]
+  entrypoints: [main.go]
+  zip_manifest_schema: practice-unpack-manifest.v2
+  legacy_activation_prerequisite: retained legacy build and binding-aware routing; never bypass runner digest drift
+  live_acceptance: pending fresh real ZIP and OCI Go and Sandbox E2E

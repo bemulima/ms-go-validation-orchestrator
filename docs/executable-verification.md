@@ -84,3 +84,10 @@ A receipt is evidence from the validation service, not publication authority.
 The practice-task owner must persist it against the exact immutable revision,
 reject digest drift, and require `passed=true` before moving a revision to
 `RUNNABLE` or `PUBLISHED`.
+
+
+## LC-06 TASK-003 bounded HTTP module
+
+Verification selects the existing Code Validator capability by profile_id and binds that same profile to the exact contract, candidate and runner metadata. The bounded HTTP contract targets/requires go.mod, handler.go, main.go; all seven checks are required. Reference must PASS, starter/negative must semantic FAIL; ERROR cannot yield a receipt, and negative must fail method. Receipt sealing and reread do not execute code again. The Go execution adapter projects those exact files (excluding only Sandbox docker-compose.yml), rejects extras/duplicates, and validates returned source/runner/bundle/profile/starter bindings and complete semantic criteria. Legacy single-file behavior is preserved for its matching bindings.
+
+Profile source/security contract belongs to Code Validator; publication/manifest contract belongs to Catalog. Activation requires retained legacy Code Validator build and explicit binding-aware routing for historical runner digests (owner-approved blocker; never spoof digests). Fresh real-owner OCI/ZIP/Sandbox E2E and LC-05-compatible Planner/Course admission remain pending. Unit HTTP/store fixtures do not prove that E2E.

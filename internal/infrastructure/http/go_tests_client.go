@@ -74,7 +74,7 @@ func (c *GoTestsClient) Validate(ctx context.Context, input domain.EngineValidat
 		ProfileID string               `json:"profile_id"`
 		Binding   domain.GoTestBinding `json:"private_binding"`
 	}
-	if input.Mode != "final" || json.Unmarshal(input.Stage.Checks, &checks) != nil || checks.ProfileID != "go-double-numbers.v1" || checks.Binding.ProfileID != checks.ProfileID || checks.Binding.Schema != "go-test-execution.v1" {
+	if input.Mode != "final" || json.Unmarshal(input.Stage.Checks, &checks) != nil || (checks.ProfileID != "go-double-numbers.v1" && checks.ProfileID != "go-http-handler.v1") || checks.Binding.ProfileID != checks.ProfileID || checks.Binding.Schema != "go-test-execution.v1" {
 		return domain.StageExecutionResult{}, errors.New("missing immutable Go evaluation binding")
 	}
 	b := checks.Binding
@@ -87,13 +87,23 @@ func (c *GoTestsClient) Validate(ctx context.Context, input domain.EngineValidat
 		seen[f.Path] = true
 		switch f.Path {
 		case "docker-compose.yml": // Sandbox-managed operational file, outside executable source.
-		case "solution.go":
+		case "solution.go", "go.mod", "handler.go", "main.go":
 			b.Files[f.Path] = f.Content
 		default:
 			return domain.StageExecutionResult{}, errors.New("unsupported Go input path")
 		}
 	}
-	if len(b.Files) != 1 {
+	want := []string{"solution.go"}
+	if checks.ProfileID == "go-http-handler.v1" {
+		want = []string{"go.mod", "handler.go", "main.go"}
+	}
+	exact := len(b.Files) == len(want)
+	for _, name := range want {
+		if _, ok := b.Files[name]; !ok {
+			exact = false
+		}
+	}
+	if !exact {
 		return domain.StageExecutionResult{}, errors.New("one solution.go required")
 	}
 	out, err := c.Run(ctx, b, false)
@@ -101,6 +111,20 @@ func (c *GoTestsClient) Validate(ctx context.Context, input domain.EngineValidat
 		return domain.StageExecutionResult{}, err
 	}
 	result, ok := out.Outcomes["solution"]
+	if checks.ProfileID == "go-http-handler.v1" {
+		m := out.Manifest
+		valid := out.Schema == "go-test-result.v1" && len(out.Outcomes) == 1 && m.ProfileID == b.ProfileID && m.BundleDigest == b.BundleDigest && m.RunnerDigest == b.RunnerDigest && m.ExecutionProfileDigest == b.ExecutionProfileDigest && m.StarterDigest == b.StarterDigest && result.SourceDigest == domain.CanonicalDigestV2(b.Files) && len(m.CriterionTests) == 7 && len(result.Criteria) == 7
+		failed := false
+		for criterion := range m.CriterionTests {
+			status := result.Criteria[criterion]
+			valid = valid && (status == "PASS" || status == "FAIL")
+			failed = failed || status == "FAIL"
+		}
+		if !valid || (result.Status == "PASS" && failed) || (result.Status == "FAIL" && !failed) {
+			return domain.StageExecutionResult{}, errors.New("Go executable response binding drift")
+		}
+	}
+
 	if !ok || (result.Status != "PASS" && result.Status != "FAIL") {
 		return domain.StageExecutionResult{}, errors.New("Go executable validation failed technically")
 	}
@@ -109,4 +133,13 @@ func (c *GoTestsClient) Validate(ctx context.Context, input domain.EngineValidat
 		return domain.StageExecutionResult{Errors: []domain.ValidationIssue{{Code: "GO_TEST_CRITERIA_FAILED", Message: "Required executable criteria failed."}}}, nil
 	}
 	return domain.StageExecutionResult{Passed: true}, nil
+}
+
+func (c *GoTestsClient) CapabilityForProfile(ctx context.Context, profile string) (domain.GoTestManifest, error) {
+	if profile != "go-double-numbers.v1" && profile != "go-http-handler.v1" {
+		return domain.GoTestManifest{}, errors.New("unsupported Go profile")
+	}
+	var m domain.GoTestManifest
+	err := c.call(ctx, "/internal/go-tests/capability?profile_id="+profile, nil, &m)
+	return m, err
 }

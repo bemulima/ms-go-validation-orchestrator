@@ -17,10 +17,10 @@ func (u PracticeValidationUseCase) bindGoEvaluation(ctx context.Context, c *doma
 			return errors.New("Go evaluation unavailable")
 		}
 		var checks map[string]string
-		if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || checks["profile_id"] != "go-double-numbers.v1" {
+		if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || (checks["profile_id"] != "go-double-numbers.v1" && checks["profile_id"] != "go-http-handler.v1") {
 			return errors.New("invalid public Go profile")
 		}
-		m, e := engine.Capability(ctx)
+		m, e := goCapability(ctx, engine, checks["profile_id"])
 		if e != nil {
 			return e
 		}

@@ -29,6 +29,10 @@ func CanonicalDigestV2(v any) string {
 }
 
 type GoTestManifest struct {
+	StarterFiles           map[string]string `json:"starter_files,omitempty"`
+	ReadOnlyFiles          []string          `json:"readonly_files,omitempty"`
+	EditableFiles          []string          `json:"editable_files,omitempty"`
+	Entrypoints            []string          `json:"entrypoints,omitempty"`
 	Schema                 string            `json:"schema"`
 	ProfileID              string            `json:"profile_id"`
 	BundleVersion          string            `json:"bundle_version"`
@@ -91,4 +95,9 @@ type ExecutableVerificationReceipt struct {
 type VerificationReceiptValidation struct {
 	Receipt         ExecutableVerificationReceipt `json:"receipt"`
 	ExpectedRequest ExecutableVerificationRequest `json:"expected_request"`
+}
+
+// ProfiledGoTestPort is additive; existing single-profile adapters remain valid.
+type ProfiledGoTestPort interface {
+	CapabilityForProfile(context.Context, string) (GoTestManifest, error)
 }

@@ -42,20 +42,26 @@ func strictExecutableContract(raw json.RawMessage) bool {
 		return false
 	}
 	s := contract.Stages[0]
-	if s.ID != "double_numbers" || s.Engine != "go.tests.v1" || s.Mode != "final" || s.Optional || len(s.DependsOn) != 0 || len(s.Rules) != 0 {
+	if (s.ID != "double_numbers" && s.ID != "http_handler") || s.Engine != "go.tests.v1" || s.Mode != "final" || s.Optional || len(s.DependsOn) != 0 || len(s.Rules) != 0 {
 		return false
 	}
 	var checks map[string]string
-	if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || checks["profile_id"] != "go-double-numbers.v1" {
+	if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || (checks["profile_id"] != "go-double-numbers.v1" && checks["profile_id"] != "go-http-handler.v1") {
+		return false
+	}
+	if checks["profile_id"] == "go-http-handler.v1" {
+		return s.ID == "http_handler" && domain.CanonicalDigestV2(contract.Workspace.RequiredFiles) == domain.CanonicalDigestV2([]string{"go.mod", "handler.go", "main.go"}) && domain.CanonicalDigestV2(s.Targets.Files) == domain.CanonicalDigestV2(contract.Workspace.RequiredFiles)
+	}
+	if s.ID != "double_numbers" {
 		return false
 	}
 	return len(contract.Workspace.RequiredFiles) == 1 && contract.Workspace.RequiredFiles[0] == "solution.go" && len(s.Targets.Files) == 1 && s.Targets.Files[0] == "solution.go"
 }
 func validVerificationRequest(req domain.ExecutableVerificationRequest) bool {
-	return req.Schema == "validation-contract-verification-request.v2" && practiceUUIDPattern.MatchString(req.IdempotencyKey) && verificationDigestPattern.MatchString(req.CandidateDigest) && verificationDigestPattern.MatchString(req.RuntimeProfileDigest) && strictExecutableContract(req.ValidationContract) && req.Binding.Schema == "go-test-bundle-verification.v1" && len(req.Binding.Files) == 0
+	return req.Schema == "validation-contract-verification-request.v2" && practiceUUIDPattern.MatchString(req.IdempotencyKey) && verificationDigestPattern.MatchString(req.CandidateDigest) && verificationDigestPattern.MatchString(req.RuntimeProfileDigest) && strictExecutableContract(req.ValidationContract) && executableContractProfile(req.ValidationContract) == req.Binding.ProfileID && req.Binding.Schema == "go-test-bundle-verification.v1" && len(req.Binding.Files) == 0
 }
 func matchingGoBinding(b domain.GoTestBinding, m domain.GoTestManifest) bool {
-	return m.Schema == "go-test-capability.v1" && b.ProfileID == "go-double-numbers.v1" && b.ProfileID == m.ProfileID && b.BundleDigest == m.BundleDigest && b.RunnerDigest == m.RunnerDigest && b.ExecutionProfileDigest == m.ExecutionProfileDigest && b.StarterDigest == m.StarterDigest && len(m.CriterionTests) == 7 && len(m.TestFileDigests) == 1
+	return m.Schema == "go-test-capability.v1" && (b.ProfileID == "go-double-numbers.v1" || b.ProfileID == "go-http-handler.v1") && b.ProfileID == m.ProfileID && b.BundleDigest == m.BundleDigest && b.RunnerDigest == m.RunnerDigest && b.ExecutionProfileDigest == m.ExecutionProfileDigest && b.StarterDigest == m.StarterDigest && len(m.CriterionTests) == 7 && len(m.TestFileDigests) == 1
 }
 func validExecutableGate(req domain.ExecutableVerificationRequest, result domain.GoTestResult) bool {
 	if result.Schema != "go-test-result.v1" || !matchingGoBinding(req.Binding, result.Manifest) || domain.CanonicalDigestV2(req.CriterionTests) != domain.CanonicalDigestV2(result.Manifest.CriterionTests) || len(result.Outcomes) != 3 {
@@ -78,13 +84,17 @@ func validExecutableGate(req domain.ExecutableVerificationRequest, result domain
 			return false
 		}
 	}
-	return result.Outcomes["negative"].Criteria["zeros"] == "FAIL" && result.Manifest.FixtureDigests["starter"] == req.Binding.StarterDigest
+	criterion := "zeros"
+	if req.Binding.ProfileID == "go-http-handler.v1" {
+		criterion = "method"
+	}
+	return result.Outcomes["negative"].Criteria[criterion] == "FAIL" && result.Manifest.FixtureDigests["starter"] == req.Binding.StarterDigest
 }
 func (v *ExecutableVerification) Verify(ctx context.Context, req domain.ExecutableVerificationRequest) (domain.ExecutableVerificationReceipt, error) {
 	if !validVerificationRequest(req) {
 		return domain.ExecutableVerificationReceipt{}, errors.New("invalid executable verification request")
 	}
-	m, err := v.engine.Capability(ctx)
+	m, err := goCapability(ctx, v.engine, req.Binding.ProfileID)
 	if err != nil || !matchingGoBinding(req.Binding, m) || domain.CanonicalDigestV2(req.CriterionTests) != domain.CanonicalDigestV2(m.CriterionTests) {
 		return domain.ExecutableVerificationReceipt{}, errors.New("capability binding mismatch")
 	}
@@ -111,4 +121,27 @@ func (v *ExecutableVerification) Validate(input domain.VerificationReceiptValida
 	r.ReceiptDigest = ""
 	r.Seal = ""
 	return digest == domain.CanonicalDigestV2(r) && hmac.Equal([]byte(seal), []byte(v.seal(digest)))
+}
+
+func goCapability(ctx context.Context, engine domain.GoTestPort, profile string) (domain.GoTestManifest, error) {
+	if selected, ok := engine.(domain.ProfiledGoTestPort); ok {
+		return selected.CapabilityForProfile(ctx, profile)
+	}
+	m, e := engine.Capability(ctx)
+	if e == nil && m.ProfileID != profile {
+		return domain.GoTestManifest{}, errors.New("unsupported executable profile")
+	}
+	return m, e
+}
+
+func executableContractProfile(raw json.RawMessage) string {
+	var c domain.ValidationContract
+	if json.Unmarshal(raw, &c) != nil || len(c.Stages) != 1 {
+		return ""
+	}
+	var checks map[string]string
+	if json.Unmarshal(c.Stages[0].Checks, &checks) != nil {
+		return ""
+	}
+	return checks["profile_id"]
 }
