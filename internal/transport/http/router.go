@@ -22,6 +22,7 @@ type Dependencies struct {
 func NewRouter(deps Dependencies) http.Handler {
 	root := http.NewServeMux()
 	if deps.ExecutableVerifier != nil {
+		root.Handle("/api/v2/contracts/prepare", executableVerificationHandler(deps.ExecutableVerifier, deps.PlannerVerificationToken, false))
 		root.Handle("/api/v2/contracts/verify", executableVerificationHandler(deps.ExecutableVerifier, deps.PlannerVerificationToken, false))
 		root.Handle("/internal/verification-receipts/validate", executableVerificationHandler(deps.ExecutableVerifier, deps.CatalogVerificationToken, true))
 	}

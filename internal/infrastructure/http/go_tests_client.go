@@ -74,7 +74,7 @@ func (c *GoTestsClient) Validate(ctx context.Context, input domain.EngineValidat
 		ProfileID string               `json:"profile_id"`
 		Binding   domain.GoTestBinding `json:"private_binding"`
 	}
-	if input.Mode != "final" || json.Unmarshal(input.Stage.Checks, &checks) != nil || checks.ProfileID != "go-double-numbers.v1" || checks.Binding.ProfileID != checks.ProfileID || checks.Binding.Schema != "go-test-execution.v1" {
+	if input.Mode != "final" || json.Unmarshal(input.Stage.Checks, &checks) != nil || (checks.ProfileID != "go-double-numbers.v1" && checks.ProfileID != "go-double-numbers-cases.v1") || checks.Binding.ProfileID != checks.ProfileID || checks.Binding.Schema != "go-test-execution.v1" {
 		return domain.StageExecutionResult{}, errors.New("missing immutable Go evaluation binding")
 	}
 	b := checks.Binding
@@ -86,6 +86,7 @@ func (c *GoTestsClient) Validate(ctx context.Context, input domain.EngineValidat
 		}
 		seen[f.Path] = true
 		switch f.Path {
+		case "README.md": // Published bounded public documentation, not executable source.
 		case "docker-compose.yml": // Sandbox-managed operational file, outside executable source.
 		case "solution.go":
 			b.Files[f.Path] = f.Content
@@ -109,4 +110,10 @@ func (c *GoTestsClient) Validate(ctx context.Context, input domain.EngineValidat
 		return domain.StageExecutionResult{Errors: []domain.ValidationIssue{{Code: "GO_TEST_CRITERIA_FAILED", Message: "Required executable criteria failed."}}}, nil
 	}
 	return domain.StageExecutionResult{Passed: true}, nil
+}
+
+func (c *GoTestsClient) Prepare(ctx context.Context, definitions json.RawMessage) (domain.GoTestManifest, error) {
+	var m domain.GoTestManifest
+	err := c.call(ctx, "/internal/go-tests/prepare", map[string]any{"schema": "go-test-prepare.v1", "profile_id": "go-double-numbers-cases.v1", "test_definitions": definitions}, &m)
+	return m, err
 }

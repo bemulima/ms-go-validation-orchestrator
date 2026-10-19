@@ -80,3 +80,7 @@ c2_b_go_snapshot_projection:
   managed_omission: root_docker_compose_yml_only
   other_paths_duplicates_missing_source: technical_ERROR
   immutable_snapshot_revision_bundle_runner: unchanged
+
+lc06_final_gap:
+  contract: docs/lc06-final-gap-contract.md
+  scope: bounded_Go_typed_cases_and_public_two_file_starter

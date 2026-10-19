@@ -29,6 +29,7 @@ func CanonicalDigestV2(v any) string {
 }
 
 type GoTestManifest struct {
+	DefinitionsDigest      string            `json:"definitions_digest,omitempty"`
 	Schema                 string            `json:"schema"`
 	ProfileID              string            `json:"profile_id"`
 	BundleVersion          string            `json:"bundle_version"`
@@ -43,6 +44,7 @@ type GoTestManifest struct {
 	FixtureDigests         map[string]string `json:"fixture_digests"`
 }
 type GoTestBinding struct {
+	TestDefinitions        json.RawMessage   `json:"test_definitions,omitempty"`
 	Schema                 string            `json:"schema"`
 	ProfileID              string            `json:"profile_id"`
 	BundleDigest           string            `json:"bundle_digest"`

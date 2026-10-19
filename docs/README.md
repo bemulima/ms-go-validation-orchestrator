@@ -43,3 +43,5 @@ This folder is the repository-owned documentation set for the validation orchest
 - [C2-A ordinary practice owner contract](c2-a-contract-review.md).
 
 - [C2-B bounded Go snapshot projection](c2-b-go-snapshot-projection-review.md).
+
+- [LC-06 bounded final gap contract](lc06-final-gap-contract.md).

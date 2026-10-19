@@ -44,6 +44,23 @@ func executableVerificationHandler(v ExecutableVerifier, token string, validate 
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/api/v2/contracts/prepare" {
+			p, ok := v.(interface {
+				Prepare(context.Context, json.RawMessage) (domain.GoTestManifest, error)
+			})
+			if !ok || input.Schema != "go-test-prepare.v1" || input.Binding.ProfileID != "go-double-numbers-cases.v1" || len(input.Binding.Files) != 0 {
+				http.Error(w, "invalid_prepare", 400)
+				return
+			}
+			out, err := p.Prepare(r.Context(), input.Binding.TestDefinitions)
+			if err != nil {
+				http.Error(w, "definition_rejected", 422)
+				return
+			}
+			_ = json.NewEncoder(w).Encode(out)
+			return
+		}
+
 		if validate {
 			_ = json.NewEncoder(w).Encode(map[string]bool{"valid": v.Validate(receipt)})
 			return

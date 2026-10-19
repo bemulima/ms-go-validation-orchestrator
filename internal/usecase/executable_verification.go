@@ -46,16 +46,35 @@ func strictExecutableContract(raw json.RawMessage) bool {
 		return false
 	}
 	var checks map[string]string
-	if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || checks["profile_id"] != "go-double-numbers.v1" {
+	if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || (checks["profile_id"] != "go-double-numbers.v1" && checks["profile_id"] != "go-double-numbers-cases.v1") {
 		return false
 	}
 	return len(contract.Workspace.RequiredFiles) == 1 && contract.Workspace.RequiredFiles[0] == "solution.go" && len(s.Targets.Files) == 1 && s.Targets.Files[0] == "solution.go"
 }
 func validVerificationRequest(req domain.ExecutableVerificationRequest) bool {
+	var c domain.ValidationContract
+	if json.Unmarshal(req.ValidationContract, &c) != nil || len(c.Stages) != 1 {
+		return false
+	}
+	var checks map[string]string
+	if json.Unmarshal(c.Stages[0].Checks, &checks) != nil || checks["profile_id"] != req.Binding.ProfileID {
+		return false
+	}
+	if req.Binding.ProfileID == "go-double-numbers-cases.v1" && len(req.Binding.TestDefinitions) == 0 {
+		return false
+	}
+
 	return req.Schema == "validation-contract-verification-request.v2" && practiceUUIDPattern.MatchString(req.IdempotencyKey) && verificationDigestPattern.MatchString(req.CandidateDigest) && verificationDigestPattern.MatchString(req.RuntimeProfileDigest) && strictExecutableContract(req.ValidationContract) && req.Binding.Schema == "go-test-bundle-verification.v1" && len(req.Binding.Files) == 0
 }
 func matchingGoBinding(b domain.GoTestBinding, m domain.GoTestManifest) bool {
-	return m.Schema == "go-test-capability.v1" && b.ProfileID == "go-double-numbers.v1" && b.ProfileID == m.ProfileID && b.BundleDigest == m.BundleDigest && b.RunnerDigest == m.RunnerDigest && b.ExecutionProfileDigest == m.ExecutionProfileDigest && b.StarterDigest == m.StarterDigest && len(m.CriterionTests) == 7 && len(m.TestFileDigests) == 1
+	if b.ProfileID == "go-double-numbers-cases.v1" && (len(b.TestDefinitions) == 0 || domain.CanonicalDigestV2(b.TestDefinitions) != m.DefinitionsDigest) {
+		return false
+	}
+	if b.ProfileID == "go-double-numbers.v1" && (len(b.TestDefinitions) != 0 || m.DefinitionsDigest != "") {
+		return false
+	}
+
+	return m.Schema == "go-test-capability.v1" && (b.ProfileID == "go-double-numbers.v1" || b.ProfileID == "go-double-numbers-cases.v1") && b.ProfileID == m.ProfileID && b.BundleDigest == m.BundleDigest && b.RunnerDigest == m.RunnerDigest && b.ExecutionProfileDigest == m.ExecutionProfileDigest && b.StarterDigest == m.StarterDigest && len(m.CriterionTests) == 7 && len(m.TestFileDigests) == 1
 }
 func validExecutableGate(req domain.ExecutableVerificationRequest, result domain.GoTestResult) bool {
 	if result.Schema != "go-test-result.v1" || !matchingGoBinding(req.Binding, result.Manifest) || domain.CanonicalDigestV2(req.CriterionTests) != domain.CanonicalDigestV2(result.Manifest.CriterionTests) || len(result.Outcomes) != 3 {
@@ -85,6 +104,11 @@ func (v *ExecutableVerification) Verify(ctx context.Context, req domain.Executab
 		return domain.ExecutableVerificationReceipt{}, errors.New("invalid executable verification request")
 	}
 	m, err := v.engine.Capability(ctx)
+	if req.Binding.ProfileID == "go-double-numbers-cases.v1" {
+		m, err = v.Prepare(ctx, req.Binding.TestDefinitions)
+	} else if len(req.Binding.TestDefinitions) != 0 {
+		return domain.ExecutableVerificationReceipt{}, errors.New("legacy definitions forbidden")
+	}
 	if err != nil || !matchingGoBinding(req.Binding, m) || domain.CanonicalDigestV2(req.CriterionTests) != domain.CanonicalDigestV2(m.CriterionTests) {
 		return domain.ExecutableVerificationReceipt{}, errors.New("capability binding mismatch")
 	}
@@ -111,4 +135,14 @@ func (v *ExecutableVerification) Validate(input domain.VerificationReceiptValida
 	r.ReceiptDigest = ""
 	r.Seal = ""
 	return digest == domain.CanonicalDigestV2(r) && hmac.Equal([]byte(seal), []byte(v.seal(digest)))
+}
+
+func (v *ExecutableVerification) Prepare(ctx context.Context, raw json.RawMessage) (domain.GoTestManifest, error) {
+	p, ok := v.engine.(interface {
+		Prepare(context.Context, json.RawMessage) (domain.GoTestManifest, error)
+	})
+	if !ok {
+		return domain.GoTestManifest{}, errors.New("authored profile unavailable")
+	}
+	return p.Prepare(ctx, raw)
 }
