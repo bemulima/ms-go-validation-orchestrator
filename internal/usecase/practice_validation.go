@@ -176,6 +176,9 @@ func (useCase PracticeValidationUseCase) ValidatePractice(
 		}
 
 		contractForExecution := parsed.contract
+		if err := useCase.bindGoEvaluation(ctx, &contractForExecution, parsed.input.EvaluationAssets); err != nil {
+			return fail(domain.PracticeValidationAuthoringDefect)
+		}
 		contractForExecution.Workspace.RequiredFiles = nil
 		codeStructure, marshalErr := json.Marshal(contractForExecution)
 		if marshalErr != nil {

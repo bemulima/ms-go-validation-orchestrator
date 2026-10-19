@@ -38,6 +38,11 @@ type Config struct {
 	SandboxServiceBaseURL       string
 	SandboxServiceInternalToken string
 	VerificationWorkspacesDir   string
+	GoTestInternalToken         string
+	PlannerVerificationToken    string
+	CatalogVerificationToken    string
+	VerificationSigningKey      string
+	VerificationKeyID           string
 	HTTP                        HTTPConfig
 	Engines                     EngineEndpoints
 }
@@ -60,6 +65,11 @@ func Load() (Config, error) {
 		SandboxServiceBaseURL:       trimURL(os.Getenv("SANDBOX_SERVICE_BASE_URL")),
 		SandboxServiceInternalToken: stringFromEnv("SANDBOX_SERVICE_INTERNAL_TOKEN", ""),
 		VerificationWorkspacesDir:   stringFromEnv("VERIFICATION_WORKSPACES_DIR", "/workspaces"),
+		GoTestInternalToken:         stringFromEnv("GO_TEST_INTERNAL_TOKEN", ""),
+		PlannerVerificationToken:    stringFromEnv("PLANNER_VERIFICATION_INTERNAL_TOKEN", ""),
+		CatalogVerificationToken:    stringFromEnv("CATALOG_VERIFICATION_INTERNAL_TOKEN", ""),
+		VerificationSigningKey:      stringFromEnv("VERIFICATION_RECEIPT_SIGNING_KEY", ""),
+		VerificationKeyID:           stringFromEnv("VERIFICATION_RECEIPT_KEY_ID", ""),
 		HTTP: HTTPConfig{
 			Host: stringFromEnv("HOST", "0.0.0.0"),
 			Port: port,
