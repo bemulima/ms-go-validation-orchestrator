@@ -1,0 +1,17 @@
+# C2-A bounded executable verification contract
+
+Status: OWNER_AGREED_C2_A_ONLY. Existing verify v1 and Practice Runtime V2 request/specification schemas are unchanged. Code-validator owns Go semantics/execution; this owner only coordinates and seals results.
+
+Proposed POST `/api/v2/contracts/verify`, schema `validation-contract-verification-request.v2`: UUID idempotency_key, candidate_digest, normalized validation_contract, runtime_profile_digest, bundle_digest, runner_digest, execution_profile_digest, starter_digest and criterion mapping. Only dedicated `PLANNER_VERIFICATION_INTERNAL_TOKEN`. Adapter calls the code-validator private fixture verification with `GO_TEST_INTERNAL_TOKEN`; all exact pins must match actual engine manifest. Candidate criteria must all be covered. Reference=PASS, starter=FAIL, negative=FAIL; any ERROR prevents passing receipt.
+
+Receipt `validation-contract-verification-receipt.v2` covers candidate/contract/profile/bundle/runner/test-file/fixture digests, criterion coverage, explicit case outcomes, capabilities digest, issuer/key-id and timestamp. Canonical receipt digest plus HMAC-SHA256 seal under owner-only `VERIFICATION_RECEIPT_SIGNING_KEY` (never sent to Planner/Catalog). Durable copies are checkpointed in Planner and atomically with Catalog revision. No new database service/dependency for this stateless owner. Replay of durable accepted receipt avoids execution.
+
+Proposed POST `/internal/verification-receipts/validate`, dedicated `CATALOG_VERIFICATION_INTERNAL_TOKEN`: exact sealed receipt + expected digest tuple; checks canonical digest/seal and all outcomes/bindings; returns safe valid/invalid result, no execution. Catalog cannot self-assert or forge passed=true. Runtime/public callers do not hold authoring/receipt credentials. No raw fixture/code/output in receipt/evidence.
+
+The new configured go.tests.v1 adapter is FINAL-only, typed technical ERROR vs semantic FAIL, bounded HTTP execution budget covering 3 compile+run cases. Later official validation uses this same engine/harness and the existing private `evaluation_assets` fields; private suite/runner pins are checked and injected only internally. Published learner runtime contract carries public profile identity, not private tests/reference/fixture refs. No Runtime V2 wire/schema change, live-head fallback or Sandbox execution is introduced in C2-A.
+
+## Implemented wire boundary
+
+`internal/domain/executable_verification.go` owns exact v2 DTOs. Bundle/profile/runner/starter pins are nested under `binding` (`GoTestBinding`); top level has runtime_profile_digest and criterion_tests. Receipt has the exact request, verification result/manifest/outcomes, contract/capability digests, issuer/key_id/verified_at, receipt_digest and seal. Receipt digest canonicalizes JSON with sorted object keys and preserved arrays/numbers, omitting its own digest/seal by setting them empty. HMAC signs that digest. V1 digest algorithms are unchanged.
+
+Both new HTTP routes require POST and distinct `X-Internal-Token` roles. Code-validator uses its separate Bearer token. Receipt validation receives `{receipt, expected_request}` and returns `{valid}` without engine execution. Validation V2 injects checked opaque evaluation bindings into the new adapter internally; frozen request/spec schemas are unchanged. The public contract is one required FINAL `go.tests.v1` stage, kind workspace_contract, profile_id go-double-numbers.v1, required/target file solution.go.

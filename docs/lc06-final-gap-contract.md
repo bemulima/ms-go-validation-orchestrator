@@ -1,0 +1,3 @@
+# LC-06 final gap owner contract
+
+Existing Planner-token POST /api/v2/contracts/prepare delegates typed definitions to Code owner and returns safe manifest. New profile binding includes private definitions, exact definition/harness/bundle digest, same fixed profile/criteria/fixtures. Verify rereads Code prepare then executes reference/starter/negative; seals only full semantic gate. Receipt validation independently binds candidate/profile/runtime/definitions and exact manifest. Later official validation checks public profile==frozen private profile and prepares from same private definitions. Public DTO never includes them. README is ignored only as bounded public documentation; executable input remains solution.go. Legacy runner profile remains supported.

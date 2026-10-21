@@ -23,3 +23,10 @@ type ValidatorHTTPStatusError struct {
 func (failure ValidatorHTTPStatusError) Error() string {
 	return fmt.Sprintf("unexpected status %d", failure.StatusCode)
 }
+
+// GoTestProviderError marks an outbound provider failure, not an immutable
+// authoring defect. The cause is private and retained only for typed classification.
+type GoTestProviderError struct{ Cause error }
+
+func (failure GoTestProviderError) Error() string { return "go executable provider failure" }
+func (failure GoTestProviderError) Unwrap() error { return failure.Cause }

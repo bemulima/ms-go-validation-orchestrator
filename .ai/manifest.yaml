@@ -10,3 +10,6 @@ project_specific:
   commands: .ai/commands.yaml
   docs_index: docs/README.md
   contracts: [.ai/contracts/http.yaml, .ai/contracts/orchestration.yaml, .ai/contracts/engines.yaml]
+
+# Bounded owner contract, indexed by docs/README.md
+lc06_contract: docs/lc06-final-gap-contract.md

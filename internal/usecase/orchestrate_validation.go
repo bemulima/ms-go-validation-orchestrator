@@ -61,7 +61,7 @@ func (useCase OrchestrateValidationUseCase) ConfiguredEngineCapabilities() domai
 		modes := []string{domain.ValidationModeLive, domain.ValidationModeFinal}
 		execution := "static"
 		authoringSupported := engineID != "legacy.generic"
-		if strings.HasSuffix(engineID, ".runtime") {
+		if strings.HasSuffix(engineID, ".runtime") || engineID == "go.tests.v1" {
 			modes = []string{domain.ValidationModeFinal}
 			execution = "runtime"
 		}
