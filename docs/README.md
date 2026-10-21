@@ -39,3 +39,9 @@ This folder is the repository-owned documentation set for the validation orchest
 3. Continue with the E2E matrix and rollout plan if you work on release sequencing.
 4. Read the result contract if you work on student feedback or platform integrations.
 5. Read the authoring and migration guides if you work on admin authoring or seed migration.
+
+- [C2-A ordinary practice owner contract](c2-a-contract-review.md).
+
+- [C2-B bounded Go snapshot projection](c2-b-go-snapshot-projection-review.md).
+
+- [LC-06 bounded final gap contract](lc06-final-gap-contract.md).

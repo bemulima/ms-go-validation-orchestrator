@@ -102,3 +102,5 @@ Stable error classifications are `VALIDATOR_TIMEOUT`,
 `SANDBOX_SERVICE_INTERNAL_TOKEN` supplies its internal service token. If either
 is unset, the endpoint returns `ERROR` with `SNAPSHOT_UNAVAILABLE` after
 validating the request and contract digest.
+
+LC-07 provider binding: Go capability/definition preparation transport, timeout, HTTP availability and response protocol failures reuse the existing typed validator ERROR classifications. Malformed immutable profile/binding/definition or digest drift remains AUTHORING_DEFECT. No new wire enum or receipt contract; provider causes are private and never learner diagnostics.

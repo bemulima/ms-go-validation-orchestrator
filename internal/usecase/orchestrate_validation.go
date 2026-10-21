@@ -61,7 +61,7 @@ func (useCase OrchestrateValidationUseCase) ConfiguredEngineCapabilities() domai
 		modes := []string{domain.ValidationModeLive, domain.ValidationModeFinal}
 		execution := "static"
 		authoringSupported := engineID != "legacy.generic"
-		if strings.HasSuffix(engineID, ".runtime") {
+		if isFinalOnlyEngine(engineID) {
 			modes = []string{domain.ValidationModeFinal}
 			execution = "runtime"
 		}
@@ -274,7 +274,7 @@ func filterStagesByMode(stages []domain.ValidationStage, mode string) []domain.V
 }
 
 func isFinalOnlyEngine(engine string) bool {
-	return strings.HasSuffix(engine, ".runtime")
+	return strings.HasSuffix(engine, ".runtime") || engine == "go.tests.v1"
 }
 
 func filterLinksByStageIDs(links []domain.ValidationLink, stageIDs map[string]struct{}) []domain.ValidationLink {

@@ -41,10 +41,28 @@ func New(cfg config.Config) App {
 	logger := logging.NewStdLogger()
 	apiHandler := api.NewHandler(orchestrator, logger)
 	practiceValidationHandler := apiV2.NewHandler(practiceValidation)
+	var executableVerifier transporthttp.ExecutableVerifier
+	if cfg.PlannerVerificationToken != "" || cfg.CatalogVerificationToken != "" {
+		base := cfg.Engines.Go
+		if base == "" {
+			base = cfg.Engines.Code
+		}
+		if base == "" || cfg.GoTestInternalToken == "" || cfg.PlannerVerificationToken == "" || cfg.CatalogVerificationToken == "" {
+			panic("incomplete executable verification configuration")
+		}
+		v, err := usecase.NewExecutableVerification(engines.NewGoTestsClient(base, cfg.GoTestInternalToken), cfg.VerificationSigningKey, cfg.VerificationKeyID)
+		if err != nil {
+			panic(err)
+		}
+		executableVerifier = v
+	}
 	router := transporthttp.NewRouter(transporthttp.Dependencies{
 		APIHandler:                apiHandler,
 		PracticeValidationHandler: practiceValidationHandler,
 		InternalToken:             cfg.InternalAPIToken,
+		ExecutableVerifier:        executableVerifier,
+		PlannerVerificationToken:  cfg.PlannerVerificationToken,
+		CatalogVerificationToken:  cfg.CatalogVerificationToken,
 	})
 
 	server := &http.Server{
@@ -184,6 +202,9 @@ func buildEngineClients(
 		goCodeValidatorURL = cfg.Engines.Code
 	}
 	if goCodeValidatorURL != "" {
+		if cfg.GoTestInternalToken != "" {
+			engineClients = append(engineClients, engines.NewGoTestsClient(goCodeValidatorURL, cfg.GoTestInternalToken))
+		}
 		engineClients = append(
 			engineClients,
 			engines.NewWorkspaceFoundationClient(goCodeValidatorURL, httpClient, "golang"),

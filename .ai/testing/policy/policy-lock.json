@@ -5,9 +5,9 @@
   "result_schema": "test-result.v1",
   "matrix_schema": "required-test-matrix.v1",
   "source_repository": "bemulima/learning-platform-verification",
-  "policy_source_commit": "51c441d95aea289f8050f85b35f1171f04e7ceb0",
+  "policy_source_commit": "714a83f72f1821b16d53c6a0db0f158bd638d83e",
   "policy_semantics_sha": "3a374a116118d07311dab69513fdb271b82ec7a91e07d966c3515a80ff408241",
   "generated_by": "testing-policy-exporter.v1",
   "node_runtime_requirement": ">=20 <21",
-  "bundle_sha256": "c172e13e9640f69b3a44aaf2912f993ca1b5aba5407067e187c125c423c7d0d9"
+  "bundle_sha256": "d05c40a429ce1fb6768c8a504edda7da88c7b903e7a2eddd17c7915039224314"
 }

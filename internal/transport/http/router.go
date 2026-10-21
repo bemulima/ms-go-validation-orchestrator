@@ -13,11 +13,19 @@ type Dependencies struct {
 	APIHandler                apiv1.Handler
 	PracticeValidationHandler apiv2.Handler
 	InternalToken             string
+	ExecutableVerifier        ExecutableVerifier
+	PlannerVerificationToken  string
+	CatalogVerificationToken  string
 }
 
 // NewRouter constructs the service HTTP router.
 func NewRouter(deps Dependencies) http.Handler {
 	root := http.NewServeMux()
+	if deps.ExecutableVerifier != nil {
+		root.Handle("/api/v2/contracts/prepare", executableVerificationHandler(deps.ExecutableVerifier, deps.PlannerVerificationToken, false))
+		root.Handle("/api/v2/contracts/verify", executableVerificationHandler(deps.ExecutableVerifier, deps.PlannerVerificationToken, false))
+		root.Handle("/internal/verification-receipts/validate", executableVerificationHandler(deps.ExecutableVerifier, deps.CatalogVerificationToken, true))
+	}
 
 	apiMux := http.NewServeMux()
 	apiv1.RegisterRoutes(apiMux, deps.APIHandler)

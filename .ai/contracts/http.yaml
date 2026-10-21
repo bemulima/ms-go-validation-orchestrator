@@ -71,3 +71,25 @@ practice_validation_v2:
   snapshot_response_body_limit: 4 MiB
   stage_timeout: enforced from validation_contract.stage.timeout_seconds
   evaluation_error_http_status: 200
+
+c2_b_go_snapshot_projection:
+  contract: docs/c2-b-go-snapshot-projection-review.md
+  engine: go.tests.v1
+  prerequisite: complete_pinned_snapshot_identity_and_digest_verified
+  executable_input: exact_root_solution_go_bytes_only
+  managed_omission: root_docker_compose_yml_only
+  other_paths_duplicates_missing_source: technical_ERROR
+  immutable_snapshot_revision_bundle_runner: unchanged
+
+lc06_final_gap:
+  contract: docs/lc06-final-gap-contract.md
+  scope: bounded_Go_typed_cases_and_public_two_file_starter
+
+executable_verification_r1:
+  routes: [POST /api/v2/contracts/prepare, POST /api/v2/contracts/verify]
+  request_body_limit: 2 MiB
+  write_deadline: 300s via ResponseController on these routes only; unsupported deadline control fails closed with 503
+  cancellation: request context bounded to the same 300s
+  unrelated_routes: retain global 30s write timeout, including receipt validation
+  execution_response: complete private manifest equals the trusted bound manifest; frozen profile/bundle/runner/execution/starter/definitions and solution source digest must match; protocol mismatch is technical ERROR
+  final_only: go.tests.v1 is filtered from live execution and inspection
