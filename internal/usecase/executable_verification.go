@@ -66,18 +66,9 @@ func validVerificationRequest(req domain.ExecutableVerificationRequest) bool {
 
 	return req.Schema == "validation-contract-verification-request.v2" && practiceUUIDPattern.MatchString(req.IdempotencyKey) && verificationDigestPattern.MatchString(req.CandidateDigest) && verificationDigestPattern.MatchString(req.RuntimeProfileDigest) && strictExecutableContract(req.ValidationContract) && req.Binding.Schema == "go-test-bundle-verification.v1" && len(req.Binding.Files) == 0
 }
-func matchingGoBinding(b domain.GoTestBinding, m domain.GoTestManifest) bool {
-	if b.ProfileID == "go-double-numbers-cases.v1" && (len(b.TestDefinitions) == 0 || domain.CanonicalDigestV2(b.TestDefinitions) != m.DefinitionsDigest) {
-		return false
-	}
-	if b.ProfileID == "go-double-numbers.v1" && (len(b.TestDefinitions) != 0 || m.DefinitionsDigest != "") {
-		return false
-	}
 
-	return m.Schema == "go-test-capability.v1" && (b.ProfileID == "go-double-numbers.v1" || b.ProfileID == "go-double-numbers-cases.v1") && b.ProfileID == m.ProfileID && b.BundleDigest == m.BundleDigest && b.RunnerDigest == m.RunnerDigest && b.ExecutionProfileDigest == m.ExecutionProfileDigest && b.StarterDigest == m.StarterDigest && len(m.CriterionTests) == 7 && len(m.TestFileDigests) == 1
-}
 func validExecutableGate(req domain.ExecutableVerificationRequest, result domain.GoTestResult) bool {
-	if result.Schema != "go-test-result.v1" || !matchingGoBinding(req.Binding, result.Manifest) || domain.CanonicalDigestV2(req.CriterionTests) != domain.CanonicalDigestV2(result.Manifest.CriterionTests) || len(result.Outcomes) != 3 {
+	if result.Schema != "go-test-result.v1" || !domain.MatchingGoTestBinding(req.Binding, result.Manifest) || domain.CanonicalDigestV2(req.CriterionTests) != domain.CanonicalDigestV2(result.Manifest.CriterionTests) || len(result.Outcomes) != 3 {
 		return false
 	}
 	for name, want := range map[string]string{"reference": "PASS", "starter": "FAIL", "negative": "FAIL"} {
@@ -109,7 +100,7 @@ func (v *ExecutableVerification) Verify(ctx context.Context, req domain.Executab
 	} else if len(req.Binding.TestDefinitions) != 0 {
 		return domain.ExecutableVerificationReceipt{}, errors.New("legacy definitions forbidden")
 	}
-	if err != nil || !matchingGoBinding(req.Binding, m) || domain.CanonicalDigestV2(req.CriterionTests) != domain.CanonicalDigestV2(m.CriterionTests) {
+	if err != nil || !domain.MatchingGoTestBinding(req.Binding, m) || domain.CanonicalDigestV2(req.CriterionTests) != domain.CanonicalDigestV2(m.CriterionTests) {
 		return domain.ExecutableVerificationReceipt{}, errors.New("capability binding mismatch")
 	}
 	result, err := v.engine.Run(ctx, req.Binding, true)

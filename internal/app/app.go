@@ -72,9 +72,6 @@ func New(cfg config.Config) App {
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	}
-	if executableVerifier != nil {
-		server.WriteTimeout = 300 * time.Second
-	}
 
 	return App{server: server}
 }

@@ -3,6 +3,8 @@ package engines
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -86,8 +88,9 @@ func (c *GoTestsClient) EngineID() string                                { retur
 func (c *GoTestsClient) NeedsWorkspaceFiles(domain.ValidationStage) bool { return true }
 func (c *GoTestsClient) Validate(ctx context.Context, input domain.EngineValidationInput) (domain.StageExecutionResult, error) {
 	var checks struct {
-		ProfileID string               `json:"profile_id"`
-		Binding   domain.GoTestBinding `json:"private_binding"`
+		ProfileID string                `json:"profile_id"`
+		Binding   domain.GoTestBinding  `json:"private_binding"`
+		Manifest  domain.GoTestManifest `json:"private_manifest"`
 	}
 	if input.Mode != "final" || json.Unmarshal(input.Stage.Checks, &checks) != nil || (checks.ProfileID != "go-double-numbers.v1" && checks.ProfileID != "go-double-numbers-cases.v1") || checks.Binding.ProfileID != checks.ProfileID || checks.Binding.Schema != "go-test-execution.v1" {
 		return domain.StageExecutionResult{}, errors.New("missing immutable Go evaluation binding")
@@ -116,11 +119,38 @@ func (c *GoTestsClient) Validate(ctx context.Context, input domain.EngineValidat
 	if err != nil {
 		return domain.StageExecutionResult{}, err
 	}
+	protocolError := func() (domain.StageExecutionResult, error) {
+		return domain.StageExecutionResult{}, domain.GoTestProviderError{Cause: domain.ErrValidatorProtocol}
+	}
+	if out.Schema != "go-test-result.v1" || !domain.MatchingGoTestBinding(b, checks.Manifest) || domain.CanonicalDigestV2(out.Manifest) != domain.CanonicalDigestV2(checks.Manifest) || len(out.Outcomes) != 1 {
+		return protocolError()
+	}
+	receivedDigest := out.Digest
+	out.Digest = ""
+	rawResult, _ := json.Marshal(out)
+	out.Digest = receivedDigest
+	if receivedDigest != goSolutionDigest(string(rawResult)) {
+		return protocolError()
+	}
 	result, ok := out.Outcomes["solution"]
-	if !ok || (result.Status != "PASS" && result.Status != "FAIL") {
-		return domain.StageExecutionResult{}, errors.New("Go executable validation failed technically")
+	if !ok || (result.Status != "PASS" && result.Status != "FAIL") || result.SourceDigest != goSolutionDigest(b.Files["solution.go"]) {
+		return protocolError()
+	}
+	if len(result.Criteria) != len(checks.Manifest.CriterionTests) {
+		return protocolError()
+	}
+	failed := false
+	for criterion := range checks.Manifest.CriterionTests {
+		status := result.Criteria[criterion]
+		if status != "PASS" && status != "FAIL" {
+			return protocolError()
+		}
+		failed = failed || status == "FAIL"
 	}
 	passed := result.Status == "PASS"
+	if passed == failed {
+		return protocolError()
+	}
 	if !passed {
 		return domain.StageExecutionResult{Errors: []domain.ValidationIssue{{Code: "GO_TEST_CRITERIA_FAILED", Message: "Required executable criteria failed."}}}, nil
 	}
@@ -131,4 +161,9 @@ func (c *GoTestsClient) Prepare(ctx context.Context, definitions json.RawMessage
 	var m domain.GoTestManifest
 	err := c.call(ctx, "/internal/go-tests/prepare", map[string]any{"schema": "go-test-prepare.v1", "profile_id": "go-double-numbers-cases.v1", "test_definitions": definitions}, &m)
 	return m, err
+}
+
+func goSolutionDigest(source string) string {
+	h := sha256.Sum256([]byte(source))
+	return "sha256:" + hex.EncodeToString(h[:])
 }

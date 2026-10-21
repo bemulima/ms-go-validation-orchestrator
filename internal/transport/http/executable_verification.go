@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
 )
@@ -26,7 +27,7 @@ func executableVerificationHandler(v ExecutableVerifier, token string, validate 
 			http.Error(w, "method_not_allowed", 405)
 			return
 		}
-		d := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20))
+		d := json.NewDecoder(http.MaxBytesReader(w, r.Body, 2<<20))
 		d.DisallowUnknownFields()
 		var input domain.ExecutableVerificationRequest
 		var receipt domain.VerificationReceiptValidation
@@ -42,6 +43,16 @@ func executableVerificationHandler(v ExecutableVerifier, token string, validate 
 		if d.Decode(&extra) != io.EOF {
 			http.Error(w, "invalid_request", 400)
 			return
+		}
+		if !validate {
+			const budget = 300 * time.Second
+			if err := http.NewResponseController(w).SetWriteDeadline(time.Now().Add(budget)); err != nil {
+				http.Error(w, "verification_deadline_unavailable", http.StatusServiceUnavailable)
+				return
+			}
+			ctx, cancel := context.WithTimeout(r.Context(), budget)
+			defer cancel()
+			r = r.WithContext(ctx)
 		}
 		w.Header().Set("Content-Type", "application/json")
 		if r.URL.Path == "/api/v2/contracts/prepare" {

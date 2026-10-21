@@ -44,10 +44,10 @@ func (u PracticeValidationUseCase) bindGoEvaluation(ctx context.Context, c *doma
 			}
 		}
 		b.Schema = "go-test-execution.v1"
-		if !matchingGoBinding(b, m) || len(b.Files) != 0 || assets.TestSuiteRef != "go-tests:"+m.BundleDigest || assets.ReferenceSolutionRef != "go-fixture:"+m.FixtureDigests["reference"] || len(assets.NegativeFixtureRefs) != 1 || assets.NegativeFixtureRefs[0] != "go-fixture:"+m.FixtureDigests["negative"] {
+		if !domain.MatchingGoTestBinding(b, m) || len(b.Files) != 0 || assets.TestSuiteRef != "go-tests:"+m.BundleDigest || assets.ReferenceSolutionRef != "go-fixture:"+m.FixtureDigests["reference"] || len(assets.NegativeFixtureRefs) != 1 || assets.NegativeFixtureRefs[0] != "go-fixture:"+m.FixtureDigests["negative"] {
 			return errors.New("Go evaluation drift")
 		}
-		c.Stages[i].Checks, _ = json.Marshal(map[string]any{"profile_id": m.ProfileID, "private_binding": b})
+		c.Stages[i].Checks, _ = json.Marshal(map[string]any{"profile_id": m.ProfileID, "private_binding": b, "private_manifest": m})
 	}
 	return nil
 }

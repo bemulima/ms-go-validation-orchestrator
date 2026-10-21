@@ -84,3 +84,12 @@ c2_b_go_snapshot_projection:
 lc06_final_gap:
   contract: docs/lc06-final-gap-contract.md
   scope: bounded_Go_typed_cases_and_public_two_file_starter
+
+executable_verification_r1:
+  routes: [POST /api/v2/contracts/prepare, POST /api/v2/contracts/verify]
+  request_body_limit: 2 MiB
+  write_deadline: 300s via ResponseController on these routes only; unsupported deadline control fails closed with 503
+  cancellation: request context bounded to the same 300s
+  unrelated_routes: retain global 30s write timeout, including receipt validation
+  execution_response: complete private manifest equals the trusted bound manifest; frozen profile/bundle/runner/execution/starter/definitions and solution source digest must match; protocol mismatch is technical ERROR
+  final_only: go.tests.v1 is filtered from live execution and inspection
