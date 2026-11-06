@@ -41,6 +41,7 @@ This document records behavior visible in the current code. It is a constraint l
 
 ## Practice validation V2
 
+- Specification V1 retains the existing authored milestone-contract array. Specification V2 accepts one required full original V1 contract for FINAL only, without inventing a milestone ID. Both versions share the exact snapshot, provider binding, final-mode execution, result privacy and aggregation rules; V2 does not enable unsupported providers or Start.
 - Practice V2 reads workspace bytes only from the exact pinned Sandbox snapshot endpoint. Sandbox URL, token, identity, response shape, file paths, and `workspace_digest` are checked before any engine call; no current-head fallback exists.
 - `practice-validation-contract-digest.v1` is recomputed locally over canonical JSON. A mismatch, malformed immutable contract, or zero required executable criteria returns `ERROR` with `AUTHORING_DEFECT`.
 - The response echoes TaskInstance, Submission, ValidationRun, revision digest, validation-contract digest, and the full snapshot reference. Stage issue summaries contain only bounded code/message pairs; raw validator output, evidence, selectors, routes, symbols, properties, rubric data, and assets are excluded.

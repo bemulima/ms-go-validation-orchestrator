@@ -16,6 +16,7 @@ import (
 const (
 	PracticeValidationRequestSchemaV2       = "practice-validation-request.v2"
 	PracticeValidationSpecificationSchemaV1 = "practice-validation-specification.v1"
+	PracticeValidationSpecificationSchemaV2 = "practice-validation-specification.v2"
 	PracticeValidationResultSchemaV2        = "practice-validation-result.v2"
 	PracticePinnedSnapshotContentSchemaV2   = "practice-pinned-snapshot-content.v2"
 

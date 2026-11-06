@@ -66,6 +66,8 @@ consumed_http:
   accepted_validation_statuses: [200, 422]
   response_body_limit: 4 MiB
 practice_validation_v2:
+  specification_schemas: [practice-validation-specification.v1, practice-validation-specification.v2]
+  specification_v2_scope: FINAL only; full original contract without milestone_id
   snapshot_source: GET /internal/v2/sandboxes/{sandboxID}/snapshots/{snapshotID}
   snapshot_identity_query: [generation_id, workspace_digest]
   snapshot_response_body_limit: 4 MiB
