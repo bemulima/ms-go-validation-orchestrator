@@ -56,7 +56,7 @@ type practiceEvaluationAssetsV1 struct {
 }
 
 type parsedPracticeContract struct {
-	input    practiceValidationContractV1
+	input    practiceExecutableContract
 	contract domain.ValidationContract
 }
 
@@ -83,7 +83,7 @@ func (useCase PracticeValidationUseCase) ValidatePractice(
 		return result, nil
 	}
 
-	specification, err := decodePracticeValidationSpecification(request.ValidationSpecification)
+	specification, err := decodePracticeExecutionSpecification(request)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidRequest) {
 			return domain.PracticeValidationResultV2{}, err
@@ -93,16 +93,10 @@ func (useCase PracticeValidationUseCase) ValidatePractice(
 	if specification.Schema == "" {
 		return fail(domain.PracticeValidationAuthoringDefect)
 	}
-	if specification.Schema != domain.PracticeValidationSpecificationSchemaV1 {
+	if specification.Schema != domain.PracticeValidationSpecificationSchemaV1 && specification.Schema != domain.PracticeValidationSpecificationSchemaV2 {
 		return fail(domain.PracticeValidationUnsupportedConfiguration)
 	}
-	contracts, err := validatePracticeSpecification(request, specification)
-	if err != nil {
-		if errors.Is(err, domain.ErrInvalidRequest) {
-			return domain.PracticeValidationResultV2{}, err
-		}
-		return fail(domain.PracticeValidationAuthoringDefect)
-	}
+	contracts := specification.Contracts
 
 	computedDigest, err := ComputePracticeValidationContractDigest(request.Scope, request.MilestoneID, request.ValidationSpecification)
 	if err != nil || computedDigest != request.ValidationContractDigest {
@@ -122,7 +116,7 @@ func (useCase PracticeValidationUseCase) ValidatePractice(
 			return fail(domain.PracticeValidationAuthoringDefect)
 		}
 		filteredLinks := filterLinksByStageIDs(parsed.Links, collectStageIDs(orderedStages))
-		if *contractInput.Required {
+		if contractInput.Required {
 			for _, stage := range orderedStages {
 				if !stage.Optional {
 					requiredCriteria++
@@ -164,7 +158,7 @@ func (useCase PracticeValidationUseCase) ValidatePractice(
 	for _, parsed := range parsedContracts {
 		missingRequiredFiles := missingSnapshotFiles(parsed.contract.Workspace.RequiredFiles, snapshot.Files)
 		for _, path := range missingRequiredFiles {
-			required := *parsed.input.Required
+			required := parsed.input.Required
 			result.Stages = append(result.Stages, domain.PracticeValidationStageSummaryV2{
 				StageID: "workspace.required_files", Required: required,
 				Outcome: domain.PracticeValidationFail,
@@ -206,7 +200,7 @@ func (useCase PracticeValidationUseCase) ValidatePractice(
 			if executionErrorStages[report.StageID] {
 				outcome = domain.PracticeValidationError
 			}
-			required := *parsed.input.Required && !report.Optional
+			required := parsed.input.Required && !report.Optional
 			issues := safePracticeIssues(report.Errors)
 			if executionErrorStages[report.StageID] {
 				issues = []domain.PracticeValidationIssueV2{{Code: "STAGE_EXECUTION_ERROR", Message: "Validation could not complete."}}
@@ -226,7 +220,7 @@ func (useCase PracticeValidationUseCase) ValidatePractice(
 			if !report.Passed {
 				outcome = domain.PracticeValidationFail
 			}
-			required := *parsed.input.Required && !report.Optional
+			required := parsed.input.Required && !report.Optional
 			issues := safePracticeIssues(report.Errors)
 			if outcome == domain.PracticeValidationFail && len(issues) == 0 {
 				issues = []domain.PracticeValidationIssueV2{{Code: "VALIDATION_FAILED", Message: "Validation criteria failed."}}

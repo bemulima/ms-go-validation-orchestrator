@@ -17,7 +17,14 @@ stage_execution:
 practice_validation_v2:
   schema: practice-validation-request.v2
   outcome_schema: practice-validation-result.v2
+  specification_v1: unchanged authored milestone contract array for MILESTONE or FINAL
+  specification_v2: FINAL-only single required original full contract without a milestone identity
+  specification_v2_fields: [schema, runtime_profile, final_contract]
+  final_contract_fields: [required, validation_contract, evaluation_assets]
+  final_contract_required: literal true; original stages, dependencies, links and workspace requirements retained
+  specification_v2_mixed_or_milestone_fields: rejected as invalid request
   digest_preimage: canonical JSON over schema, scope, optional milestone_id, and validation_specification
+  digest_encoding: no HTML escaping; exact JSON number lexemes retained without float conversion
   workspace_source: exact retained Sandbox snapshot only; no live-head fallback
   snapshot_validation: verify all returned identities and SHA-256 of sorted path/content JSON
   snapshot_revision: required non-negative integer; explicit genesis zero valid; missing, null, negative and malformed values corrupt

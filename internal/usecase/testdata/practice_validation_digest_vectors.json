@@ -1,0 +1,19 @@
+{
+  "schema": "practice-validation-digest-vectors.v1",
+  "computed_by_owner_commit": "30091f3c6d99a66e7e5b088042b20866e56901ad",
+  "vectors": [
+    {
+      "name": "v1-milestone-html-and-numbers",
+      "scope": "MILESTONE",
+      "milestone_id": "55555555-5555-4555-8555-555555555555",
+      "validation_specification": {"schema":"practice-validation-specification.v1","runtime_profile":{},"contracts":[{"milestone_id":"55555555-5555-4555-8555-555555555555","required":true,"validation_contract":{"version":1,"kind":"workspace_contract","stages":[{"id":"browser","engine":"browser.runtime","mode":"final","rules":{"selector":"<main>&","epsilon":1e-7,"large_integer":9007199254740993}}]},"evaluation_assets":{}}]},
+      "expected_digest": "sha256:f3bbdd567dae2de8cbcf3daa2852225a9d92e14a37d77a37d095992b565e76fe"
+    },
+    {
+      "name": "v2-final-html-and-numbers",
+      "scope": "FINAL",
+      "validation_specification": {"schema":"practice-validation-specification.v2","runtime_profile":{},"final_contract":{"required":true,"validation_contract":{"version":1,"kind":"workspace_contract","stages":[{"id":"browser","engine":"browser.runtime","mode":"final","rules":{"selector":"<main>&","epsilon":1e-7,"large_integer":9007199254740993}}]},"evaluation_assets":{}}},
+      "expected_digest": "sha256:0cb22d9083a5fbe3bf643cee7e6c67a4fdae35321497a77c93b1f72e9e38713a"
+    }
+  ]
+}
