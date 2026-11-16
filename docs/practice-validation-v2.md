@@ -199,3 +199,11 @@ paths and any manifest/source-digest drift are rejected. Legacy solution.go
 profiles still use their existing endpoint/credential. All provider redirects
 are denied. Learner output contains only static public HTTP criterion codes;
 private harness/reference source and raw execution output remain excluded.
+
+The authenticated, body-bounded Practice V2 validation command has a two-minute
+execution context and response write deadline. This allows bounded compilation
+to complete beyond the shared server's 30-second deadline. Other routes retain
+the shared deadline. Provider/stage limits and cancellation remain enforced;
+unsupported response-deadline control keeps the stricter enclosing transport
+deadline, while other deadline errors reject execution with 503. Runtime callers
+allow 130 seconds for this command, below the five-minute validation lease.
