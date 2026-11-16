@@ -45,3 +45,5 @@ This folder is the repository-owned documentation set for the validation orchest
 - [C2-B bounded Go snapshot projection](c2-b-go-snapshot-projection-review.md).
 
 - [LC-06 bounded final gap contract](lc06-final-gap-contract.md).
+
+- IDE28 bounded HTTP-main support is documented in [Practice V2](practice-validation-v2.md) and [executable verification](executable-verification.md); default-OFF and exact profile-bound.
