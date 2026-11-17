@@ -84,3 +84,13 @@ A receipt is evidence from the validation service, not publication authority.
 The practice-task owner must persist it against the exact immutable revision,
 reject digest drift, and require `passed=true` before moving a revision to
 `RUNNABLE` or `PUBLISHED`.
+
+IDE28 opt-in HTTP profile: `go-http-health-main.v1` uses the existing exact
+verification/result schemas and Sandbox worker, with a separate Code Validator
+prefix/credential. Its public contract is one required final `health_http`
+stage, engine `go.tests.v1`, exact main.go target/required file and one profile
+check. All seven public criteria must be present; reference PASS, starter FAIL
+and negative health_body FAIL are required. No ERROR can satisfy fixture gates.
+Existing DoubleNumbers verification requirements and immutable identities remain
+unchanged. The owner contract is in Code Validator's
+`docs/ide28-http-main-profile.md`.

@@ -33,6 +33,8 @@ type EngineEndpoints struct {
 }
 
 type Config struct {
+	HTTPGoEnabled               bool
+	HTTPGoToken                 string
 	ServiceName                 string
 	InternalAPIToken            string
 	SandboxServiceBaseURL       string
@@ -59,7 +61,13 @@ func Load() (Config, error) {
 		codeURL = goCodeURL
 	}
 
+	flag := os.Getenv("GO_HTTP_TESTS_ENABLED")
+	if flag != "" && flag != "false" && flag != "true" {
+		return Config{}, fmt.Errorf("invalid GO_HTTP_TESTS_ENABLED")
+	}
 	cfg := Config{
+		HTTPGoEnabled:               flag == "true",
+		HTTPGoToken:                 strings.TrimSpace(os.Getenv("GO_HTTP_TEST_INTERNAL_TOKEN")),
 		ServiceName:                 stringFromEnv("SERVICE_NAME", "ms-go-validation-orchestrator"),
 		InternalAPIToken:            stringFromEnv("INTERNAL_API_TOKEN", "change-me"),
 		SandboxServiceBaseURL:       trimURL(os.Getenv("SANDBOX_SERVICE_BASE_URL")),

@@ -190,3 +190,20 @@ is unset, the endpoint returns `ERROR` with `SNAPSHOT_UNAVAILABLE` after
 validating the request and contract digest.
 
 LC-07 provider binding: Go capability/definition preparation transport, timeout, HTTP availability and response protocol failures reuse the existing typed validator ERROR classifications. Malformed immutable profile/binding/definition or digest drift remains AUTHORING_DEFECT. No new wire enum or receipt contract; provider causes are private and never learner diagnostics.
+
+`GO_HTTP_TESTS_ENABLED` defaults false. Explicit activation additionally needs
+`GO_HTTP_TEST_INTERNAL_TOKEN`, distinct from legacy Go, Orchestrator and Sandbox
+credentials. The registered Go client dispatches this one profile to the separate
+Code HTTP endpoint and projects exact pinned main.go only; other executable
+paths and any manifest/source-digest drift are rejected. Legacy solution.go
+profiles still use their existing endpoint/credential. All provider redirects
+are denied. Learner output contains only static public HTTP criterion codes;
+private harness/reference source and raw execution output remain excluded.
+
+The authenticated, body-bounded Practice V2 validation command has a two-minute
+execution context and response write deadline. This allows bounded compilation
+to complete beyond the shared server's 30-second deadline. Other routes retain
+the shared deadline. Provider/stage limits and cancellation remain enforced;
+unsupported response-deadline control keeps the stricter enclosing transport
+deadline, while other deadline errors reject execution with 503. Runtime callers
+allow 130 seconds for this command, below the five-minute validation lease.

@@ -42,11 +42,17 @@ func strictExecutableContract(raw json.RawMessage) bool {
 		return false
 	}
 	s := contract.Stages[0]
-	if s.ID != "double_numbers" || s.Engine != "go.tests.v1" || s.Mode != "final" || s.Optional || len(s.DependsOn) != 0 || len(s.Rules) != 0 {
+	if (s.ID != "double_numbers" && s.ID != "health_http") || s.Engine != "go.tests.v1" || s.Mode != "final" || s.Optional || len(s.DependsOn) != 0 || len(s.Rules) != 0 {
 		return false
 	}
 	var checks map[string]string
-	if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || (checks["profile_id"] != "go-double-numbers.v1" && checks["profile_id"] != "go-double-numbers-cases.v1") {
+	if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || (checks["profile_id"] != "go-double-numbers.v1" && checks["profile_id"] != "go-double-numbers-cases.v1" && checks["profile_id"] != "go-http-health-main.v1") {
+		return false
+	}
+	if checks["profile_id"] == "go-http-health-main.v1" {
+		return s.ID == "health_http" && len(contract.Workspace.RequiredFiles) == 1 && contract.Workspace.RequiredFiles[0] == "main.go" && len(s.Targets.Files) == 1 && s.Targets.Files[0] == "main.go"
+	}
+	if s.ID != "double_numbers" {
 		return false
 	}
 	return len(contract.Workspace.RequiredFiles) == 1 && contract.Workspace.RequiredFiles[0] == "solution.go" && len(s.Targets.Files) == 1 && s.Targets.Files[0] == "solution.go"
@@ -88,13 +94,17 @@ func validExecutableGate(req domain.ExecutableVerificationRequest, result domain
 			return false
 		}
 	}
-	return result.Outcomes["negative"].Criteria["zeros"] == "FAIL" && result.Manifest.FixtureDigests["starter"] == req.Binding.StarterDigest
+	negativeCriterion := "zeros"
+	if req.Binding.ProfileID == "go-http-health-main.v1" {
+		negativeCriterion = "health_body"
+	}
+	return result.Outcomes["negative"].Criteria[negativeCriterion] == "FAIL" && result.Manifest.FixtureDigests["starter"] == req.Binding.StarterDigest
 }
 func (v *ExecutableVerification) Verify(ctx context.Context, req domain.ExecutableVerificationRequest) (domain.ExecutableVerificationReceipt, error) {
 	if !validVerificationRequest(req) {
 		return domain.ExecutableVerificationReceipt{}, errors.New("invalid executable verification request")
 	}
-	m, err := v.engine.Capability(ctx)
+	m, err := capabilityForGoProfile(ctx, v.engine, req.Binding.ProfileID)
 	if req.Binding.ProfileID == "go-double-numbers-cases.v1" {
 		m, err = v.Prepare(ctx, req.Binding.TestDefinitions)
 	} else if len(req.Binding.TestDefinitions) != 0 {

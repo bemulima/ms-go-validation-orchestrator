@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/example/ms-validation-orchestrator-service/internal/domain"
 )
@@ -42,7 +43,16 @@ func (handler Handler) ValidatePractice(responseWriter http.ResponseWriter, requ
 		writeJSON(responseWriter, status, map[string]any{"error": "invalid_request", "message": err.Error()})
 		return
 	}
-	result, err := handler.useCase.ValidatePractice(request.Context(), input)
+	// Official bounded compilation may exceed the shared 30-second socket
+	// deadline. Extend only this already-authenticated, body-bounded route.
+	const budget = 2 * time.Minute
+	if err := http.NewResponseController(responseWriter).SetWriteDeadline(time.Now().Add(budget)); err != nil && !errors.Is(err, http.ErrNotSupported) {
+		writeJSON(responseWriter, http.StatusServiceUnavailable, map[string]string{"error": "validation_deadline_unavailable"})
+		return
+	}
+	ctx, cancel := context.WithTimeout(request.Context(), budget)
+	defer cancel()
+	result, err := handler.useCase.ValidatePractice(ctx, input)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidRequest) {
 			writeJSON(responseWriter, http.StatusBadRequest, map[string]any{"error": "invalid_request", "message": err.Error()})

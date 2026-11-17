@@ -50,7 +50,7 @@ func New(cfg config.Config) App {
 		if base == "" || cfg.GoTestInternalToken == "" || cfg.PlannerVerificationToken == "" || cfg.CatalogVerificationToken == "" {
 			panic("incomplete executable verification configuration")
 		}
-		v, err := usecase.NewExecutableVerification(engines.NewGoTestsClient(base, cfg.GoTestInternalToken), cfg.VerificationSigningKey, cfg.VerificationKeyID)
+		v, err := usecase.NewExecutableVerification(configuredGoTests(base, cfg), cfg.VerificationSigningKey, cfg.VerificationKeyID)
 		if err != nil {
 			panic(err)
 		}
@@ -203,7 +203,7 @@ func buildEngineClients(
 	}
 	if goCodeValidatorURL != "" {
 		if cfg.GoTestInternalToken != "" {
-			engineClients = append(engineClients, engines.NewGoTestsClient(goCodeValidatorURL, cfg.GoTestInternalToken))
+			engineClients = append(engineClients, configuredGoTests(goCodeValidatorURL, cfg))
 		}
 		engineClients = append(
 			engineClients,
@@ -266,4 +266,15 @@ func buildEngineClients(
 
 func itoa(value int) string {
 	return fmt.Sprintf("%d", value)
+}
+
+func configuredGoTests(base string, cfg config.Config) *engines.GoTestsClient {
+	c := engines.NewGoTestsClient(base, cfg.GoTestInternalToken)
+	if cfg.HTTPGoEnabled {
+		if len(cfg.HTTPGoToken) < 32 || cfg.HTTPGoToken == cfg.GoTestInternalToken || cfg.HTTPGoToken == cfg.InternalAPIToken || cfg.HTTPGoToken == cfg.SandboxServiceInternalToken {
+			panic("dedicated HTTP Go credential required")
+		}
+		c.HTTPGoToken = cfg.HTTPGoToken
+	}
+	return c
 }
