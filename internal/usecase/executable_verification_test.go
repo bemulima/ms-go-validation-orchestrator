@@ -10,11 +10,19 @@ import (
 )
 
 type executableFake struct {
-	result domain.GoTestResult
-	calls  int
+	result       domain.GoTestResult
+	calls        int
+	profileCalls []string
 }
 
 func (f *executableFake) Capability(context.Context) (domain.GoTestManifest, error) {
+	return f.result.Manifest, nil
+}
+func (f *executableFake) CapabilityForProfile(_ context.Context, profile string) (domain.GoTestManifest, error) {
+	f.profileCalls = append(f.profileCalls, profile)
+	if profile != f.result.Manifest.ProfileID {
+		return domain.GoTestManifest{}, domain.ErrValidatorProtocol
+	}
 	return f.result.Manifest, nil
 }
 func (f *executableFake) Run(context.Context, domain.GoTestBinding, bool) (domain.GoTestResult, error) {
@@ -143,5 +151,66 @@ func TestExecutableVerificationFailsClosed(t *testing.T) {
 				t.Fatal("invalid executable gate accepted")
 			}
 		})
+	}
+}
+
+func TestStrictExecutableContractAcceptsSafeDivisionProfileOnlyOnMainGo(t *testing.T) {
+	valid := json.RawMessage(`{"version":1,"kind":"workspace_contract","workspace":{"required_files":["main.go"]},"stages":[{"id":"safe_division","engine":"go.tests.v1","mode":"final","targets":{"files":["main.go"]},"checks":{"profile_id":"go-safe-division.v1"}}]}`)
+	if !strictExecutableContract(valid) {
+		t.Fatal("versioned SafeDivide executable contract rejected")
+	}
+	for _, raw := range []string{
+		`{"version":1,"kind":"workspace_contract","workspace":{"required_files":["solution.go"]},"stages":[{"id":"safe_division","engine":"go.tests.v1","mode":"final","targets":{"files":["solution.go"]},"checks":{"profile_id":"go-safe-division.v1"}}]}`,
+		`{"version":1,"kind":"workspace_contract","workspace":{"required_files":["main.go"]},"stages":[{"id":"double_numbers","engine":"go.tests.v1","mode":"final","targets":{"files":["main.go"]},"checks":{"profile_id":"go-safe-division.v1"}}]}`,
+		`{"version":1,"kind":"workspace_contract","workspace":{"required_files":["main.go"]},"stages":[{"id":"safe_division","engine":"go.tests.v1","mode":"final","targets":{"files":["main.go"]},"checks":{"profile_id":"go-double-numbers.v1"}}]}`,
+	} {
+		if strictExecutableContract(json.RawMessage(raw)) {
+			t.Fatal("SafeDivide contract accepted wrong profile or workspace")
+		}
+	}
+}
+
+func TestSafeDivisionExecutableVerificationUsesExactCapabilityAndNegativeCriterion(t *testing.T) {
+	criteria := map[string]string{
+		"positive_exact": "TestPositiveExact", "quotient_truncates": "TestQuotientTruncates",
+		"negative_numerator": "TestNegativeNumerator", "negative_divisor": "TestNegativeDivisor",
+		"both_negative": "TestBothNegative", "zero_numerator": "TestZeroNumerator",
+		"zero_divisor_error": "TestZeroDivisorError",
+	}
+	digest := func(value string) string { return domain.CanonicalDigestV2(value) }
+	manifest := domain.GoTestManifest{
+		Schema: "go-test-capability.v1", ProfileID: "go-safe-division.v1", BundleVersion: "safe-division.v1",
+		BundleDigest: digest("bundle"), RunnerDigest: digest("runner"), ExecutionProfileDigest: digest("execution"),
+		StarterDigest: digest("starter"), TestFileDigests: map[string]string{"exercise_test.go": digest("tests")},
+		CriterionTests: criteria, FixtureDigests: map[string]string{"reference": digest("reference"), "starter": digest("starter"), "negative": digest("negative")},
+	}
+	statuses := map[string]domain.GoTestOutcome{}
+	for name, status := range map[string]string{"reference": "PASS", "starter": "FAIL", "negative": "FAIL"} {
+		criterionResults := map[string]string{}
+		for criterion := range criteria {
+			criterionResults[criterion] = "PASS"
+		}
+		if status == "FAIL" {
+			criterionResults["positive_exact"] = "FAIL"
+		}
+		statuses[name] = domain.GoTestOutcome{Status: status, SourceDigest: manifest.FixtureDigests[name], Criteria: criterionResults}
+	}
+	fake := &executableFake{result: domain.GoTestResult{Schema: "go-test-result.v1", Manifest: manifest, Outcomes: statuses}}
+	verification, err := NewExecutableVerification(fake, strings.Repeat("k", 64), "safe-division-key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	contract := json.RawMessage(`{"version":1,"kind":"workspace_contract","workspace":{"required_files":["main.go"]},"stages":[{"id":"safe_division","engine":"go.tests.v1","mode":"final","targets":{"files":["main.go"]},"checks":{"profile_id":"go-safe-division.v1"}}]}`)
+	request := domain.ExecutableVerificationRequest{
+		Schema: "validation-contract-verification-request.v2", IdempotencyKey: "4658157e-0f3b-45cc-899b-d54f0ba71aab",
+		CandidateDigest: digest("candidate"), RuntimeProfileDigest: digest("runtime"), ValidationContract: contract,
+		Binding:        domain.GoTestBinding{Schema: "go-test-bundle-verification.v1", ProfileID: manifest.ProfileID, BundleDigest: manifest.BundleDigest, RunnerDigest: manifest.RunnerDigest, ExecutionProfileDigest: manifest.ExecutionProfileDigest, StarterDigest: manifest.StarterDigest},
+		CriterionTests: criteria,
+	}
+	if _, err := verification.Verify(context.Background(), request); err != nil {
+		t.Fatalf("SafeDivide executable verification failed: %v", err)
+	}
+	if len(fake.profileCalls) != 1 || fake.profileCalls[0] != "go-safe-division.v1" || fake.calls != 1 {
+		t.Fatalf("exact capability was not used: profiles=%v executions=%d", fake.profileCalls, fake.calls)
 	}
 }

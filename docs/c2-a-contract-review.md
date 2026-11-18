@@ -14,4 +14,17 @@ The new configured go.tests.v1 adapter is FINAL-only, typed technical ERROR vs s
 
 `internal/domain/executable_verification.go` owns exact v2 DTOs. Bundle/profile/runner/starter pins are nested under `binding` (`GoTestBinding`); top level has runtime_profile_digest and criterion_tests. Receipt has the exact request, verification result/manifest/outcomes, contract/capability digests, issuer/key_id/verified_at, receipt_digest and seal. Receipt digest canonicalizes JSON with sorted object keys and preserved arrays/numbers, omitting its own digest/seal by setting them empty. HMAC signs that digest. V1 digest algorithms are unchanged.
 
-Both new HTTP routes require POST and distinct `X-Internal-Token` roles. Code-validator uses its separate Bearer token. Receipt validation receives `{receipt, expected_request}` and returns `{valid}` without engine execution. Validation V2 injects checked opaque evaluation bindings into the new adapter internally; frozen request/spec schemas are unchanged. The public contract is one required FINAL `go.tests.v1` stage, kind workspace_contract, profile_id go-double-numbers.v1, required/target file solution.go.
+Both new HTTP routes require POST and distinct `X-Internal-Token` roles. Code-validator uses its separate Bearer token. Receipt validation receives `{receipt, expected_request}` and returns `{valid}` without engine execution. Validation V2 injects checked opaque evaluation bindings into the new adapter internally; frozen request/spec schemas are unchanged. The original C2-A public contract is one required FINAL `go.tests.v1` stage, kind workspace_contract, profile_id go-double-numbers.v1, required/target file solution.go.
+
+## CAT-49 SafeDivide profile addition
+
+The additive `go-safe-division.v1` profile uses the same private binding and
+bounded worker model with a distinct test/fixture/runner digest. Validation
+requests this capability by exact profile ID; it is not inferred from a Go
+language hint and cannot downgrade to DoubleNumbers. Its strict authoring
+contract is one required FINAL `safe_division` stage targeting the exact
+`main.go` file. The authenticated private bundle includes seven SafeDivide
+criteria, reference, starter and negative fixture digests. Reference must
+pass; starter and negative must semantically fail, with `positive_exact`
+required to fail in the negative. Public AST defaults and the frozen
+DoubleNumbers contract remain unchanged.

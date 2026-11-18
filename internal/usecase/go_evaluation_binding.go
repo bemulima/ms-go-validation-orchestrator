@@ -17,7 +17,7 @@ func (u PracticeValidationUseCase) bindGoEvaluation(ctx context.Context, c *doma
 			return errors.New("Go evaluation unavailable")
 		}
 		var checks map[string]string
-		if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || (checks["profile_id"] != "go-double-numbers.v1" && checks["profile_id"] != "go-double-numbers-cases.v1" && checks["profile_id"] != "go-http-health-main.v1") {
+		if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || (checks["profile_id"] != "go-double-numbers.v1" && checks["profile_id"] != "go-double-numbers-cases.v1" && checks["profile_id"] != "go-http-health-main.v1" && checks["profile_id"] != "go-safe-division.v1") {
 			return errors.New("invalid public Go profile")
 		}
 		m, e := capabilityForGoProfile(ctx, engine, checks["profile_id"])
@@ -53,12 +53,12 @@ func (u PracticeValidationUseCase) bindGoEvaluation(ctx context.Context, c *doma
 }
 
 func samePublicGoProfile(public, private string) bool {
-	return public == private && (public == "go-double-numbers.v1" || public == "go-double-numbers-cases.v1" || public == "go-http-health-main.v1")
+	return public == private && (public == "go-double-numbers.v1" || public == "go-double-numbers-cases.v1" || public == "go-http-health-main.v1" || public == "go-safe-division.v1")
 }
 
 // Optional profile-aware owner capability; legacy fakes/ports remain compatible.
 func capabilityForGoProfile(ctx context.Context, engine domain.GoTestPort, profile string) (domain.GoTestManifest, error) {
-	if profile == "go-http-health-main.v1" {
+	if profile == "go-http-health-main.v1" || profile == "go-safe-division.v1" {
 		p, ok := engine.(interface {
 			CapabilityForProfile(context.Context, string) (domain.GoTestManifest, error)
 		})

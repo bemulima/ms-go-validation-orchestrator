@@ -95,3 +95,14 @@ executable_verification_r1:
   unrelated_routes: retain global 30s write timeout, including receipt validation
   execution_response: complete private manifest equals the trusted bound manifest; frozen profile/bundle/runner/execution/starter/definitions and solution source digest must match; protocol mismatch is technical ERROR
   final_only: go.tests.v1 is filtered from live execution and inspection
+
+cat49_safe_division_profile:
+  engine: go.tests.v1
+  profile: go-safe-division.v1
+  public_stage: safe_division
+  mode: final
+  workspace_and_target: [main.go]
+  capability_selection: exact_profile_id_query
+  owner_bundle: authentic_suite_reference_starter_negative_runner
+  legacy_double_numbers_identity: unchanged
+  unknown_profile: reject_without_default_downgrade

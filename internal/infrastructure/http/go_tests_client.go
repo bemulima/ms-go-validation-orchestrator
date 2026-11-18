@@ -104,11 +104,15 @@ func (c *GoTestsClient) Validate(ctx context.Context, input domain.EngineValidat
 		Binding   domain.GoTestBinding  `json:"private_binding"`
 		Manifest  domain.GoTestManifest `json:"private_manifest"`
 	}
-	if input.Mode != "final" || json.Unmarshal(input.Stage.Checks, &checks) != nil || (checks.ProfileID != "go-double-numbers.v1" && checks.ProfileID != "go-double-numbers-cases.v1" && !(checks.ProfileID == httpGoProfile && c.HTTPGoToken != "")) || checks.Binding.ProfileID != checks.ProfileID || checks.Binding.Schema != "go-test-execution.v1" {
+	if input.Mode != "final" || json.Unmarshal(input.Stage.Checks, &checks) != nil || checks.Binding.ProfileID != checks.ProfileID || checks.Binding.Schema != "go-test-execution.v1" {
+		return domain.StageExecutionResult{}, errors.New("missing immutable Go evaluation binding")
+	}
+	allowedProfile := checks.ProfileID == "go-double-numbers.v1" || checks.ProfileID == "go-double-numbers-cases.v1" || checks.ProfileID == safeDivisionProfile || (checks.ProfileID == httpGoProfile && c.HTTPGoToken != "")
+	if !allowedProfile {
 		return domain.StageExecutionResult{}, errors.New("missing immutable Go evaluation binding")
 	}
 	sourceFile := "solution.go"
-	if checks.ProfileID == httpGoProfile {
+	if checks.ProfileID == httpGoProfile || checks.ProfileID == safeDivisionProfile {
 		sourceFile = "main.go"
 	}
 	b := checks.Binding
@@ -194,6 +198,7 @@ func goSolutionDigest(source string) string {
 }
 
 const httpGoProfile = "go-http-health-main.v1"
+const safeDivisionProfile = "go-safe-division.v1"
 
 func (c *GoTestsClient) routePrefix() string {
 	if c.prefix != "" {
@@ -217,6 +222,14 @@ func (c *GoTestsClient) CapabilityForProfile(ctx context.Context, profile string
 			return domain.GoTestManifest{}, e
 		}
 		return copy.Capability(ctx)
+	}
+	if profile == safeDivisionProfile {
+		var m domain.GoTestManifest
+		err := c.call(ctx, "/internal/go-tests/capability?profile_id="+safeDivisionProfile, nil, &m)
+		if err == nil && m.ProfileID != safeDivisionProfile {
+			return domain.GoTestManifest{}, domain.GoTestProviderError{Cause: domain.ErrValidatorProtocol}
+		}
+		return m, err
 	}
 	if profile != "go-double-numbers.v1" && profile != "go-double-numbers-cases.v1" {
 		return domain.GoTestManifest{}, errors.New("unsupported Go profile")
