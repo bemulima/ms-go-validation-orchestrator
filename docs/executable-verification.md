@@ -94,3 +94,15 @@ and negative health_body FAIL are required. No ERROR can satisfy fixture gates.
 Existing DoubleNumbers verification requirements and immutable identities remain
 unchanged. The owner contract is in Code Validator's
 `docs/ide28-http-main-profile.md`.
+
+CAT-49 adds the distinct private `go-safe-division.v1` profile. Its only
+accepted executable contract has one required FINAL `safe_division` stage,
+engine `go.tests.v1`, exact `main.go` target/required file, and one matching
+profile check. Validation fetches that exact versioned capability from Code
+Validator; unknown or mismatched profiles fail closed. The authenticated
+owner capability binds the real private suite, reference/starter/negative
+fixtures, runner and worker identities. Authoring requires reference PASS,
+starter semantic FAIL, and the `positive_exact` negative criterion FAIL. The
+same frozen binding is used for saved `main.go` evaluation. DoubleNumbers and
+HTTP-main contracts remain unchanged. See Code Validator's
+`docs/safe-division-profile.md` for the owned AST and private-test contract.
