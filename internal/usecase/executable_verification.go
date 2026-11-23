@@ -42,15 +42,18 @@ func strictExecutableContract(raw json.RawMessage) bool {
 		return false
 	}
 	s := contract.Stages[0]
-	if (s.ID != "double_numbers" && s.ID != "health_http") || s.Engine != "go.tests.v1" || s.Mode != "final" || s.Optional || len(s.DependsOn) != 0 || len(s.Rules) != 0 {
+	if (s.ID != "double_numbers" && s.ID != "health_http" && s.ID != "safe_division") || s.Engine != "go.tests.v1" || s.Mode != "final" || s.Optional || len(s.DependsOn) != 0 || len(s.Rules) != 0 {
 		return false
 	}
 	var checks map[string]string
-	if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || (checks["profile_id"] != "go-double-numbers.v1" && checks["profile_id"] != "go-double-numbers-cases.v1" && checks["profile_id"] != "go-http-health-main.v1") {
+	if json.Unmarshal(s.Checks, &checks) != nil || len(checks) != 1 || (checks["profile_id"] != "go-double-numbers.v1" && checks["profile_id"] != "go-double-numbers-cases.v1" && checks["profile_id"] != "go-http-health-main.v1" && checks["profile_id"] != "go-safe-division.v1") {
 		return false
 	}
 	if checks["profile_id"] == "go-http-health-main.v1" {
 		return s.ID == "health_http" && len(contract.Workspace.RequiredFiles) == 1 && contract.Workspace.RequiredFiles[0] == "main.go" && len(s.Targets.Files) == 1 && s.Targets.Files[0] == "main.go"
+	}
+	if checks["profile_id"] == "go-safe-division.v1" {
+		return s.ID == "safe_division" && len(contract.Workspace.RequiredFiles) == 1 && contract.Workspace.RequiredFiles[0] == "main.go" && len(s.Targets.Files) == 1 && s.Targets.Files[0] == "main.go"
 	}
 	if s.ID != "double_numbers" {
 		return false
@@ -97,6 +100,8 @@ func validExecutableGate(req domain.ExecutableVerificationRequest, result domain
 	negativeCriterion := "zeros"
 	if req.Binding.ProfileID == "go-http-health-main.v1" {
 		negativeCriterion = "health_body"
+	} else if req.Binding.ProfileID == "go-safe-division.v1" {
+		negativeCriterion = "positive_exact"
 	}
 	return result.Outcomes["negative"].Criteria[negativeCriterion] == "FAIL" && result.Manifest.FixtureDigests["starter"] == req.Binding.StarterDigest
 }
